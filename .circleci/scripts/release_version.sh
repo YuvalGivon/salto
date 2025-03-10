@@ -11,8 +11,8 @@ if [ -z "$GITHUB_AUTH_TOKEN" ]; then
   exit 1
 fi
 
-if [ -z "$NPM_TOKEN" ]; then
-  echo >&2 "missing NPM_TOKEN environment variable"
+if [ -z "$GITHUB_PAT_PACKAGES" ]; then
+  echo >&2 "missing GITHUB_PAT_PACKAGES environment variable"
   exit 1
 fi
 
@@ -24,11 +24,6 @@ fi
 GIT_BASE_REVISION=${1-}
 if [ -z "$GIT_BASE_REVISION" ]; then
   echo >&2 "usage: $0 git_base_revision"
-  exit 1
-fi
-
-if [ -z "$VSCODE_MARKETPLACE_TOKEN" ]; then
-  echo >&2 "missing VSCODE_MARKETPLACE_TOKEN environment variable"
   exit 1
 fi
 
@@ -75,11 +70,8 @@ push_new_git_tag() {
 
 publish_packages_to_github_packages() {
   echo "publishing to github packages"
-  # set token at npmrc - without making the git local copy dirty
-  echo "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" >> .npmrc
-
-  echo ".npmrc" >> .git/info/exclude
-  git update-index --assume-unchanged .npmrc
+  echo "@salto-io:registry=https://npm.pkg.github.com" > ~/.npmrc
+  echo "//npm.pkg.github.com/:_authToken=${GITHUB_PAT_PACKAGES}" >> ~/.npmrc
 
   yarn lerna-publish -y --ignore-scripts
 }
@@ -114,18 +106,8 @@ create_release_in_github() {
   wait
 }
 
-publish_extension_to_marketplace() {
-  pushd "$1"
-
-  echo "publishing extension to vscode market place"
-  npx vsce publish --packagePath ./salto.vsix --pat ${VSCODE_MARKETPLACE_TOKEN}
-
-  popd
-}
-
 tmp_assets_dir=$(mktemp -d)
 copy_files_from_s3 $tmp_assets_dir
 push_new_git_tag
 publish_packages_to_github_packages
 create_release_in_github $tmp_assets_dir
-publish_extension_to_marketplace $tmp_assets_dir
