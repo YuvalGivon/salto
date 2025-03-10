@@ -1,5 +1,8 @@
 {
   "$schema": "https://turborepo.org/schema.json",
+  "globalEnv": [
+    "GITHUB_PAT_PACKAGES"
+  ],
   "tasks": {
     "build-ts": {
       "outputLogs": "new-only",

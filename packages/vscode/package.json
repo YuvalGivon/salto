@@ -1,10 +1,11 @@
 {
-  "name": "salto-vscode",
+  "name": "@salto-io/salto-vscode",
   "displayName": "Salto NACL Configuration Editor",
   "description": "Provides rich support for NACL Configuration files, including syntax highlighting, auto-complete, code navigation and more.",
   "version": "0.5.2",
   "publishConfig": {
-    "access": "public"
+    "access": "private",
+    "registry": "https://npm.pkg.github.com/"
   },
   "icon": "icons/images/file_type_salto_opaque.png",
   "galleryBanner": {
@@ -17,7 +18,7 @@
   "publisher": "salto-io",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salto-io/salto"
+    "url": "https://github.com/salto-io/salto-base.git"
   },
   "categories": [
     "Other"

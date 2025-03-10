@@ -29,7 +29,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - .circleci/continue_config.yml  
+            - .circleci/continue_config.yml
 
 workflows:
   prepare:

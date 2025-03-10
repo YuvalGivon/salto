@@ -5,10 +5,11 @@
   "description": "Salto E2E tests credentials store",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salto-io/salto"
+    "url": "https://github.com/salto-io/salto-base.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private",
+    "registry": "https://npm.pkg.github.com/"
   },
   "files": [
     "dist"

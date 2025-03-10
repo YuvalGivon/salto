@@ -5,10 +5,11 @@
   "description": "Salto local workspace",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salto-io/salto"
+    "url": "https://github.com/salto-io/salto-base.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private",
+    "registry": "https://npm.pkg.github.com/"
   },
   "files": [
     "dist/src",
@@ -37,7 +38,7 @@
     "@salto-io/logging": "0.5.2",
     "@salto-io/lowerdash": "0.5.2",
     "@salto-io/parser": "0.5.2",
-    "@salto-io/rocksdb": "5.1.1-salto-18",
+    "@salto-io/rocksdb": "5.1.1-salto-19",
     "@salto-io/workspace": "0.5.2",
     "async-lock": "^1.2.4",
     "axios": "^1.7.2",
@@ -57,7 +58,7 @@
   "devDependencies": {
     "@aws-sdk/util-stream-node": "3.198.0",
     "@salto-io/element-test-utils": "0.5.2",
-    "@salto-io/jest-extended": "^4.0.3",
+    "@salto-io/jest-extended": "^4.0.5",
     "@salto-io/test-utils": "0.5.2",
     "@types/async-lock": "^1.1.2",
     "@types/fs-extra": "^9.0.8",

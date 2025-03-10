@@ -4064,6 +4064,7 @@ __metadata:
     "@salto-io/google-workspace-adapter": 0.5.2
     "@salto-io/intercom-adapter": 0.5.2
     "@salto-io/jamf-adapter": 0.5.2
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/jira-adapter": 0.5.2
     "@salto-io/microsoft-entra-adapter": 0.5.2
     "@salto-io/microsoft-security-adapter": 0.5.2
@@ -4081,7 +4082,6 @@ __metadata:
     "@types/jest": ^29.5.12
     eslint: ^9.16.0
     jest: ^29.7.0
-    jest-extended: ^4.0.2
     prettier: 3.2.5
     ts-jest: ^29.2.0
     tsc-watch: ^2.2.1
@@ -4237,11 +4237,11 @@ __metadata:
     "@salto-io/adapter-utils": 0.5.2
     "@salto-io/dag": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/local-workspace": 0.5.2
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
-    "@salto-io/node-diff3": 3.1.2-salto.1
+    "@salto-io/node-diff3": 3.1.2-salto.2
     "@salto-io/test-utils": 0.5.2
     "@salto-io/workspace": 0.5.2
     "@types/jest": ^29.5.12
@@ -4487,18 +4487,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/jest-extended@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "@salto-io/jest-extended@npm:4.0.3"
+"@salto-io/jest-extended@npm:^4.0.5":
+  version: 4.0.5
+  resolution: "@salto-io/jest-extended@npm:4.0.5::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fjest-extended%2F4.0.5%2F157a98fedbf470fe27bb37b096748cdafdce9a2c"
   dependencies:
     jest-diff: ^29.0.0
     jest-get-type: ^29.0.0
   peerDependencies:
     jest: ">=27.2.5"
-  peerDependenciesMeta:
-    jest:
-      optional: true
-  checksum: c905866ae492c3469a6ddfb65bd18dc063561cd06c68a54214deb54e4ccb61b13f1112efe051fb6f3e1ebdea276b14852038cf479e7d311fdfbb8a0ab7634d12
+  checksum: 853d9e2627a0d6588542a87188366c96dd836187564b3381d43e61ac18755e1d751f15b7bd909461b650a58db0522f2ace0d77f5ac4342fb31bc82fb2dca09aa
   languageName: node
   linkType: hard
 
@@ -4513,7 +4510,7 @@ __metadata:
     "@salto-io/dag": 0.5.2
     "@salto-io/e2e-credentials-store": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
     "@salto-io/test-utils": 0.5.2
@@ -4541,16 +4538,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/jsforce-types@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@salto-io/jsforce-types@npm:0.1.0"
-  checksum: 35f3f97afb5bea163bfd55b7f1a3ba17c0a68bf9bf665f21f1c3e8a381eec886562c8578edb39cdf07ddfb467207ad0476ddfab92c1800392962095784fa2986
+"@salto-io/jsforce-types@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@salto-io/jsforce-types@npm:0.1.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fjsforce-types%2F0.1.1%2Fbf9585de5db0d320b4a608afc5f61c75e4357dbc"
+  checksum: dc002c5d72f480aab1e08bb638cb6330521a005a4fa3d38a53063ebb8a3034e898f6b2626c167ae0644e53fb9c053c56653c1ab371b4167ec4809c5eb08de6ca
   languageName: node
   linkType: hard
 
-"@salto-io/jsforce@npm:^1.9.4":
-  version: 1.9.4
-  resolution: "@salto-io/jsforce@npm:1.9.4"
+"@salto-io/jsforce@npm:^1.9.5":
+  version: 1.9.5
+  resolution: "@salto-io/jsforce@npm:1.9.5::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fjsforce%2F1.9.5%2F9380d048e9b859fea1cf3203b9b0b99a3e58e64c"
   dependencies:
     base64-url: ^2.2.0
     co-prompt: ^1.0.0
@@ -4569,7 +4566,7 @@ __metadata:
     xml2js: ^0.4.16
   bin:
     jsforce: bin/jsforce
-  checksum: 9ac30c4cd54eaf3bb85a5749b0648ac77f667e75e8c16f6a28bc80e483cd6633704a73516d8c878488b7b72b3f621586789381002dbe540d0d098e054f626d4f
+  checksum: 5f7ff86c95e2270f15fbf0dc638c508818360468437586a7be056e3622b36d4b8a938800d36139b2740ca7abb3f52a0b3728ca4464bda2c995ad34df16c6551d
   languageName: node
   linkType: hard
 
@@ -4611,11 +4608,11 @@ __metadata:
     "@salto-io/aws-utils": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
     "@salto-io/file": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
     "@salto-io/parser": 0.5.2
-    "@salto-io/rocksdb": 5.1.1-salto-18
+    "@salto-io/rocksdb": 5.1.1-salto-19
     "@salto-io/test-utils": 0.5.2
     "@salto-io/workspace": 0.5.2
     "@types/async-lock": ^1.1.2
@@ -4683,22 +4680,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/logging@npm:latest":
-  version: 0.4.0
-  resolution: "@salto-io/logging@npm:0.4.0"
-  dependencies:
-    "@salto-io/lowerdash": 0.4.0
-    chalk: ^2.4.2
-    fast-safe-stringify: ^2.0.7
-    lodash: ^4.17.21
-    minimatch: ^3.0.4
-    pino: ^6.14.0
-    uuid: ^10.0.0
-    wu: ^2.1.0
-  checksum: e3c25edd7b54059b57a870ba50417a73d1941be53f820b59c2f2a319879373f48f509d258f1866fd7049cd4ebca571fa48360a5a92a32d4402a9b73742f6d24b
-  languageName: node
-  linkType: hard
-
 "@salto-io/lowerdash@0.5.2, @salto-io/lowerdash@workspace:packages/lowerdash":
   version: 0.0.0-use.local
   resolution: "@salto-io/lowerdash@workspace:packages/lowerdash"
@@ -4719,17 +4700,6 @@ __metadata:
     wu: ^2.1.0
   languageName: unknown
   linkType: soft
-
-"@salto-io/lowerdash@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@salto-io/lowerdash@npm:0.4.0"
-  dependencies:
-    lodash: ^4.17.21
-    stacktrace-parser: ^0.1.9
-    wu: ^2.1.0
-  checksum: a3a499c91c02620a2d0fe405aa10243c00991c339bec9ceb74c3f85127c73a9f71e9eb6a948772db4f1ec574d8b47394f84776f52aec352035ee1069b1afe0ec
-  languageName: node
-  linkType: hard
 
 "@salto-io/microsoft-entra-adapter@0.5.2, @salto-io/microsoft-entra-adapter@workspace:packages/microsoft-entra-adapter":
   version: 0.0.0-use.local
@@ -4826,8 +4796,8 @@ __metadata:
     "@salto-io/file": 0.5.2
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
-    "@salto-io/suitecloud-cli-legacy": "npm:@salto-io/suitecloud-cli@1.9.0-salto-4"
-    "@salto-io/suitecloud-cli-new": "npm:@salto-io/suitecloud-cli@2.0.0-salto-1"
+    "@salto-io/suitecloud-cli-legacy": "npm:@salto-io/suitecloud-cli@1.9.0-salto-5"
+    "@salto-io/suitecloud-cli-new": "npm:@salto-io/suitecloud-cli@2.0.0-salto-2"
     "@salto-io/test-utils": 0.5.2
     "@types/async-lock": ^1.1.2
     "@types/he": ^1.1.1
@@ -4866,10 +4836,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/node-diff3@npm:3.1.2-salto.1":
-  version: 3.1.2-salto.1
-  resolution: "@salto-io/node-diff3@npm:3.1.2-salto.1"
-  checksum: bf1b08adec6e19e899bb4197dd5a12b2348b780636d00c7cbf915bfc35678cdc47b72e2dd05d10a4c6f029b07e0c753fb7f9b919d929e40f8743abe1aab79f64
+"@salto-io/node-diff3@npm:3.1.2-salto.2":
+  version: 3.1.2-salto.2
+  resolution: "@salto-io/node-diff3@npm:3.1.2-salto.2::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fnode-diff3%2F3.1.2-salto.2%2Ffaedafd40ef74525a0f8c9115a085d6b1e876789"
+  checksum: a9fff81f191ed68902a7b25fc976d13831d0e44c7a8f74e62e34988c9d3c7a204882eeb1bb1bbd85021995df8a136ea0f2b8cb5eb17b1aae999f05d53957e4da
   languageName: node
   linkType: hard
 
@@ -4882,7 +4852,7 @@ __metadata:
     "@salto-io/adapter-utils": 0.5.2
     "@salto-io/e2e-credentials-store": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
     "@salto-io/parser": 0.5.2
@@ -4984,15 +4954,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/rocksdb@npm:5.1.1-salto-18":
-  version: 5.1.1-salto-18
-  resolution: "@salto-io/rocksdb@npm:5.1.1-salto-18"
+"@salto-io/rocksdb@npm:5.1.1-salto-19":
+  version: 5.1.1-salto-19
+  resolution: "@salto-io/rocksdb@npm:5.1.1-salto-19::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Frocksdb%2F5.1.1-salto-19%2F0535c8f526a5a8754d87ec6a85887bc192dc0006"
   dependencies:
     abstract-leveldown: ^7.0.0
     napi-macros: ^2.0.0
     node-gyp: latest
     node-gyp-build: ^4.3.0
-  checksum: 4acb8079dcaec2d528c4dc018323065122a908dd79d5ca354e5e70b33d8f743d8742b9662d96209fa69440df80443d9fdf9f6c70b7797ddb930aa52c41de5746
+  checksum: 5502a2d9d2c713c2dca0959267fdb4191525377415dfd9ca1bdf68277e024087cf9c7b047ebb69a4a88eff5c9520605742263089aea2400d32dc1e83fb245932
   languageName: node
   linkType: hard
 
@@ -5009,12 +4979,12 @@ __metadata:
     "@salto-io/e2e-credentials-store": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
     "@salto-io/file": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
-    "@salto-io/jsforce": ^1.9.4
-    "@salto-io/jsforce-types": ^0.1.0
+    "@salto-io/jest-extended": ^4.0.5
+    "@salto-io/jsforce": ^1.9.5
+    "@salto-io/jsforce-types": ^0.1.1
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
-    "@salto-io/salesforce-formula-parser": 0.1.5
+    "@salto-io/salesforce-formula-parser": 0.1.6
     "@salto-io/test-utils": 0.5.2
     "@types/jest": ^29.5.12
     "@types/jszip": ^3.4.0
@@ -5042,15 +5012,47 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/salesforce-formula-parser@npm:0.1.5":
-  version: 0.1.5
-  resolution: "@salto-io/salesforce-formula-parser@npm:0.1.5"
+"@salto-io/salesforce-formula-parser@npm:0.1.6":
+  version: 0.1.6
+  resolution: "@salto-io/salesforce-formula-parser@npm:0.1.6::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fsalesforce-formula-parser%2F0.1.6%2F7fdc17b666f34fcdfc429a35a060423054ba8a6e"
   dependencies:
     lodash: ^4.17.21
     moo: ^0.5.2
-  checksum: 5fc0e308d938a7d50e150db349436c15715260c8532d2c035f44083305d2335c80b95094aef65d377680435004d84f760b9e17905d2f21ee5ff78aa96561f9c6
+  checksum: c6e38ce14c1b6b64dc15323219734ce5b9066b20bb6da12126d735798bc66f4b9b162274159164603d8a2fd7f08bc0d21492199499c0e9ede3bd37dc30087ca8
   languageName: node
   linkType: hard
+
+"@salto-io/salto-vscode@workspace:packages/vscode":
+  version: 0.0.0-use.local
+  resolution: "@salto-io/salto-vscode@workspace:packages/vscode"
+  dependencies:
+    "@salto-io/adapter-creators": 0.5.2
+    "@salto-io/element-test-utils": 0.5.2
+    "@salto-io/file": 0.5.2
+    "@salto-io/lang-server": 0.5.2
+    "@salto-io/local-workspace": 0.5.2
+    "@salto-io/lowerdash": 0.5.2
+    "@salto-io/parser": 0.5.2
+    "@salto-io/workspace": 0.5.2
+    "@types/jest": ^29.5.12
+    "@types/vscode": ^1.36
+    clipboardy: ^2.3.0
+    eslint: ^9.16.0
+    jest: ^29.7.0
+    lodash: ^4.17.21
+    open: ^7.2.0
+    prettier: 3.2.5
+    readdirp: ^3.1.1
+    tmp-promise: ^2.0.2
+    ts-jest: ^29.2.0
+    tsc-watch: ^2.2.1
+    turbo: ^2.0.6
+    typescript: 4.8.4
+    vsce: ^2.9.2
+    vscode-test: ^1.0.2
+    wu: ^2.1.0
+  languageName: unknown
+  linkType: soft
 
 "@salto-io/sap-adapter@0.5.2, @salto-io/sap-adapter@workspace:packages/sap-adapter":
   version: 0.0.0-use.local
@@ -5109,7 +5111,7 @@ __metadata:
     "@salto-io/adapter-components": 0.5.2
     "@salto-io/adapter-utils": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/logging": 0.5.2
     "@types/jest": ^29.5.12
     "@types/lodash": ^4.14.168
@@ -5126,9 +5128,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salto-io/suitecloud-cli-legacy@npm:@salto-io/suitecloud-cli@1.9.0-salto-4":
-  version: 1.9.0-salto-4
-  resolution: "@salto-io/suitecloud-cli@npm:1.9.0-salto-4"
+"@salto-io/suitecloud-cli-legacy@npm:@salto-io/suitecloud-cli@1.9.0-salto-5":
+  version: 1.9.0-salto-5
+  resolution: "@salto-io/suitecloud-cli@npm:1.9.0-salto-5::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fsuitecloud-cli%2F1.9.0-salto-5%2Fd8c72dda0bafe680d36458a46fd4445df280129f"
   dependencies:
     "@salto-io/logging": latest
     chalk: 4.1.2
@@ -5138,13 +5140,13 @@ __metadata:
     xml2js: 0.6.2
   bin:
     suitecloud: src/suitecloud.js
-  checksum: a84a5b0885c75c72e7b2a2b718b24d3d53ce05506bd31c469f020899688749e1e7cfc46cba1d0d386696be12c7d956702b34f3a79a0b5d912827f8584a6b4d38
+  checksum: fea034994c52b92500f956a55c9205101e9c2a5eb09ad041d5b7b77a17cc7741205f5d5f69d4e0c902838faab07334997dc51611412f51d2c8db4ca2f26b5476
   languageName: node
   linkType: hard
 
-"@salto-io/suitecloud-cli-new@npm:@salto-io/suitecloud-cli@2.0.0-salto-1":
-  version: 2.0.0-salto-1
-  resolution: "@salto-io/suitecloud-cli@npm:2.0.0-salto-1"
+"@salto-io/suitecloud-cli-new@npm:@salto-io/suitecloud-cli@2.0.0-salto-2":
+  version: 2.0.0-salto-2
+  resolution: "@salto-io/suitecloud-cli@npm:2.0.0-salto-2::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40salto-io%2Fsuitecloud-cli%2F2.0.0-salto-2%2Fcd33931107a5b2b7f253e54d10545612f3955f1f"
   dependencies:
     "@salto-io/logging": latest
     chalk: 4.1.2
@@ -5154,7 +5156,7 @@ __metadata:
     xml2js: 0.6.2
   bin:
     suitecloud: src/suitecloud.js
-  checksum: 7a44383a4a40ff6dbd7fcacb4d2fb29d80fc603fd8e2e0db2b94b1eba30c44f42b4807171f5afd9be18efab41311b630ed3eaf6c3e6be7a8ab11bbd12b77340a
+  checksum: c93f34525c7c95502b1cf0477c95b7ecf0fd8f4fa5bd6117b9151fbbc10bfc8ebedbdf706e3414a1e604c5a9b625ea1a885ff141674283041427fdda960749ca
   languageName: node
   linkType: hard
 
@@ -5210,7 +5212,7 @@ __metadata:
     "@salto-io/adapter-utils": 0.5.2
     "@salto-io/dag": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/jest-extended": ^4.0.3
+    "@salto-io/jest-extended": ^4.0.5
     "@salto-io/logging": 0.5.2
     "@salto-io/lowerdash": 0.5.2
     "@salto-io/parser": 0.5.2
@@ -13353,21 +13355,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-extended@npm:^4.0.2":
-  version: 4.0.2
-  resolution: "jest-extended@npm:4.0.2"
-  dependencies:
-    jest-diff: ^29.0.0
-    jest-get-type: ^29.0.0
-  peerDependencies:
-    jest: ">=27.2.5"
-  peerDependenciesMeta:
-    jest:
-      optional: true
-  checksum: afdc255eec7caa173f9e805e94562273d8b8aa4c7ab9b396668f018c18ea5236270a6ac499ca84b8c60e90ccbe9ccb4aebf998daef13aec9542c426df1df6079
-  languageName: node
-  linkType: hard
-
 "jest-get-type@npm:^26.3.0":
   version: 26.3.0
   resolution: "jest-get-type@npm:26.3.0"
@@ -18092,38 +18079,6 @@ __metadata:
     tmp: ^0.0.33
     turbo: ^2.0.6
     yargs: ^13.3.0
-  languageName: unknown
-  linkType: soft
-
-"salto-vscode@workspace:packages/vscode":
-  version: 0.0.0-use.local
-  resolution: "salto-vscode@workspace:packages/vscode"
-  dependencies:
-    "@salto-io/adapter-creators": 0.5.2
-    "@salto-io/element-test-utils": 0.5.2
-    "@salto-io/file": 0.5.2
-    "@salto-io/lang-server": 0.5.2
-    "@salto-io/local-workspace": 0.5.2
-    "@salto-io/lowerdash": 0.5.2
-    "@salto-io/parser": 0.5.2
-    "@salto-io/workspace": 0.5.2
-    "@types/jest": ^29.5.12
-    "@types/vscode": ^1.36
-    clipboardy: ^2.3.0
-    eslint: ^9.16.0
-    jest: ^29.7.0
-    lodash: ^4.17.21
-    open: ^7.2.0
-    prettier: 3.2.5
-    readdirp: ^3.1.1
-    tmp-promise: ^2.0.2
-    ts-jest: ^29.2.0
-    tsc-watch: ^2.2.1
-    turbo: ^2.0.6
-    typescript: 4.8.4
-    vsce: ^2.9.2
-    vscode-test: ^1.0.2
-    wu: ^2.1.0
   languageName: unknown
   linkType: soft
 

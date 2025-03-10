@@ -5,10 +5,11 @@
   "description": "Salto Zendesk adapter e2e",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salto-io/salto"
+    "url": "https://github.com/salto-io/salto-base.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private",
+    "registry": "https://npm.pkg.github.com/"
   },
   "files": [
     "dist/src",

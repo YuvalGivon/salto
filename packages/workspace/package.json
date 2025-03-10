@@ -5,10 +5,11 @@
   "description": "Salto workspace",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salto-io/salto"
+    "url": "https://github.com/salto-io/salto-base.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private",
+    "registry": "https://npm.pkg.github.com/"
   },
   "files": [
     "dist/src",
@@ -41,7 +42,7 @@
   "devDependencies": {
     "@salto-io/dag": "0.5.2",
     "@salto-io/element-test-utils": "0.5.2",
-    "@salto-io/jest-extended": "^4.0.3",
+    "@salto-io/jest-extended": "^4.0.5",
     "@salto-io/test-utils": "0.5.2",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.14.168",

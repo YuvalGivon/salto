@@ -4,7 +4,7 @@ set -eo pipefail
 
 GITHUB_API_ENDPOINT=https://api.github.com
 GITHUB_UPLOADS_ENDPOINT=https://uploads.github.com
-REPO=salto-io/salto
+REPO=salto-io/salto-base
 
 if [ -z "$GITHUB_AUTH_TOKEN" ]; then
   echo >&2 "missing GITHUB_AUTH_TOKEN environment variable"
@@ -73,10 +73,11 @@ push_new_git_tag() {
   git push origin $VERSION_TAG
 }
 
-publish_packages_to_npm() {
-  echo "publishing to npm"
+publish_packages_to_github_packages() {
+  echo "publishing to github packages"
   # set token at npmrc - without making the git local copy dirty
-  echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+  echo "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" >> .npmrc
+
   echo ".npmrc" >> .git/info/exclude
   git update-index --assume-unchanged .npmrc
 
@@ -118,13 +119,13 @@ publish_extension_to_marketplace() {
 
   echo "publishing extension to vscode market place"
   npx vsce publish --packagePath ./salto.vsix --pat ${VSCODE_MARKETPLACE_TOKEN}
-  
+
   popd
 }
 
 tmp_assets_dir=$(mktemp -d)
 copy_files_from_s3 $tmp_assets_dir
 push_new_git_tag
-publish_packages_to_npm
+publish_packages_to_github_packages
 create_release_in_github $tmp_assets_dir
 publish_extension_to_marketplace $tmp_assets_dir
