@@ -64,9 +64,19 @@ export type ProgressReporter = {
   reportProgress: (progress: Progress) => void
 }
 
+export type PartialFetchTarget = {
+  group: string
+  name: string
+}
+
+export type PartialFetchTargetWithPath = PartialFetchTarget & {
+  path: string[]
+}
+
 export type FetchOptions = {
   progressReporter: ProgressReporter
   withChangesDetection?: boolean
+  partialFetchTargets?: PartialFetchTarget[]
 }
 
 export type DeployOptions = {
@@ -87,6 +97,7 @@ export type PostFetchOptions = {
   elementsByAccount: Readonly<Record<string, ReadonlyArray<Readonly<Element>>>>
   accountToServiceNameMap?: Record<string, string>
   progressReporter: ProgressReporter
+  partialFetchTargets?: PartialFetchTarget[]
 }
 
 export type DeployAction = {
@@ -279,6 +290,18 @@ export type AdapterFormat = {
   dumpElementsToFolder?: (args: DumpElementsToFolderArgs) => Promise<DumpElementsResult>
 }
 
+export type PartialFetchOperations = {
+  getAllTargets: (params: {
+    elementsSource: ReadOnlyElementsSource
+    config?: InstanceElement
+    getAlias: (elemId: ElemID) => Promise<string | undefined>
+  }) => Promise<PartialFetchTargetWithPath[]>
+  getTargetsForElements: (params: {
+    elemIds: ElemID[]
+    elementsSource: ReadOnlyElementsSource
+  }) => Promise<PartialFetchTarget[]>
+}
+
 export type Adapter = {
   operations: (context: AdapterOperationsContext) => AdapterOperations
   validateCredentials: (config: Readonly<InstanceElement>) => Promise<AccountInfo>
@@ -289,6 +312,7 @@ export type Adapter = {
   getAdditionalReferences?: GetAdditionalReferencesFunc
   adapterFormat?: AdapterFormat
   getCustomReferences?: GetCustomReferencesFunc
+  partialFetch?: PartialFetchOperations
 }
 
 export const OBJECT_SERVICE_ID = 'object_service_id'

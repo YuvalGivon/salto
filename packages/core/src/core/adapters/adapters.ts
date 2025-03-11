@@ -176,6 +176,17 @@ const filterElementsSource = (elementsSource: ReadOnlyElementsSource, adapterNam
   }
 }
 
+export const createAdapterElementsSource = ({
+  elementsSource,
+  account,
+  adapter,
+}: {
+  elementsSource: ReadOnlyElementsSource
+  account: string
+  adapter: string
+}): ReadOnlyElementsSource =>
+  createElemIDReplacedElementsSource(filterElementsSource(elementsSource, account), account, adapter)
+
 export const createResolvedTypesElementsSource = (elementsSource: ReadOnlyElementsSource): ReadOnlyElementsSource => {
   let resolvedTypesPromise: Promise<Map<string, TypeElement>> | undefined
   const resolveTypes = async (): Promise<Map<string, TypeElement>> => {
@@ -258,16 +269,9 @@ export const getAdaptersCreatorConfigs = async (
   Object.fromEntries(
     await Promise.all(
       accounts.map(async account => {
-        const defaultConfig = await getMergedDefaultAdapterConfig(
-          accountToServiceName[account],
-          account,
-          adapterCreators,
-        )
-        const adapterElementSource = createElemIDReplacedElementsSource(
-          filterElementsSource(elementsSource, account),
-          account,
-          accountToServiceName[account],
-        )
+        const adapter = accountToServiceName[account]
+        const defaultConfig = await getMergedDefaultAdapterConfig(adapter, account, adapterCreators)
+        const adapterElementSource = createAdapterElementsSource({ elementsSource, account, adapter })
         // Currently the type resolving element source has an internal cache and therefore we must not
         // use it in deploy where the underlying element source (the one we get as input here) changes
         const elementsSourceForAdapter = resolveTypes
