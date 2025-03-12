@@ -30,10 +30,10 @@ To report issues or ask about using the Salto CLI - please join our public Slack
 In order to use the private `salto-base` repo, you'd need to setup the Github Packages authentication method.
 
   1. [Generate a CLASSIC personal access token in Github](https://github.com/settings/tokens)
-    * Give it the scope or `read:packages`
-    * Name is how you'd like to. For example: `NPM read only token`
-  2. Export this variable however you're used to. Remember, this is a **private** token. Name it `GITHUB_PAT_PACKAGES`
-    * See `./yarnrc.yml`
+      * Give it the scope or `read:packages`
+      * Name is how you'd like to. For example: `NPM read only token`
+  2. Export this variable however you're used to. Remember, this is a **private** token. Name it `GITHUB_PAT_PACKAGES`  
+      * See `./yarnrc.yml`
 
 If you're using `npm` you should also setup `~/.npmrc`. It should look like this:
 
