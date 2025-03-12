@@ -66,6 +66,18 @@ describe('loadElementsFromFolder', () => {
         expect(fields).toContainEqual('One__c')
       })
     })
+    describe('custom metadata', () => {
+      let customMetadataFragments: ObjectType[]
+      beforeAll(() => {
+        customMetadataFragments = elements
+          .filter(isObjectType)
+          .filter(obj => obj.elemID.typeName === 'Test_metadata__mdt')
+      })
+      it('should have fields', () => {
+        const fields = customMetadataFragments.flatMap(fragment => Object.keys(fragment.fields))
+        expect(fields).toContainEqual('Percent__c')
+      })
+    })
     describe('type with content - apex class', () => {
       let apexClass: InstanceElement
       beforeAll(() => {

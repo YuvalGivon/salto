@@ -24,7 +24,7 @@ import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { dumpElementsToFolder } from '../../src/sfdx_parser/sfdx_dump'
 import { mockTypes, mockDefaultValues } from '../mock_elements'
 import { createInstanceElement, Types } from '../../src/transformers/transformer'
-import { createCustomObjectType } from '../utils'
+import { createCustomMetadataType, createCustomObjectType } from '../utils'
 import { xmlToValues } from '../../src/transformers/xml_transformer'
 import { setupTmpProject } from './utils'
 
@@ -34,6 +34,16 @@ describe('dumpElementsToFolder', () => {
       fields: {
         One__c: { refType: Types.primitiveDataTypes.Number, annotations: { apiName: 'Test__c.One__c' } },
         Check__c: { refType: Types.primitiveDataTypes.Checkbox, annotations: { apiName: 'Test__c.Check__c' } },
+      },
+    })
+
+  const getExistingCustomMetadata = (): ObjectType =>
+    createCustomMetadataType('Test_metadata__mdt', {
+      fields: {
+        Percent__c: {
+          refType: Types.primitiveDataTypes.Percent,
+          annotations: { apiName: 'Test_metadata__mdt.Percent__c' },
+        },
       },
     })
 
@@ -297,29 +307,30 @@ describe('dumpElementsToFolder', () => {
   })
 
   describe('with fields', () => {
-    describe('when adding a field', () => {
-      const project = setupTmpProject()
-      let dumpResult: DumpElementsResult
-      beforeAll(async () => {
-        const object = getExistingCustomObject()
-        object.fields.New__c = new Field(object, 'New__c', Types.primitiveDataTypes.Text, {
-          apiName: 'Test__c.New__c',
+    describe('of a custom object', () => {
+      describe('when adding a field', () => {
+        const project = setupTmpProject()
+        let dumpResult: DumpElementsResult
+        beforeAll(async () => {
+          const object = getExistingCustomObject()
+          object.fields.New__c = new Field(object, 'New__c', Types.primitiveDataTypes.Text, {
+            apiName: 'Test__c.New__c',
+          })
+          dumpResult = await dumpElementsToFolder({
+            baseDir: project.name(),
+            changes: [toChange({ after: object.fields.New__c })],
+            elementsSource: buildElementsSourceFromElements([object]),
+          })
         })
-        dumpResult = await dumpElementsToFolder({
-          baseDir: project.name(),
-          changes: [toChange({ after: object.fields.New__c })],
-          elementsSource: buildElementsSourceFromElements([object]),
+        it('should apply all changes and have no errors', () => {
+          expect(dumpResult.unappliedChanges).toHaveLength(0)
+          expect(dumpResult.errors).toHaveLength(0)
         })
-      })
-      it('should apply all changes and have no errors', () => {
-        expect(dumpResult.unappliedChanges).toHaveLength(0)
-        expect(dumpResult.errors).toHaveLength(0)
-      })
-      it('should create an XML for the new field', async () => {
-        const metadataContent = await readTextFile.notFoundAsUndefined(
-          path.join(project.name(), 'force-app/main/default/objects/Test__c/fields/New__c.field-meta.xml'),
-        )
-        expect(metadataContent).toEqual(`<?xml version="1.0" encoding="UTF-8"?>
+        it('should create an XML for the new field', async () => {
+          const metadataContent = await readTextFile.notFoundAsUndefined(
+            path.join(project.name(), 'force-app/main/default/objects/Test__c/fields/New__c.field-meta.xml'),
+          )
+          expect(metadataContent).toEqual(`<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>New__c</fullName>
     <type>Text</type>
@@ -327,33 +338,107 @@ describe('dumpElementsToFolder', () => {
     <length>80</length>
 </CustomField>
 `)
-      })
-    })
-    describe('when deleting a field', () => {
-      const project = setupTmpProject()
-      let dumpResult: DumpElementsResult
-      let fieldFilePath: string
-      beforeAll(async () => {
-        const before = getExistingCustomObject()
-        const after = before.clone()
-        delete after.fields.One__c
-
-        // Ensure the field file exists before we start
-        fieldFilePath = path.join(project.name(), 'force-app/main/default/objects/Test__c/fields/One__c.field-meta.xml')
-        await expect(exists(fieldFilePath)).resolves.toBeTrue()
-
-        dumpResult = await dumpElementsToFolder({
-          baseDir: project.name(),
-          changes: [toChange({ before: before.fields.One__c })],
-          elementsSource: buildElementsSourceFromElements([after]),
         })
       })
-      it('should apply all changes and have no errors', () => {
-        expect(dumpResult.unappliedChanges).toHaveLength(0)
-        expect(dumpResult.errors).toHaveLength(0)
+
+      describe('when deleting a field', () => {
+        const project = setupTmpProject()
+        let dumpResult: DumpElementsResult
+        let fieldFilePath: string
+        beforeAll(async () => {
+          const before = getExistingCustomObject()
+          const after = before.clone()
+          delete after.fields.One__c
+
+          // Ensure the field file exists before we start
+          fieldFilePath = path.join(
+            project.name(),
+            'force-app/main/default/objects/Test__c/fields/One__c.field-meta.xml',
+          )
+          await expect(exists(fieldFilePath)).resolves.toBeTrue()
+
+          dumpResult = await dumpElementsToFolder({
+            baseDir: project.name(),
+            changes: [toChange({ before: before.fields.One__c })],
+            elementsSource: buildElementsSourceFromElements([after]),
+          })
+        })
+        it('should apply all changes and have no errors', () => {
+          expect(dumpResult.unappliedChanges).toHaveLength(0)
+          expect(dumpResult.errors).toHaveLength(0)
+        })
+        it('should delete the XML files of the nested element', async () => {
+          await expect(exists(fieldFilePath)).resolves.toBeFalse()
+        })
       })
-      it('should delete the XML files of the nested element', async () => {
-        await expect(exists(fieldFilePath)).resolves.toBeFalse()
+    })
+
+    describe('of a custom metadata', () => {
+      describe('when adding a field', () => {
+        const project = setupTmpProject()
+        let dumpResult: DumpElementsResult
+        beforeAll(async () => {
+          const metadata = getExistingCustomMetadata()
+          metadata.fields.NewField__c = new Field(metadata, 'NewField__c', Types.primitiveDataTypes.Text, {
+            apiName: 'Test_metadata__mdt.NewField__c',
+          })
+          dumpResult = await dumpElementsToFolder({
+            baseDir: project.name(),
+            changes: [toChange({ after: metadata.fields.NewField__c })],
+            elementsSource: buildElementsSourceFromElements([metadata]),
+          })
+        })
+        it('should apply all changes and have no errors', () => {
+          expect(dumpResult.unappliedChanges).toHaveLength(0)
+          expect(dumpResult.errors).toHaveLength(0)
+        })
+        it('should create an XML for the new custom metadata field', async () => {
+          const metadataContent = await readTextFile.notFoundAsUndefined(
+            path.join(
+              project.name(),
+              'force-app/main/default/objects/Test_metadata__mdt/fields/NewField__c.field-meta.xml',
+            ),
+          )
+          expect(metadataContent).toEqual(`<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NewField__c</fullName>
+    <type>Text</type>
+    <required>false</required>
+    <length>80</length>
+</CustomField>
+`)
+        })
+      })
+
+      describe('when deleting a field', () => {
+        const project = setupTmpProject()
+        let dumpResult: DumpElementsResult
+        let fieldFilePath: string
+        beforeAll(async () => {
+          const before = getExistingCustomMetadata()
+          const after = before.clone()
+          delete after.fields.Percent__c
+
+          // Ensure the field file exists before we start
+          fieldFilePath = path.join(
+            project.name(),
+            'force-app/main/default/objects/Test_metadata__mdt/fields/Percent__c.field-meta.xml',
+          )
+          await expect(exists(fieldFilePath)).resolves.toBeTrue()
+
+          dumpResult = await dumpElementsToFolder({
+            baseDir: project.name(),
+            changes: [toChange({ before: before.fields.Percent__c })],
+            elementsSource: buildElementsSourceFromElements([after]),
+          })
+        })
+        it('should apply all changes and have no errors', () => {
+          expect(dumpResult.unappliedChanges).toHaveLength(0)
+          expect(dumpResult.errors).toHaveLength(0)
+        })
+        it('should delete the XML files of the custom metadata field', async () => {
+          await expect(exists(fieldFilePath)).resolves.toBeFalse()
+        })
       })
     })
   })

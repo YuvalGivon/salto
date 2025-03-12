@@ -9,20 +9,20 @@ import _ from 'lodash'
 import path from 'path'
 import { isSubDirectory, rm } from '@salto-io/file'
 import { logger } from '@salto-io/logging'
-import { AdapterFormat, Change, getChangeData, isField, isObjectType } from '@salto-io/adapter-api'
+import { AdapterFormat, Change, getChangeData, isField } from '@salto-io/adapter-api'
 import { filter } from '@salto-io/adapter-utils'
 import { objects, promises, values } from '@salto-io/lowerdash'
 import { allFilters, NESTED_METADATA_TYPES } from '../adapter'
-import { CUSTOM_METADATA, SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIELDS, API_NAME } from '../constants'
+import { SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIELDS } from '../constants'
 import { getLookUpName, resolveSalesforceChanges } from '../transformers/reference_mapping'
 import { buildFetchProfile } from '../fetch_profile/fetch_profile'
 import { createDeployPackage, DeployPackage, PACKAGE } from '../transformers/xml_transformer'
 import { addChangeToPackage, validateChanges } from '../metadata_deploy'
 import {
-  isCustomObjectSync,
+  isCustomObjectOrCustomMetadataRecordTypeSync,
   isInstanceOfCustomObjectChangeSync,
   isMetadataInstanceElementSync,
-  metadataTypeSync,
+  metadataTypeOrUndefined,
 } from '../filters/utils'
 import {
   ComponentSet,
@@ -59,8 +59,8 @@ export const UNSUPPORTED_TYPES = new Set([
 
 const isSupportedMetadataChange = (change: Change): boolean => {
   const element = getChangeData(change)
-  const metadataTypeName = metadataTypeSync(element)
-  if (UNSUPPORTED_TYPES.has(metadataTypeName)) {
+  const metadataTypeName = metadataTypeOrUndefined(element)
+  if (!metadataTypeName || UNSUPPORTED_TYPES.has(metadataTypeName)) {
     return false
   }
   return true
@@ -130,9 +130,8 @@ export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, 
     const data = getChangeData(change)
     return (
       isMetadataInstanceElementSync(data) ||
-      isCustomObjectSync(data) ||
-      (isObjectType(data) && metadataTypeSync(data) === CUSTOM_METADATA && data.annotations[API_NAME] !== undefined) ||
-      (isField(data) && isCustomObjectSync(data.parent))
+      isCustomObjectOrCustomMetadataRecordTypeSync(data) ||
+      (isField(data) && isCustomObjectOrCustomMetadataRecordTypeSync(data.parent))
     )
   })
   const [supportedMetadataChanges, unsupportedMetadataChanges] = _.partition(metadataChanges, isSupportedMetadataChange)
