@@ -6,7 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-export { ContextCombinationDefinition } from './dependencies'
+export { ContextCombinationDefinition, RecurseIntoDefinition } from './dependencies'
 export { FetchApiDefinitions, InstanceFetchApiDefinitions, FetchApiDefinitionsOptions } from './fetch'
 export { FetchRequestDefinition } from './request'
 export { ResourceTransformFunc, FetchResourceDefinition } from './resource'

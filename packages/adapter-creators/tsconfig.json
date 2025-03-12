@@ -9,6 +9,7 @@
   "references": [
     { "path": "../adapter-api" },
     { "path": "../test-utils" },
+    { "path": "../cloudflare-adapter" },
     { "path": "../confluence-adapter" },
     { "path": "../dummy-adapter" },
     { "path": "../google-workspace-adapter" },

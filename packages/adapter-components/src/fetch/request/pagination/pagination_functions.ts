@@ -106,16 +106,19 @@ export const pageOffsetPagination = ({
  * next page is prev+1 and first page is as specified.
  * Also supports recursive queries (see example under computeRecursiveArgs).
  */
-export const pageOffsetAndLastPagination = ({
-  firstPage,
-  paginationField,
-}: {
-  firstPage: number
-  paginationField: string
-}): PaginationFunction => {
-  const nextPageFullPages: PaginationFunction = ({ currentParams, responseData }) => {
-    // hard-coding the "last" flag for now - if we see more variants we can move it to config
-    if (_.get(responseData, 'last') !== false) {
+export const pageOffsetAndLastPagination =
+  ({
+    firstPage,
+    paginationField,
+    // Default value for backward compatibility with existing pagination functions
+    lastPageField = 'last',
+  }: {
+    firstPage: number
+    paginationField: string
+    lastPageField: string
+  }): PaginationFunction =>
+  ({ currentParams, responseData }) => {
+    if (_.get(responseData, lastPageField) !== false) {
       return []
     }
     return [
@@ -126,8 +129,6 @@ export const pageOffsetAndLastPagination = ({
       }),
     ]
   }
-  return nextPageFullPages
-}
 
 export const offsetAndValuesPagination = ({ paginationField }: { paginationField: string }): PaginationFunction => {
   // TODO allow customizing the field values (`isLastValues`)

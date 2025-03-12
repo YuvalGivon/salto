@@ -104,7 +104,7 @@ export const createValueTransformer = <TContext extends Record<string, unknown>,
   return async item => {
     const res = await transformItem(item)
     if (res.length !== 1) {
-      log.warn('expected single item of type %s but transformation resulted in %d items', res.length)
+      log.warn('expected single item of type %s but transformation resulted in %d items', item.typeName, res.length)
     }
     // will be undefined if list is empty
     return res[0]
