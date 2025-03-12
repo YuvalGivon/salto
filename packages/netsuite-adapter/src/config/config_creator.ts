@@ -210,18 +210,31 @@ export const instanceLimiterCreator =
     return maxInstancesOptions.every(limit => instanceCount > limit)
   }
 
+const getValidatedConfig = (
+  configInstance: Readonly<InstanceElement> | undefined,
+  throwOnError: boolean,
+): NetsuiteConfig | undefined => {
+  try {
+    if (configInstance !== undefined) {
+      const { value: originalConfig } = configInstance
+      validateConfig(originalConfig)
+      return originalConfig
+    }
+    log.warn('missing config instance - using netsuite adapter config with full fetch')
+  } catch (error) {
+    if (throwOnError) {
+      throw error
+    }
+    log.debug('ignoring config validation error - using netsuite adapter config with full fetch')
+  }
+  return undefined
+}
+
 export const netsuiteConfigFromConfig = (
   configInstance: Readonly<InstanceElement> | undefined,
+  { throwOnError = true }: { throwOnError?: boolean } = {},
 ): { config: NetsuiteConfig; originalConfig: NetsuiteConfig } => {
-  if (!configInstance) {
-    log.warn('missing config instance - using netsuite adapter config with full fetch')
-    return {
-      config: { fetch: fullFetchConfig() },
-      originalConfig: { fetch: fullFetchConfig() },
-    }
-  }
-  const { value: originalConfig } = configInstance
-  validateConfig(originalConfig)
+  const originalConfig = getValidatedConfig(configInstance, throwOnError) ?? { fetch: fullFetchConfig() }
   const config = updatedConfig(originalConfig)
   return { config, originalConfig }
 }

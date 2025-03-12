@@ -50,6 +50,7 @@ import {
   CUSTOM_RECORD_TYPE,
   CUSTOM_RECORDS_PATH,
   IS_LOCKED,
+  ADDRESS_FORM,
 } from '../src/constants'
 import { createInstanceElement, toCustomizationInfo } from '../src/transformer'
 import { LocalFilterCreator } from '../src/filter'
@@ -88,6 +89,7 @@ import {
 } from '../src/scriptid_list'
 import { getTypesToInternalId } from '../src/data_elements/types'
 import { getSuiteQLTableElements } from '../src/data_elements/suiteql_table_elements'
+import * as getCustomRecordsModule from '../src/custom_records/custom_records'
 
 const DEFAULT_SDF_DEPLOY_PARAMS = {
   manifestDependencies: {
@@ -450,7 +452,7 @@ describe('Adapter', () => {
 
         it('should throw an error when defining fetchTarget for the first fetch', async () => {
           await expect(() => adapter.fetch(mockFetchOpts)).rejects.toThrow(
-            "Can't define fetchTarget for the first fetch. Remove fetchTarget from adapter config file",
+            'Cannot run a partial fetch in the first fetch',
           )
         })
       })
@@ -491,6 +493,96 @@ describe('Adapter', () => {
           expect(fileCabinetQuery.isFileMatch('Some/File/Regex')).toBeFalsy()
           expect(fileCabinetQuery.isFileMatch('Some/AnotherFile/another')).toBeFalsy()
           expect(fileCabinetQuery.isFileMatch('Some/File/another')).toBeTruthy()
+        })
+      })
+    })
+
+    describe('partialFetchTargets', () => {
+      let adapter: NetsuiteAdapter
+
+      const conf = {
+        fetch: {
+          include: fullQueryParams(),
+          exclude: {
+            types: [{ name: SAVED_SEARCH }, { name: TRANSACTION_FORM }],
+            fileCabinet: ['^/Some/File/Regex$'],
+            customRecords: [],
+          },
+        },
+      }
+
+      const mockPartialFetchOpts: FetchOptions = {
+        ...mockFetchOpts,
+        partialFetchTargets: [
+          { group: 'customRecords', name: 'customrecord1' },
+          { group: 'fileCabinet', name: 'Some/File' },
+          { group: 'types', name: ADDRESS_FORM },
+        ],
+      }
+
+      describe('when partialFetchTargets is passed for the first fetch', () => {
+        beforeEach(() => {
+          adapter = new NetsuiteAdapter({
+            client: new NetsuiteClient(client),
+            elementsSource: buildElementsSourceFromElements([]),
+            filtersCreators: [firstDummyFilter, secondDummyFilter],
+            config: conf,
+            originalConfig: conf,
+            getElemIdFunc: mockGetElemIdFunc,
+          })
+        })
+
+        it('should throw an error when partialFetchTargets is passed for the first fetch', async () => {
+          await expect(() => adapter.fetch(mockPartialFetchOpts)).rejects.toThrow(
+            'Cannot run a partial fetch in the first fetch',
+          )
+        })
+      })
+
+      describe('when partialFetchTargets is passed after a full fetch', () => {
+        beforeEach(() => {
+          const dummyElement = new ObjectType({ elemID: new ElemID('dum', 'test') })
+          adapter = new NetsuiteAdapter({
+            client: new NetsuiteClient(client),
+            elementsSource: buildElementsSourceFromElements([dummyElement]),
+            filtersCreators: [firstDummyFilter, secondDummyFilter],
+            config: conf,
+            originalConfig: conf,
+            getElemIdFunc: mockGetElemIdFunc,
+          })
+        })
+
+        it('isPartial should be true', async () => {
+          const { partialFetchData } = await adapter.fetch(mockPartialFetchOpts)
+          expect(partialFetchData?.isPartial).toBeTruthy()
+        })
+
+        it('should only match the types that are in partialFetchTargets', async () => {
+          await adapter.fetch(mockPartialFetchOpts)
+
+          const customObjectsQuery = (client.getCustomObjects as jest.Mock).mock.calls[0][1].updatedFetchQuery
+          expect(getStandardTypesNames().filter(customObjectsQuery.isTypeMatch)).toEqual([ADDRESS_FORM])
+        })
+
+        it('should only match the files that are in partialFetchTargets', async () => {
+          await adapter.fetch(mockPartialFetchOpts)
+
+          const fileCabinetQuery = (client.importFileCabinetContent as jest.Mock).mock.calls[0][0]
+          expect(fileCabinetQuery.isFileMatch('/Some/File/')).toBeTruthy()
+          expect(fileCabinetQuery.isFileMatch('/Some/File/another')).toBeTruthy()
+
+          expect(fileCabinetQuery.isFileMatch('/Some/File/Regex')).toBeFalsy()
+          expect(fileCabinetQuery.isFileMatch('/Some/AnotherFile/another')).toBeFalsy()
+        })
+
+        it('should only match the custom records that are in partialFetchTargets', async () => {
+          const getCustomRecordsSpyOn = jest.spyOn(getCustomRecordsModule, 'getCustomRecords')
+
+          await adapter.fetch(mockPartialFetchOpts)
+
+          const customRecordsQuery = getCustomRecordsSpyOn.mock.calls[0][2]
+          expect(customRecordsQuery.isCustomRecordTypeMatch('customrecord1')).toBeTruthy()
+          expect(customRecordsQuery.isCustomRecordTypeMatch('customrecord2')).toBeFalsy()
         })
       })
     })
