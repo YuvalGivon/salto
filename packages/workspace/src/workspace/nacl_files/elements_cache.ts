@@ -53,7 +53,7 @@ export type RecoveryOverrideFunc = (
   src2ElementsToMerge: AsyncIterable<ElemID>
 }>
 
-type CacheChangeSetUpdate = {
+export type CacheChangeSetUpdate = {
   src1Changes?: ChangeSet<Change<Element>>
   src2Changes?: ChangeSet<Change<Element>>
   recoveryOverride?: RecoveryOverrideFunc

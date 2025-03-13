@@ -728,37 +728,49 @@ describe('workspace', () => {
       expect(firstSourceLocation.sourceRange.start).toEqual({ byte: 26, col: 3, line: 3 })
       expect(firstSourceLocation.sourceRange.end).toEqual({ byte: 79, col: 4, line: 5 })
     })
-    it('should have merge error when hidden values are added to nacl', async () => {
-      const obj = new ObjectType({
-        elemID: new ElemID('salto', 't'),
-        fields: {
-          field: {
-            annotations: {
-              [CORE_ANNOTATIONS.HIDDEN_VALUE]: true,
+    describe('when hidden values are added to nacl', () => {
+      let workspace: Workspace
+      let inst: InstanceElement
+      beforeEach(async () => {
+        const obj = new ObjectType({
+          elemID: new ElemID('salto', 't'),
+          fields: {
+            field: {
+              annotations: {
+                [CORE_ANNOTATIONS.HIDDEN_VALUE]: true,
+              },
+              refType: BuiltinTypes.NUMBER,
             },
-            refType: BuiltinTypes.NUMBER,
           },
-        },
-      })
-      const inst = new InstanceElement('inst', obj, {
-        field: 1,
-      })
-      const state = createState([obj, inst])
-      const workspace = await createWorkspace(
-        mockDirStore([], false, {
-          'x.nacl': `type salto.t {
-            number field {
-              ${CORE_ANNOTATIONS.HIDDEN_VALUE} = true
+        })
+        inst = new InstanceElement('inst', obj, {
+          field: 1,
+        })
+        const state = createState([obj, inst])
+        workspace = await createWorkspace(
+          mockDirStore([], false, {
+            'x.nacl': `type salto.t {
+              number field {
+                ${CORE_ANNOTATIONS.HIDDEN_VALUE} = true
+              }
             }
-          }
-          salto.t inst {
-            field = 1
-          }`,
-        }),
-        state,
-      )
-      const wsErrors = await workspace.errors()
-      expect(wsErrors.merge).toHaveLength(1)
+            salto.t inst {
+              field = 2
+            }`,
+          }),
+          state,
+        )
+      })
+      it('should have a warning severity merge error', async () => {
+        const wsErrors = await workspace.errors()
+        expect(wsErrors.merge).toHaveLength(1)
+        expect(wsErrors.merge[0].severity).toBe('Warning')
+      })
+      it('should have the value from the state in the merge result', async () => {
+        const mergedInstance = await (await workspace.elements()).get(inst.elemID)
+        expect(mergedInstance).toBeInstanceOf(InstanceElement)
+        expect(mergedInstance.value).toEqual({ field: 1 })
+      })
     })
   })
 

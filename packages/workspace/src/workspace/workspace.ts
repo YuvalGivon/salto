@@ -83,8 +83,9 @@ import {
   createEmptyChangeSet,
   MergedRecoveryMode,
   RecoveryOverrideFunc,
+  CacheChangeSetUpdate,
 } from './nacl_files/elements_cache'
-import { ReadOnlyRemoteMap, RemoteMap, RemoteMapCreator } from './remote_map'
+import { InMemoryRemoteMap, ReadOnlyRemoteMap, RemoteMap, RemoteMapCreator } from './remote_map'
 import {
   serialize,
   deserializeMergeErrors,
@@ -833,6 +834,33 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
           }
         }
 
+        const mergeFunc: CacheChangeSetUpdate['mergeFunc'] = async elements => {
+          const mergeResult = await mergeElements(elements)
+          const mergeErrors = await awu(mergeResult.errors.entries())
+            .map(({ key, value }) => {
+              log.warn(
+                'Ignoring merge errors between nacl and state for element %s, errors=%o',
+                key,
+                value.map(error => `${error.message} (${error.detailedMessage})`),
+              )
+              // Merge errors between nacl and state usually indicate that there is a hidden value in the NaCl
+              // Since we know that the correct value is in the state, and because of the order in which the
+              // merge is done, the value in the merged element will be the one from the state, we can reduce
+              // the severity of the error to a warning so it will not block the workspace from being used.
+              // Note - ideally we should not mutate the error object, but since the error is a class, it
+              // would be much harder to properly clone it with a different severity.
+              value.forEach(error => {
+                error.severity = 'Warning'
+              })
+              return { key, value }
+            })
+            .toArray()
+          return {
+            merged: mergeResult.merged,
+            errors: new InMemoryRemoteMap<MergeError[]>(mergeErrors),
+          }
+        }
+
         const changeResult = await stateToBuild.mergeManager.mergeComponents({
           src1Changes: wsChanges[envName],
           src2Changes: await completeStateOnlyChanges(
@@ -841,7 +869,7 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
           recoveryOverride: dropStateOnlyElementsRecovery,
           src1Prefix: MULTI_ENV_SOURCE_PREFIX + envName,
           src2Prefix: STATE_SOURCE_PREFIX + envName,
-          mergeFunc: elements => mergeElements(elements),
+          mergeFunc,
           currentElements: stateToBuild.states[envName].merged,
           currentErrors: stateToBuild.states[envName].errors,
         })
