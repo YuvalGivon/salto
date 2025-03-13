@@ -14,6 +14,7 @@ import setConstantUrls from '../service_url/constant_urls'
 import setCustomFieldsUrls from '../service_url/custom_field'
 import setCustomRecordTypesUrls from '../service_url/custom_record_type'
 import setCustomSegmentUrls from '../service_url/custom_segment'
+import setCustomListsUrls from '../service_url/custom_list'
 import setCustomTransactionTypesUrls from '../service_url/custom_transaction_type'
 import setEmailTemplatesUrls from '../service_url/emailtemplate'
 import setFileCabinetUrls from '../service_url/file_cabinet'
@@ -32,6 +33,7 @@ const SERVICE_URL_SETTERS = {
   setCustomFieldsUrls,
   setCustomRecordTypesUrls,
   setCustomSegmentUrls,
+  setCustomListsUrls,
   setCustomTransactionTypesUrls,
   setEmailTemplatesUrls,
   setRoleUrls,
