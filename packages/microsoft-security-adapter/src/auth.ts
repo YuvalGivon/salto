@@ -9,7 +9,7 @@ import { BuiltinTypes, ElemID, ObjectType } from '@salto-io/adapter-api'
 import { createMatchingObjectType } from '@salto-io/adapter-utils'
 import { MICROSOFT_SECURITY } from './constants'
 
-export const AVAILABLE_MICROSOFT_SECURITY_SERVICES = ['Entra', 'Intune'] as const
+export const AVAILABLE_MICROSOFT_SECURITY_SERVICES = ['Entra', 'Intune', 'Defender'] as const
 export type AvailableMicrosoftSecurityServices = (typeof AVAILABLE_MICROSOFT_SECURITY_SERVICES)[number]
 export type MicrosoftServicesToManage = Partial<Record<AvailableMicrosoftSecurityServices, boolean>>
 
@@ -46,6 +46,10 @@ export const SCOPE_MAPPING: Record<AvailableMicrosoftSecurityServices, string[]>
     'DeviceManagementConfiguration.ReadWrite.All',
     'DeviceManagementRBAC.ReadWrite.All',
     'User.Read',
+  ],
+  Defender: [
+    'ThreatIndicators.ReadWrite.OwnedBy', // TODO: update once we use the security API
+    'DeviceManagementConfiguration.Read.All',
   ],
 }
 
@@ -95,6 +99,13 @@ export const oauthRequestParameters = createMatchingObjectType<OauthRequestParam
       refType: BuiltinTypes.BOOLEAN,
       annotations: {
         message: 'Manage Intune?',
+        _required: true,
+      },
+    },
+    Defender: {
+      refType: BuiltinTypes.BOOLEAN,
+      annotations: {
+        message: 'Manage Defender?',
         _required: true,
       },
     },

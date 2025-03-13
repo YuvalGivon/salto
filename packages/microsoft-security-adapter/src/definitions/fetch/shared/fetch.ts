@@ -12,12 +12,14 @@ import { DEFAULT_FIELD_CUSTOMIZATIONS, DEFAULT_ID_PARTS } from './defaults'
 import { createEntraCustomizations } from '../entra/fetch'
 import { createIntuneCustomizations } from '../intune/fetch'
 import { MicrosoftServicesToManage } from '../../../auth'
+import { createDefenderCustomizations } from '../defender/fetch'
 
 const createCustomizations = (
   servicesToManage: MicrosoftServicesToManage,
 ): Record<string, definitions.fetch.InstanceFetchApiDefinitions<Options>> => ({
   ...createEntraCustomizations({ entraExtended: Boolean(servicesToManage.Entra) }),
   ...(servicesToManage.Intune ? createIntuneCustomizations() : {}),
+  ...(servicesToManage.Defender ? createDefenderCustomizations() : {}),
 })
 
 export const createFetchDefinitions = (

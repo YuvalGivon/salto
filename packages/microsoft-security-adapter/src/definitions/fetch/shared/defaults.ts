@@ -79,6 +79,12 @@ export const DEFAULT_FIELD_CUSTOMIZATIONS: Record<string, ElementFieldCustomizat
   appOwnerOrganizationId: {
     omit: true,
   },
+  azureTenantId: {
+    omit: true,
+  },
+  ingestedDateTime: {
+    omit: true,
+  },
 }
 
 export const ID_FIELD_TO_HIDE = { id: { hide: true } }

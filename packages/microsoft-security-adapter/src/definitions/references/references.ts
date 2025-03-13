@@ -12,11 +12,17 @@ import { ODATA_TYPE_FIELD_NACL_CASE, entraConstants } from '../../constants'
 import { CustomReferenceSerializationStrategyName, Options } from '../types'
 import { REFERENCE_RULES as EntraReferenceRules } from './entra_reference_rules'
 import { REFERENCE_RULES as IntuneReferenceRules } from './intune_reference_rules'
+import { REFERENCE_RULES as DefenderReferenceRules } from './defender_reference_rules'
 import { REFERENCE_RULES as CrossReferenceRules } from './cross_reference_rules'
 
 const log = logger(module)
 
-const REFERENCE_RULES = [...EntraReferenceRules, ...IntuneReferenceRules, ...CrossReferenceRules]
+const REFERENCE_RULES = [
+  ...EntraReferenceRules,
+  ...IntuneReferenceRules,
+  ...DefenderReferenceRules,
+  ...CrossReferenceRules,
+]
 
 type FieldsToGroupBy =
   | referenceUtils.ReferenceIndexField

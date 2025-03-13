@@ -15,7 +15,7 @@ import { AdjustFunctionMergeAndTransform, FetchCustomizations } from '../../shar
 import { intuneConstants } from '../../../../constants'
 import { EndpointPath } from '../../../types'
 import { SERVICE_BASE_URL } from '../../../../constants/intune'
-import { ASSIGNMENT_FIELD_CUSTOMIZATION } from './assignments'
+import { ASSIGNMENT_FIELD_CUSTOMIZATION } from '../../shared/assignments'
 import { extractStaticFileFromBinaryScript } from './script_content'
 
 const log = logger(module)

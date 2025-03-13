@@ -7,7 +7,7 @@
  */
 import { references as referenceUtils } from '@salto-io/adapter-components'
 import { ReferenceContextStrategies, CustomReferenceSerializationStrategyName } from '../types'
-import { intuneConstants, entraConstants } from '../../constants'
+import { intuneConstants, entraConstants, defenderConstants } from '../../constants'
 
 export const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
   ReferenceContextStrategies,
@@ -27,6 +27,30 @@ export const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
       parentTypes: intuneConstants.TYPES_WITH_ASSIGNMENTS_TARGET,
     },
     target: { type: entraConstants.TOP_LEVEL_TYPES.GROUP_TYPE_NAME },
+    serializationStrategy: 'id',
+  },
+  {
+    src: {
+      field: 'groupId',
+      parentTypes: defenderConstants.POLICY_ASSIGNMENT_TARGET_NESTED_TYPE,
+    },
+    target: { type: entraConstants.TOP_LEVEL_TYPES.GROUP_TYPE_NAME },
+    serializationStrategy: 'id',
+  },
+  {
+    src: {
+      field: 'deviceAndAppManagementAssignmentFilterId',
+      parentTypes: defenderConstants.POLICY_ASSIGNMENT_TARGET_NESTED_TYPE,
+    },
+    target: { type: intuneConstants.TOP_LEVEL_TYPES.FILTER_TYPE_NAME },
+    serializationStrategy: 'id',
+  },
+  {
+    src: {
+      field: 'roleScopeTagIds',
+      parentTypes: [...defenderConstants.POLICY_TYPE_NAMES],
+    },
+    target: { type: intuneConstants.TOP_LEVEL_TYPES.SCOPE_TAG_TYPE_NAME },
     serializationStrategy: 'id',
   },
 ]

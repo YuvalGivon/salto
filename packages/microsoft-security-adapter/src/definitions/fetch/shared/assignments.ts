@@ -6,8 +6,8 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { ODATA_TYPE_FIELD_NACL_CASE } from '../../../../constants'
-import { ElementFieldCustomization } from '../../shared/types'
+import { ODATA_TYPE_FIELD_NACL_CASE } from '../../../constants'
+import { ElementFieldCustomization } from './types'
 
 export const ASSIGNMENT_FIELD_CUSTOMIZATION: ElementFieldCustomization = {
   sort: {

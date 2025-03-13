@@ -17,7 +17,7 @@ import { odataType } from '../../../utils'
 import { applicationConfiguration } from '../../../utils/intune'
 import { createCustomizationsWithBasePathForFetch } from '../shared/utils'
 import { application, deviceConfiguration, deviceConfigurationSettings, platformScript } from './utils'
-import { ASSIGNMENT_FIELD_CUSTOMIZATION } from './utils/assignments'
+import { ASSIGNMENT_FIELD_CUSTOMIZATION } from '../shared/assignments'
 
 const {
   TOP_LEVEL_TYPES: {

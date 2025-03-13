@@ -8,4 +8,5 @@
 
 export * as entraConstants from './entra'
 export * as intuneConstants from './intune'
+export * as defenderConstants from './defender'
 export * from './shared'
