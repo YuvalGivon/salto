@@ -47,3 +47,6 @@ export const POLICY_ASSIGNMENTS_NESTED_TYPE = POLICY_TYPE_NAMES.map(typeName =>
 export const POLICY_ASSIGNMENT_TARGET_NESTED_TYPE = POLICY_TYPE_NAMES.map(typeName =>
   recursiveNestedTypeName(typeName, ASSIGNMENTS_FIELD_NAME, 'target'),
 )
+export const POLICY_SETTINGS_NESTED_TYPE = POLICY_TYPE_NAMES.map(typeName =>
+  recursiveNestedTypeName(typeName, 'settings'),
+)

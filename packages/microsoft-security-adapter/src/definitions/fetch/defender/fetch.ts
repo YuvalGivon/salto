@@ -18,6 +18,7 @@ const {
   // Type names
   TOP_LEVEL_TYPES: { INDICATOR_TYPE_NAME, POLICY_TEMPLATE_TYPE_NAME },
   POLICY_ASSIGNMENTS_NESTED_TYPE,
+  POLICY_SETTINGS_NESTED_TYPE,
   POLICY_TYPE_TO_TEMPLATE_FAMILY_NAME,
   // Fields
   ASSIGNMENTS_FIELD_NAME,
@@ -106,7 +107,7 @@ const graphBetaCustomizations: FetchCustomizations = {
               path: '/deviceManagement/configurationPolicies',
               queryArgs: {
                 $filter: `templateReference/TemplateFamily eq '${templateFamilyName}'`,
-                $expand: 'assignments',
+                $expand: 'assignments,settings',
               },
             },
             transformation: {
@@ -155,6 +156,23 @@ const graphBetaCustomizations: FetchCustomizations = {
               omit: true,
             },
             sourceId: {
+              omit: true,
+            },
+          },
+        },
+      },
+    })),
+  ),
+  ...Object.assign(
+    {},
+    ...POLICY_SETTINGS_NESTED_TYPE.map(typeName => ({
+      [typeName]: {
+        resource: {
+          directFetch: false,
+        },
+        element: {
+          fieldCustomizations: {
+            id: {
               omit: true,
             },
           },
