@@ -19,6 +19,7 @@ import {
   PROJECT_ROLE_TYPE,
   WORKFLOW_CONFIGURATION_TYPE,
   WORKFLOW_RULES_TYPE_NAME,
+  WORKFLOW_SCHEME_TYPE_NAME,
   WORKFLOW_STATUS_TYPE_NAME,
   WORKFLOW_TRANSITION_TYPE_NAME,
   WORKFLOW_TYPE_NAME,
@@ -139,6 +140,11 @@ const TYPES_AND_VALUES_TO_SORT: Record<string, Record<string, Record<string, str
       links: ['fromStatusReference', 'toPort', 'fromPort'],
     },
     // TODO: add also WorkflowCondition
+  },
+  [WORKFLOW_SCHEME_TYPE_NAME]: {
+    [WORKFLOW_SCHEME_TYPE_NAME]: {
+      items: ['issueType.elemID.name'],
+    },
   },
 }
 

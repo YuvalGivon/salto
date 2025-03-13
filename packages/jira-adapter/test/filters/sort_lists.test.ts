@@ -14,7 +14,7 @@ import {
   ReferenceExpression,
   Values,
 } from '@salto-io/adapter-api'
-import { getFilterParams } from '../utils'
+import { createEmptyType, getFilterParams } from '../utils'
 import sortListsFilter from '../../src/filters/sort_lists'
 import { Filter } from '../../src/filter'
 import {
@@ -23,6 +23,7 @@ import {
   JIRA,
   PERMISSION_SCHEME_TYPE_NAME,
   PROJECT_ROLE_TYPE,
+  WORKFLOW_SCHEME_TYPE_NAME,
 } from '../../src/constants'
 
 describe('sortListsFilter', () => {
@@ -33,11 +34,13 @@ describe('sortListsFilter', () => {
   let dashboardInstance: InstanceElement
   let automationInstance: InstanceElement
   let workflowInstance: InstanceElement
+  let workflowSchemeInstance: InstanceElement
   let sortedDashboardValues: Values
   let sortedProjectRoleValues: Values
   let sortedPermissionValues: Values
   let sortedAutomationValues: Values
   let sortedWorkflowValues: Values
+  let sortedWorkflowSchemeValues: Values
   beforeEach(async () => {
     filter = sortListsFilter(getFilterParams())
 
@@ -290,6 +293,46 @@ describe('sortListsFilter', () => {
         },
       ],
     }
+    workflowSchemeInstance = new InstanceElement('instance', createEmptyType(WORKFLOW_SCHEME_TYPE_NAME), {
+      items: [
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wa'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ia'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wb'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'id'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wc'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ib'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wd'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ic'), {}),
+        },
+      ],
+    })
+    sortedWorkflowSchemeValues = {
+      items: [
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wa'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ia'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wc'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ib'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wd'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'ic'), {}),
+        },
+        {
+          workflow: new ReferenceExpression(new ElemID(JIRA, 'WorkflowConfiguration', 'instance', 'wb'), {}),
+          issueType: new ReferenceExpression(new ElemID(JIRA, 'IssueType', 'instance', 'id'), {}),
+        },
+      ],
+    }
   })
 
   describe('onFetch', () => {
@@ -326,6 +369,10 @@ describe('sortListsFilter', () => {
 
       await filter.onFetch?.([workflowInstance])
       expect(workflowInstance.value).toEqual(sortedWorkflowValues)
+    })
+    it('should sort workflow schemes', async () => {
+      await filter.onFetch?.([workflowSchemeInstance])
+      expect(workflowSchemeInstance.value).toEqual(sortedWorkflowSchemeValues)
     })
 
     it('should sort inner lists', async () => {
