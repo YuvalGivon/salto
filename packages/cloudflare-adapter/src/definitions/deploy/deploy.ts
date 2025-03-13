@@ -7,28 +7,39 @@
  */
 import _ from 'lodash'
 import { definitions, deployment } from '@salto-io/adapter-components'
-import { ClientOptions } from '..'
-import { AdditionalAction } from '../types'
-import { getBusinessHoursScheduleDefinition } from './business_hours_schedule'
+import { AdditionalAction, ClientOptions } from '../types'
 
 type InstanceDeployApiDefinitions = definitions.deploy.InstanceDeployApiDefinitions<AdditionalAction, ClientOptions>
-
-// TODO example - adjust and remove irrelevant definitions. check @adapter-components/deployment for helper functions
+type DeployApiDefinitions = definitions.deploy.DeployApiDefinitions<AdditionalAction, ClientOptions>
 
 const createCustomizations = (): Record<string, InstanceDeployApiDefinitions> => {
   const standardRequestDefinitions = deployment.helpers.createStandardDeployDefinitions<
     AdditionalAction,
     ClientOptions
-  >({
-    group: { bulkPath: '/api/v2/groups', nestUnderField: 'group' },
-  })
+  >({})
+
   const customDefinitions: Record<string, Partial<InstanceDeployApiDefinitions>> = {
-    business_hours_schedule: getBusinessHoursScheduleDefinition(),
+    ZoneSettings: {
+      requestsByAction: {
+        customizations: {
+          modify: [
+            {
+              request: {
+                endpoint: {
+                  path: '/client/v4/zones/{zoneId}/settings/{id}',
+                  method: 'patch',
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
   }
   return _.merge(standardRequestDefinitions, customDefinitions)
 }
 
-export const createDeployDefinitions = (): definitions.deploy.DeployApiDefinitions<never, ClientOptions> => ({
+export const createDeployDefinitions = (): DeployApiDefinitions => ({
   instances: {
     default: {
       requestsByAction: {
@@ -36,21 +47,16 @@ export const createDeployDefinitions = (): definitions.deploy.DeployApiDefinitio
           request: {
             context: deployment.helpers.DEFAULT_CONTEXT,
           },
+          copyFromResponse: {
+            updateServiceIDs: true,
+          },
         },
-        customizations: {},
+      },
+      referenceResolution: {
+        when: 'early',
       },
       changeGroupId: deployment.grouping.selfGroup,
     },
     customizations: createCustomizations(),
   },
-  dependencies: [
-    // {
-    //   first: { type: 'dynamic_content_item', action: 'add' },
-    //   second: { type: 'dynamic_content_item_variant', action: 'add' },
-    // },
-    // {
-    //   first: { type: 'dynamic_content_item', action: 'remove' },
-    //   second: { type: 'dynamic_content_item_variant', action: 'remove' },
-    // },
-  ],
 })
