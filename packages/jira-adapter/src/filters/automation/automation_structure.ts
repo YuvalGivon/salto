@@ -47,6 +47,8 @@ const { awu } = collections.asynciterable
 const log = logger(module)
 const { isDefined } = lowerDashValues
 
+const AUTOMATION_ATTACH_FORM_ACTION_TYPE = 'jira.proforma.form.add.action'
+
 type LinkTypeObject = {
   linkType: string
   linkTypeDirection: string
@@ -254,7 +256,7 @@ const isHTMLBodyContentAutomationValue = ({ value }: TransformFuncArgs): boolean
 
 const extractHTMLContentToStaticFile =
   (): TransformFuncSync =>
-  async ({ value, path }) => {
+  ({ value, path }) => {
     if (path !== undefined && isHTMLBodyContentAutomationValue({ value })) {
       value.body = new StaticFile({
         filepath: `${JIRA}/${AUTOMATION_TYPE}/${getHTMLStaticFileName(path)}.html`,
@@ -266,9 +268,21 @@ const extractHTMLContentToStaticFile =
 
 const transformStaticFileBufferToHTML =
   (): TransformFuncSync =>
-  async ({ value }) => {
+  ({ value }) => {
     if (isHTMLBodyContentAutomationValue({ value })) {
       value.body = value.body.toString()
+    }
+    return value
+  }
+
+const transformIdNumberToString =
+  (): TransformFuncSync =>
+  ({ value }) => {
+    if (
+      value?.type === AUTOMATION_ATTACH_FORM_ACTION_TYPE &&
+      Array.isArray(value.value?.templateFormsConfig?.templateFormIds)
+    ) {
+      value.value.templateFormsConfig.templateFormIds = value.value.templateFormsConfig.templateFormIds.map(String)
     }
     return value
   }
@@ -395,6 +409,7 @@ const filter: FilterCreator = ({ client }) => {
             createTransformDeleteLinkTypesFunc(),
             createTransformHasAttachmentValueFunc(),
             extractHTMLContentToStaticFile(),
+            transformIdNumberToString(),
           ])
           instance.value = (
             await transformElement({
