@@ -23,12 +23,14 @@ import { values } from '@salto-io/lowerdash'
 import { safeJsonStringify } from '@salto-io/adapter-utils'
 import { AUTHENTICATOR_TYPE_NAME, MFA_POLICY_TYPE_NAME } from '../constants'
 import { getAuthenticatorsFromMfaPolicy } from '../change_validators/enabled_authenticators'
+import { isActivationChange, isDeactivationChange } from '../definitions/deploy/utils/status'
 
 const log = logger(module)
 
 /*
  * Add dependency from Authenticator change to MultifactorEnrollmentPolicy additions or modifications.
- * Authenticator must be activated before it can be used by a MultifactorEnrollmentPolicy.
+ * When activating an Authenticator, it must be done before using it is a MultifactorEnrollmentPolicy.
+ * When deactivating an Authenticator, any MultifactorEnrollmentPolicy using it must disable this Authenticator.
  */
 export const addAuthenticatorToMfaPolicyDependency: DependencyChanger = async changes => {
   const instanceChanges = Array.from(changes.entries())
@@ -50,23 +52,37 @@ export const addAuthenticatorToMfaPolicyDependency: DependencyChanger = async ch
     return []
   }
 
-  const authenticatorChangesById = _.keyBy(authenticatorChanges, change =>
-    getChangeData(change.change).elemID.getFullName(),
+  const authenticatorElemIdToKey = _.fromPairs(
+    authenticatorChanges.map(change => [getChangeData(change.change).elemID.getFullName(), change.key]),
   )
 
-  const changedAuthenticatorsElemIDs = new Set(Object.keys(authenticatorChangesById))
+  const activatedAuthenticators = authenticatorChanges.filter(change => isActivationChange(change.change))
+  const activatedAuthenticatorIds = new Set(
+    activatedAuthenticators.map(change => getChangeData(change.change).elemID.getFullName()),
+  )
+
+  const deactivatedAuthenticators = authenticatorChanges.filter(change => isDeactivationChange(change.change))
+  const deactivatedAuthenticatorIds = new Set(
+    deactivatedAuthenticators.map(change => getChangeData(change.change).elemID.getFullName()),
+  )
 
   return mfaChanges
     .flatMap(mfaChange => {
-      const usedAuthenticatorChanges = getAuthenticatorsFromMfaPolicy(getChangeData(mfaChange.change))
+      const usedAuthenticatorElemIds = getAuthenticatorsFromMfaPolicy(getChangeData(mfaChange.change))
         .map(authenticator => authenticator.key)
         .map(reference => reference.elemID.getFullName())
-        .filter(authenticatorId => changedAuthenticatorsElemIDs.has(authenticatorId))
-        .map(authenticatorId => authenticatorChangesById[authenticatorId])
-        .filter(values.isDefined)
-      const dependencies = usedAuthenticatorChanges.map(authenticator =>
-        dependencyChange('add', mfaChange.key, authenticator.key),
-      )
+        .filter(authenticatorId => authenticatorElemIdToKey[authenticatorId])
+
+      const activatedDependencies = usedAuthenticatorElemIds
+        .filter(elemId => activatedAuthenticatorIds.has(elemId))
+        .map(elemId => dependencyChange('add', mfaChange.key, authenticatorElemIdToKey[elemId]))
+
+      const deactivatedDependencies = usedAuthenticatorElemIds
+        .filter(elemId => deactivatedAuthenticatorIds.has(elemId))
+        .map(elemId => dependencyChange('add', authenticatorElemIdToKey[elemId], mfaChange.key))
+
+      const dependencies = activatedDependencies.concat(deactivatedDependencies)
+
       log.debug(
         'addAuthenticatorToMfaPolicyDependency added the following dependencies: %s',
         safeJsonStringify(dependencies.map(d => d.dependency)),

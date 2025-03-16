@@ -40,6 +40,7 @@ export const disabledAuthenticatorsInMfaPolicyValidator: ChangeValidator = async
     await awu(mfaInstances)
       .map(async policy => {
         const disabledAuthenticators = await awu(getAuthenticatorsFromMfaPolicy(policy))
+          .filter(({ enroll }) => enroll.self !== 'NOT_ALLOWED')
           .map(async ({ key }) => key.getResolvedValue(elementSource))
           .filter(isInstanceElement)
           .filter(({ value }) => value.status === INACTIVE_STATUS)

@@ -22,11 +22,18 @@ describe('addAuthenticatorToMfaPolicyDependency', () => {
   const authenticatorType = new ObjectType({ elemID: new ElemID(OKTA, AUTHENTICATOR_TYPE_NAME) })
   const mfaPolicyType = new ObjectType({ elemID: new ElemID(OKTA, MFA_POLICY_TYPE_NAME) })
 
-  const authenticator1 = new InstanceElement('authenticator1', authenticatorType, {
+  const inactiveAuthenticator = new InstanceElement('authenticator1', authenticatorType, {
     id: '1',
     label: 'authenticator1',
     status: 'INACTIVE',
   })
+
+  const activeAuthenticator = new InstanceElement('authenticator1', authenticatorType, {
+    id: '1',
+    label: 'authenticator1',
+    status: 'ACTIVE',
+  })
+
   const authenticator2 = new InstanceElement('authenticator2', authenticatorType, {
     id: '2',
     label: 'authenticator2',
@@ -38,14 +45,18 @@ describe('addAuthenticatorToMfaPolicyDependency', () => {
     settings: {
       type: 'AUTHENTICATOR',
       authenticators: [
-        { key: new ReferenceExpression(authenticator1.elemID, authenticator1), enroll: { self: 'OPTIONAL' } },
+        {
+          key: new ReferenceExpression(inactiveAuthenticator.elemID, inactiveAuthenticator),
+          enroll: { self: 'OPTIONAL' },
+        },
       ],
     },
   })
-  it('should add dependency from MultifactorEnrollmentPolicy addition to its used Authenticator modification changes', async () => {
+
+  it('should add dependency from MultifactorEnrollmentPolicy to Authenticator being activated', async () => {
     const inputChanges = new Map([
       ['mfaPolicy', toChange({ after: mfaPolicy })],
-      ['authenticator1', toChange({ before: authenticator1, after: authenticator1 })],
+      ['authenticator1', toChange({ before: inactiveAuthenticator, after: activeAuthenticator })],
       ['authenticator2', toChange({ before: authenticator2, after: authenticator2 })],
     ])
     dependencyChanges = [...(await addAuthenticatorToMfaPolicyDependency(inputChanges, new Map()))]
@@ -55,14 +66,17 @@ describe('addAuthenticatorToMfaPolicyDependency', () => {
     expect(dependencyChanges[0].dependency.target).toEqual('authenticator1')
   })
 
-  it('should add dependency from MultifactorEnrollmentPolicy modification to its used Authenticator modification changes', async () => {
+  it('should add dependency from MultifactorEnrollmentPolicy to Authenticator being activated (with modification)', async () => {
     const beforeMfa = new InstanceElement('mfaPolicy', mfaPolicyType, {
       id: 'ab',
       priority: 1,
       settings: {
         type: 'AUTHENTICATOR',
         authenticators: [
-          { key: new ReferenceExpression(authenticator1.elemID, authenticator1), enroll: { self: 'OPTIONAL' } },
+          {
+            key: new ReferenceExpression(inactiveAuthenticator.elemID, inactiveAuthenticator),
+            enroll: { self: 'OPTIONAL' },
+          },
           // this authenticator is removed from the policy, so no dependency should be added
           { key: new ReferenceExpression(authenticator2.elemID, authenticator2), enroll: { self: 'REQUIRED' } },
         ],
@@ -70,7 +84,7 @@ describe('addAuthenticatorToMfaPolicyDependency', () => {
     })
     const inputChanges = new Map([
       ['mfaPolicy', toChange({ before: beforeMfa, after: mfaPolicy })],
-      ['authenticator1', toChange({ before: authenticator1, after: authenticator1 })],
+      ['authenticator1', toChange({ before: inactiveAuthenticator, after: activeAuthenticator })],
       ['authenticator2', toChange({ before: authenticator2, after: authenticator2 })],
     ])
     dependencyChanges = [...(await addAuthenticatorToMfaPolicyDependency(inputChanges, new Map()))]
@@ -87,5 +101,17 @@ describe('addAuthenticatorToMfaPolicyDependency', () => {
     ])
     dependencyChanges = [...(await addAuthenticatorToMfaPolicyDependency(inputChanges, new Map()))]
     expect(dependencyChanges).toHaveLength(0)
+  })
+
+  it('should add dependency from deactivated Authenticator to MultifactorEnrollmentPolicy that uses it', async () => {
+    const inputChanges = new Map([
+      ['mfaPolicy', toChange({ after: mfaPolicy })],
+      ['authenticator1', toChange({ before: activeAuthenticator, after: inactiveAuthenticator })],
+    ])
+    dependencyChanges = [...(await addAuthenticatorToMfaPolicyDependency(inputChanges, new Map()))]
+    expect(dependencyChanges).toHaveLength(1)
+    expect(dependencyChanges[0].action).toEqual('add')
+    expect(dependencyChanges[0].dependency.source).toEqual('authenticator1')
+    expect(dependencyChanges[0].dependency.target).toEqual('mfaPolicy')
   })
 })

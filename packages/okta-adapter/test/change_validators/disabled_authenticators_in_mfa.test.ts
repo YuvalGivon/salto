@@ -49,9 +49,23 @@ describe('disabledAuthenticatorsInMfaPolicyValidator', () => {
       ],
     },
   })
-  const elementSource = buildElementsSourceFromElements([policyType, authType, MFA1, MFA2, auth1, auth2])
 
-  it('should return error when disabled authenticator is used in MFA policy', async () => {
+  const MFA3 = new InstanceElement('mfa3', policyType, {
+    name: 'policy',
+    status: 'ACTIVE',
+    system: false,
+    type: 'MFA_POLICY',
+    settings: {
+      authenticators: [
+        { key: new ReferenceExpression(auth1.elemID, auth1), enroll: { self: 'NOT_ALLOWED' } },
+        { key: new ReferenceExpression(auth2.elemID, auth2), enroll: { self: 'REQUIRED' } },
+      ],
+    },
+  })
+
+  const elementSource = buildElementsSourceFromElements([policyType, authType, MFA1, MFA2, MFA3, auth1, auth2])
+
+  it('should return error when disabled authenticator is used in MFA policy with OPTIONAL or REQUIRED enrollment', async () => {
     const changeErrors = await disabledAuthenticatorsInMfaPolicyValidator(
       [toChange({ after: MFA1 }), toChange({ before: MFA2, after: MFA2 })],
       elementSource,
@@ -74,6 +88,12 @@ describe('disabledAuthenticatorsInMfaPolicyValidator', () => {
       },
     ])
   })
+
+  it('should not return error when disabled authenticator is set to NOT_ALLOWED in MFA policy', async () => {
+    const changeErrors = await disabledAuthenticatorsInMfaPolicyValidator([toChange({ after: MFA3 })], elementSource)
+    expect(changeErrors).toHaveLength(0)
+  })
+
   it('should not return error when all used authenticators are enabled', async () => {
     auth1.value.status = 'ACTIVE'
     const changeErrors = await disabledAuthenticatorsInMfaPolicyValidator(
@@ -82,10 +102,12 @@ describe('disabledAuthenticatorsInMfaPolicyValidator', () => {
     )
     expect(changeErrors).toHaveLength(0)
   })
+
   it('should not return error on MFA removals even when using disabled authenticators', async () => {
     const changeErrors = await disabledAuthenticatorsInMfaPolicyValidator([toChange({ before: MFA1 })], elementSource)
     expect(changeErrors).toHaveLength(0)
   })
+
   it('should do nothing when element source is missing', async () => {
     const changeErrors = await disabledAuthenticatorsInMfaPolicyValidator([toChange({ after: MFA1 })], undefined)
     expect(changeErrors).toHaveLength(0)
