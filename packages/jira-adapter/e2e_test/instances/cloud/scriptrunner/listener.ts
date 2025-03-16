@@ -10,7 +10,7 @@ import { createReference } from '../../../utils'
 import { JIRA } from '../../../../src/constants'
 
 export const createScriptRunnerListenerValues = (name: string, allElements: Element[]): Values => ({
-  projects: [createReference(new ElemID(JIRA, 'Project', 'instance', 'Test_Project@s'), allElements)],
+  projects: [createReference(new ElemID(JIRA, 'Project', 'instance', 'test_project@s'), allElements)],
   script: 'import java.time.LocalDate;return LocalDate.now().minusDays(1)',
   enabled: true,
   events: ['comment_created'],

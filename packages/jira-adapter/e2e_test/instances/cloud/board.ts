@@ -13,7 +13,7 @@ export const createKanbanBoardValues = (name: string, allElements: Element[]): V
   name: `kanban${name}`,
   type: 'kanban',
   location: {
-    projectId: createReference(new ElemID(JIRA, 'Project', 'instance', 'Test_Project@s'), allElements),
+    projectId: createReference(new ElemID(JIRA, 'Project', 'instance', 'test_project@s'), allElements),
   },
   filterId: createReference(new ElemID(JIRA, 'Filter', 'instance', 'Filter_for_TP_board@s'), allElements),
   columnConfig: {
@@ -40,7 +40,7 @@ export const createScrumBoardValues = (name: string, allElements: Element[]): Va
   name: `scrum${name}`,
   type: 'scrum',
   location: {
-    projectId: createReference(new ElemID(JIRA, 'Project', 'instance', 'Test_Project@s'), allElements),
+    projectId: createReference(new ElemID(JIRA, 'Project', 'instance', 'test_project@s'), allElements),
   },
   filterId: createReference(new ElemID(JIRA, 'Filter', 'instance', 'Filter_for_TP_board@s'), allElements),
   columnConfig: {

@@ -68,7 +68,7 @@ export const createWorkflowValues = (name: string, allElements: Element[]): Valu
                 allElements,
                 ['name'],
               ),
-              roleId: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'Administrators'), allElements),
+              roleId: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'administrators'), allElements),
             },
           },
         },
@@ -115,7 +115,7 @@ export const createWorkflowValues = (name: string, allElements: Element[]): Valu
         {
           ruleKey: 'system:set-security-level-from-role',
           parameters: {
-            roleId: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'Administrators'), allElements),
+            roleId: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'administrators'), allElements),
           },
         },
         {
@@ -272,7 +272,7 @@ export const createWorkflowValues = (name: string, allElements: Element[]): Valu
           {
             ruleKey: 'system:restrict-issue-transition',
             parameters: {
-              roleIds: [createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'Administrators'), allElements)],
+              roleIds: [createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'administrators'), allElements)],
             },
           },
           {

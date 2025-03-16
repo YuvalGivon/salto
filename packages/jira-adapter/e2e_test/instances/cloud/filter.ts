@@ -16,7 +16,7 @@ export const createFilterValues = (name: string, allElements: Element[]): Values
     parts: [
       createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Project__project'), allElements),
       ' = ',
-      createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'Test_Project@s'), allElements, ['key']),
+      createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'test_project@s'), allElements, ['key']),
       ' ORDER BY ',
       createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Rank__gh_lexo_rank__c@uubbuu'), allElements, [
         'name',
@@ -36,7 +36,7 @@ export const createFilterValues = (name: string, allElements: Element[]): Values
     {
       type: 'project',
       project: {
-        id: createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'Test_Project@s'), allElements),
+        id: createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'test_project@s'), allElements),
       },
     },
     {

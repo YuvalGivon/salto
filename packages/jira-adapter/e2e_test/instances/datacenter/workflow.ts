@@ -184,7 +184,7 @@ export const createWorkflowValues = (name: string, allElements: Element[]): Valu
               type: 'com.atlassian.jira.workflow.condition.InProjectRoleCondition',
               configuration: {
                 projectRole: {
-                  id: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'Administrators'), allElements),
+                  id: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'administrators'), allElements),
                 },
               },
             },

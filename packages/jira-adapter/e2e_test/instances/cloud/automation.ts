@@ -69,7 +69,7 @@ export const createAutomationValues = (name: string, allElements: Element[]): Va
             parts: [
               createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Priority__priority'), allElements),
               ' = ',
-              createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'Medium'), allElements, ['name']),
+              createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'medium'), allElements, ['name']),
             ],
           }),
         },
@@ -192,7 +192,7 @@ export const createAutomationValues = (name: string, allElements: Element[]): Va
             parts: [
               createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Project__project'), allElements),
               ' = ',
-              createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'Test_Project@s'), allElements, ['key']),
+              createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'test_project@s'), allElements, ['key']),
               ' ORDER BY ',
               createReference(
                 new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Rank__gh_lexo_rank__c@uubbuu'),

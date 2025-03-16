@@ -51,7 +51,7 @@ export const createSLAValues = (name: string, allElements: Element[]): Values =>
           parts: [
             createReference(new ElemID(JIRA, 'Field', 'instance', 'Priority__priority'), allElements),
             ' = ',
-            createReference(new ElemID(JIRA, 'Priority', 'instance', 'Highest'), allElements, ['name']),
+            createReference(new ElemID(JIRA, 'Priority', 'instance', 'highest'), allElements, ['name']),
           ],
         }),
         duration: 7200000,

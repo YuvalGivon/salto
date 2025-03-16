@@ -15,7 +15,7 @@ export const createWorkflowSchemeValues = (name: string, allElements: Element[])
   defaultWorkflow: createReference(new ElemID(JIRA, WORKFLOW_TYPE_NAME, 'instance', 'jira'), allElements),
   items: [
     {
-      issueType: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Bug'), allElements),
+      issueType: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'bug'), allElements),
       workflow: createReference(new ElemID(JIRA, WORKFLOW_TYPE_NAME, 'instance', 'jira'), allElements),
     },
   ],

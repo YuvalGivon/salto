@@ -22,11 +22,15 @@ export const createInstances = (randomString: string, fetchedElements: Element[]
     findType('FieldConfiguration', fetchedElements),
     createFieldConfigurationValues(randomString),
   )
-  const issueType = new InstanceElement(`IT_${randomString}`, findType(ISSUE_TYPE_NAME, fetchedElements), {
-    description: randomString,
-    name: `IT_${randomString}`,
-    hierarchyLevel: 0,
-  })
+  const issueType = new InstanceElement(
+    `IT_${randomString}`.toLowerCase(),
+    findType(ISSUE_TYPE_NAME, fetchedElements),
+    {
+      description: randomString,
+      name: `IT_${randomString}`,
+      hierarchyLevel: 0,
+    },
+  )
 
   const automation = new InstanceElement(
     randomString,
@@ -41,7 +45,7 @@ export const createInstances = (randomString: string, fetchedElements: Element[]
   )
 
   const workflowScheme = new InstanceElement(
-    randomString,
+    randomString.toLowerCase(),
     findType('WorkflowScheme', fetchedElements),
     createWorkflowSchemeValues(randomString, fetchedElements),
   )

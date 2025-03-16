@@ -22,6 +22,6 @@ export const createScriptedFragmentsValues = (id: string, allElements: Element[]
     css: '',
     js: '',
   },
-  entities: [createReference(new ElemID(JIRA, 'Project', 'instance', 'Test_Project@s'), allElements, ['key'])],
+  entities: [createReference(new ElemID(JIRA, 'Project', 'instance', 'test_project@s'), allElements, ['key'])],
   no: 0,
 })
