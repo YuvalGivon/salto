@@ -17,7 +17,7 @@ import _ from 'lodash'
 import { FilterCreator } from '../../filter'
 import { walkOnUsers, WalkOnUsersCallback } from './account_id_filter'
 import { UserMap, getUsersMap } from '../../users'
-import { PROJECT_COMPONENT_TYPE, PROJECT_TYPE } from '../../constants'
+import { PERMISSION_SCHEME_TYPE_NAME, PROJECT_COMPONENT_TYPE, PROJECT_TYPE } from '../../constants'
 
 const { awu } = collections.asynciterable
 
@@ -87,7 +87,10 @@ const filter: FilterCreator = ({ client, config, getUserMapFunc, elementsSource 
       .filter(isInstanceChange)
       .filter(isAdditionOrModificationChange)
       .map(getChangeData)
-      .filter(instance => ![PROJECT_TYPE, PROJECT_COMPONENT_TYPE].includes(instance.elemID.typeName))
+      .filter(
+        instance =>
+          ![PROJECT_TYPE, PROJECT_COMPONENT_TYPE, PERMISSION_SCHEME_TYPE_NAME].includes(instance.elemID.typeName),
+      )
       .forEach(element => walkOnElement({ element, func: walkOnUsers(convertUserNameToId(preDeployUserMap), config) }))
   },
   onDeploy: async changes => {

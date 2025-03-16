@@ -287,6 +287,7 @@ describe('convert userId to key in Jira DC', () => {
   let projectType: ObjectType
   let projectInstance: InstanceElement
   let componentInstance: InstanceElement
+  let permissionSchemeInstance: InstanceElement
 
   beforeEach(() => {
     const usersType = new ObjectType({
@@ -406,6 +407,20 @@ describe('convert userId to key in Jira DC', () => {
       },
     })
 
+    permissionSchemeInstance = new InstanceElement('instance', createEmptyType('PermissionScheme'), {
+      permissions: [
+        {
+          holder: {
+            type: 'user',
+            parameter: {
+              id: 'JIRAUSER10300',
+            },
+          },
+          permission: 'BROWSE_ARCHIVE',
+        },
+      ],
+    })
+
     mockConnection.get.mockResolvedValue({
       status: 200,
       data: [
@@ -489,8 +504,9 @@ describe('convert userId to key in Jira DC', () => {
       expect(automationInstance.value.authorAccountId).toEqual({ id: 'JIRAUSER10100' })
       expect(dashboardInstance.value.editPermissions.user.accountId).toEqual({ id: 'JIRAUSER10200' })
       expect(projectInstance.value.leadAccountId).toEqual({ id: 'JIRAUSER10300' })
+      expect(permissionSchemeInstance.value.permissions[0].holder.parameter).toEqual({ id: 'JIRAUSER10300' })
 
-      await filter.onFetch([automationInstance, dashboardInstance, projectInstance])
+      await filter.onFetch([automationInstance, dashboardInstance, projectInstance, permissionSchemeInstance])
       expect(mockConnection.get).toHaveBeenCalledOnce()
       expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/2/user/search', {
         headers: undefined,
@@ -503,14 +519,22 @@ describe('convert userId to key in Jira DC', () => {
       expect(automationInstance.value.authorAccountId).toEqual({ id: 'salto' })
       expect(dashboardInstance.value.editPermissions.user.accountId).toEqual({ id: 'admin' })
       expect(projectInstance.value.leadAccountId).toEqual({ id: 'projectLeadAccount' })
+      expect(permissionSchemeInstance.value.permissions[0].holder.parameter).toEqual({ id: 'projectLeadAccount' })
     })
     it('should not convert only project instance key to userId on preDeploy and onDeploy', async () => {
-      await filter.onFetch([automationInstance, dashboardInstance, projectInstance, componentInstance])
+      await filter.onFetch([
+        automationInstance,
+        dashboardInstance,
+        projectInstance,
+        componentInstance,
+        permissionSchemeInstance,
+      ])
       await filter.preDeploy([
         toChange({ after: automationInstance }),
         toChange({ before: dashboardInstance, after: dashboardInstance }),
         toChange({ after: projectInstance }),
         toChange({ after: componentInstance }),
+        toChange({ after: permissionSchemeInstance }),
       ])
       expect(mockConnection.get).toHaveBeenCalledOnce()
       expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/2/user/search', {
@@ -524,6 +548,7 @@ describe('convert userId to key in Jira DC', () => {
       expect(dashboardInstance.value.editPermissions.user.accountId).toEqual({ id: 'JIRAUSER10200' })
       expect(projectInstance.value.leadAccountId).toEqual({ id: 'projectLeadAccount' })
       expect(componentInstance.value.leadAccountId).toEqual({ id: 'projectLeadAccount' })
+      expect(permissionSchemeInstance.value.permissions[0].holder.parameter).toEqual({ id: 'projectLeadAccount' })
       await filter.onDeploy([
         toChange({ after: automationInstance }),
         toChange({ before: dashboardInstance, after: dashboardInstance }),
@@ -542,6 +567,7 @@ describe('convert userId to key in Jira DC', () => {
       expect(dashboardInstance.value.editPermissions.user.accountId).toEqual({ id: 'admin' })
       expect(projectInstance.value.leadAccountId).toEqual({ id: 'projectLeadAccount' })
       expect(componentInstance.value.leadAccountId).toEqual({ id: 'projectLeadAccount' })
+      expect(permissionSchemeInstance.value.permissions[0].holder.parameter).toEqual({ id: 'projectLeadAccount' })
     })
     it('should not convert userId to key or backwards for undefined types', async () => {
       const type = common.createType('Other')
