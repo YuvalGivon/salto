@@ -126,7 +126,9 @@ const deployGroupMembershipChange = async (
       ),
     )
     const failedAssignments = res.filter(({ result }) => result === 'failure').map(({ userId }) => userId)
-    log.error('failed to add the following group assignments: %s', failedAssignments.join(', '))
+    if (failedAssignments.length > 0) {
+      log.error('failed to add the following group assignments: %s', failedAssignments.join(', '))
+    }
 
     return { appliedChange: await updateChangeWithFailedAssignments(change, failedAssignments) }
   }
