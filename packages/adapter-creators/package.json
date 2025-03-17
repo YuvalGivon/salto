@@ -33,6 +33,7 @@
     "@salto-io/adapter-api": "0.5.2",
     "@salto-io/cloudflare-adapter": "0.5.2",
     "@salto-io/confluence-adapter": "0.5.2",
+    "@salto-io/crowdstrike-adapter": "0.5.2",
     "@salto-io/dummy-adapter": "0.5.2",
     "@salto-io/google-workspace-adapter": "0.5.2",
     "@salto-io/intercom-adapter": "0.5.2",

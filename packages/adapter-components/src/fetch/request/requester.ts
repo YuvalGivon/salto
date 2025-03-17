@@ -6,6 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import _ from 'lodash'
+import { inspectValue } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
 import { collections, values as lowerdashValues } from '@salto-io/lowerdash'
 import { ResponseValue } from '../../client'
@@ -174,11 +175,12 @@ export const getRequester = <Options extends APIDefinitionsOptions>({
     return itemsWithContext.filter(item => {
       if (!lowerdashValues.isPlainRecord(item.value)) {
         log.warn(
-          'extracted invalid item for endpoint %s.%s:%s %s',
+          'extracted invalid item for endpoint %s.%s:%s %s: %s',
           clientName,
           mergedRequestDef.endpoint.path,
           mergedRequestDef.endpoint.method ?? 'get',
           typeName,
+          inspectValue(item.value),
         )
         return false
       }

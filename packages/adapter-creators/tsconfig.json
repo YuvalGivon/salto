@@ -23,6 +23,7 @@
     { "path": "../salesforce-adapter" },
     { "path": "../sap-adapter" },
     { "path": "../serviceplaceholder-adapter" },
+    { "path": "../crowdstrike-adapter" },
     { "path": "../stripe-adapter" },
     { "path": "../workato-adapter" },
     { "path": "../zendesk-adapter" },
