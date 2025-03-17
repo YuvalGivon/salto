@@ -15,28 +15,35 @@ import { convertIdListToObject, convertGroupSummaryToIdList } from './transforms
 const NAME_ID_FIELD: definitions.fetch.FieldIDPart = { fieldName: 'name' }
 const DEFAULT_ID_PARTS = [NAME_ID_FIELD]
 
-const COMMON_FIELD_CUSTOMIZATIONS: Record<string, definitions.fetch.ElementFieldCustomization> = [
+const COMMON_FIELD_CUSTOMIZATIONS: Record<string, definitions.fetch.ElementFieldCustomization> = {
   // ID fields
-  'id',
-  'customer_id',
-  'cid', // same as customer_id
+  ...[
+    'id',
+    'customer_id',
+    'cid', // same as customer_id
+  ].reduce((acc: Record<string, definitions.fetch.ElementFieldCustomization>, fieldName: string) => {
+    acc[fieldName] = { hide: true }
+    return acc
+  }, {}),
 
   // Audit fields
   // Yes, all of these are actually used...
-  'created_by',
-  'created_timestamp',
-  'created_on',
-  'CreatedAt',
-  'modified_by',
-  'modified_timestamp',
-  'modified_on',
-  'UpdatedAt',
-  'last_modified',
-  'last_seen',
-].reduce((acc: Record<string, definitions.fetch.ElementFieldCustomization>, fieldName: string) => {
-  acc[fieldName] = { omit: true }
-  return acc
-}, {})
+  ...[
+    'created_by',
+    'created_timestamp',
+    'created_on',
+    'CreatedAt',
+    'modified_by',
+    'modified_timestamp',
+    'modified_on',
+    'UpdatedAt',
+    'last_modified',
+    'last_seen',
+  ].reduce((acc: Record<string, definitions.fetch.ElementFieldCustomization>, fieldName: string) => {
+    acc[fieldName] = { omit: true }
+    return acc
+  }, {}),
+}
 
 const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchApiDefinitions<Options>> => ({
   PreventionPolicy: {
@@ -649,7 +656,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     },
   },
 
-  // Note: this is currently hidden (as the `members` field from HostGroup is omitted)
+  // Note: this is fetched as recurseInto from HostGroup as its `members` field, but it's marked as omitted.
   HostGroupMember: {
     requests: [
       {
