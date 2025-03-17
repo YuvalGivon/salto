@@ -11,9 +11,9 @@ import { ISSUE_TYPE_NAME, JIRA } from '../../../src/constants'
 
 export const createIssueTypeSchemeValues = (name: string, allElements: Element[]): Values => ({
   name,
-  defaultIssueTypeId: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'bug'), allElements),
+  defaultIssueTypeId: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Bug'), allElements),
   issueTypeIds: [
-    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'bug'), allElements),
-    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'epic'), allElements),
+    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Bug'), allElements),
+    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Epic'), allElements),
   ],
 })

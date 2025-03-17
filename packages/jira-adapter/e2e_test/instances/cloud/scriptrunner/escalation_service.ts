@@ -25,7 +25,7 @@ export const createEscalationServiceValues = (name: string, allElements: Element
     parts: [
       createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Project__project'), allElements),
       ' = ',
-      createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'test_project@s'), allElements, ['key']),
+      createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'Test_Project@s'), allElements, ['key']),
     ],
   }),
 })

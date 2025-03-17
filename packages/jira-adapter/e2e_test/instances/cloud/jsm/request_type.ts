@@ -14,7 +14,7 @@ export const createrequestTypeValues = (name: string, allElements: Element[]): V
   name,
   description: 'testRequestTypeDescription',
   helpText: 'testRequestTypeHelpCenter',
-  issueTypeId: createReference(new ElemID(JIRA, 'IssueType', 'instance', 'emailed_request@s'), allElements),
+  issueTypeId: createReference(new ElemID(JIRA, 'IssueType', 'instance', 'Emailed_request@s'), allElements),
   workflowStatuses: [
     {
       id: createReference(new ElemID(JIRA, 'Status', 'instance', 'to_do@s'), allElements),

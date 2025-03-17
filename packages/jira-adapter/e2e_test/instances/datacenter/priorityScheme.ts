@@ -13,8 +13,8 @@ export const createPrioritySchemeValues = (name: string, allElements: Element[])
   name,
   description: `desc-${name}`,
   optionIds: [
-    createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'highest'), allElements),
-    createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'high'), allElements),
+    createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'Highest'), allElements),
+    createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'High'), allElements),
   ],
-  defaultOptionId: createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'high'), allElements),
+  defaultOptionId: createReference(new ElemID(JIRA, PRIORITY_TYPE_NAME, 'instance', 'High'), allElements),
 })

@@ -21,7 +21,7 @@ export const createFieldConfigurationSchemeValues = (name: string, allElements: 
       ),
     },
     {
-      issueTypeId: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'bug'), allElements),
+      issueTypeId: createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Bug'), allElements),
       fieldConfigurationId: createReference(
         new ElemID(JIRA, 'FieldConfiguration', 'instance', 'Default_Field_Configuration@s'),
         allElements,

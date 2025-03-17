@@ -587,7 +587,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
       serviceIdField: 'issueTypeSchemeId',
       fieldsToHide: [{ fieldName: 'id' }],
       serviceUrl: '/secure/admin/ConfigureOptionSchemes!default.jspa?fieldId=&schemeId={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -722,9 +721,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         expand: 'permissions,user',
       },
     },
-    transformation: {
-      nameMapping: 'lowercase',
-    },
   },
 
   PermissionHolder: {
@@ -807,7 +803,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/admin/projectcategories/EditProjectCategory!default.jspa?id={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -850,7 +845,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/project/EditProject!default.jspa?pid={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -904,7 +898,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         { fieldName: 'componentBean' },
         { fieldName: 'deleted' },
       ],
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -929,7 +922,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
     transformation: {
       fieldsToHide: [{ fieldName: 'id' }],
       serviceUrl: '/secure/admin/EditNotifications!default.jspa?schemeId={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1024,7 +1016,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/admin/EditResolution!default.jspa?id={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1416,7 +1407,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/admin/EditWorkflowScheme.jspa?schemeId={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1451,7 +1441,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/admin/EditIssueType!default.jspa?id={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1513,7 +1502,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
       fieldTypeOverrides: [{ fieldName: 'originalName', fieldType: 'string' }],
       fieldsToHide: [{ fieldName: 'groupId' }, { fieldName: 'originalName' }],
       serviceIdField: 'groupId',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1610,7 +1598,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/project/EditProjectRole!default.jspa?id={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {
@@ -1674,7 +1661,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
         },
       ],
       serviceUrl: '/secure/admin/EditPriority!default.jspa?id={id}',
-      nameMapping: 'lowercase',
     },
     deployRequests: {
       add: {

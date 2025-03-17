@@ -82,14 +82,14 @@ export const createCascadeFieldValues = (name: string): Values => ({
 const createContextValues = (name: string, allElements: Element[]): Values => ({
   name,
   issueTypeIds: [
-    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'epic'), allElements),
-    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'story'), allElements),
+    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Epic'), allElements),
+    createReference(new ElemID(JIRA, ISSUE_TYPE_NAME, 'instance', 'Story'), allElements),
   ],
 })
 
 export const createProjectScopeContextValues = (name: string, allElements: Element[]): Values => ({
   name,
-  projectIds: [createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'test_project@s'), allElements)],
+  projectIds: [createReference(new ElemID(JIRA, PROJECT_TYPE, 'instance', 'Test_Project@s'), allElements)],
 })
 
 const createContextName = (randomString: string, type: string): string =>

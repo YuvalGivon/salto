@@ -89,20 +89,16 @@ export const createInstances = (
     findType('Dashboard', fetchedElements),
     createDashboardValues(randomString),
   )
-  const issueType = new InstanceElement(
-    `it_${randomString}`.toLowerCase(),
-    findType(ISSUE_TYPE_NAME, fetchedElements),
-    {
-      description: randomString,
-      name: `IT_${randomString}`,
-      hierarchyLevel: 0,
-      untranslatedName: `IT_${randomString}`,
-      avatar: new StaticFile({
-        filepath: `${JIRA}/${ISSUE_TYPE_NAME}/${randomString}.png`,
-        content: fs.readFileSync(path.resolve(`${__dirname}/../../../e2e_test/images/nacl.png`)),
-      }),
-    },
-  )
+  const issueType = new InstanceElement(`IT_${randomString}`, findType(ISSUE_TYPE_NAME, fetchedElements), {
+    description: randomString,
+    name: `IT_${randomString}`,
+    hierarchyLevel: 0,
+    untranslatedName: `IT_${randomString}`,
+    avatar: new StaticFile({
+      filepath: `${JIRA}/${ISSUE_TYPE_NAME}/${randomString}.png`,
+      content: fs.readFileSync(path.resolve(`${__dirname}/../../../e2e_test/images/nacl.png`)),
+    }),
+  })
 
   const dashboardGadget1 = new InstanceElement(
     naclCase(`${randomString}__${randomString}-1_2_0`),
@@ -121,7 +117,7 @@ export const createInstances = (
   )
 
   const issueTypeScheme = new InstanceElement(
-    randomString.toLowerCase(),
+    randomString,
     findType(ISSUE_TYPE_SCHEMA_NAME, fetchedElements),
     createIssueTypeSchemeValues(randomString, fetchedElements),
   )
@@ -133,7 +129,7 @@ export const createInstances = (
   )
 
   const workflowScheme = new InstanceElement(
-    randomString.toLowerCase(),
+    randomString,
     findType('WorkflowScheme', fetchedElements),
     createWorkflowSchemeValues(randomString, fetchedElements),
   )
@@ -159,7 +155,7 @@ export const createInstances = (
   securityLevel.annotations[CORE_ANNOTATIONS.PARENT] = [new ReferenceExpression(securityScheme.elemID, securityScheme)]
 
   const notificationScheme = new InstanceElement(
-    randomString.toLowerCase(),
+    randomString,
     findType(NOTIFICATION_SCHEME_TYPE_NAME, fetchedElements),
     createNotificationSchemeValues(randomString),
   )
@@ -222,7 +218,7 @@ export const createInstances = (
     createScriptedFragmentsValues(uuid, fetchedElements),
   )
 
-  const jsmProject = createReference(new ElemID(JIRA, 'Project', 'instance', 'support'), fetchedElements)
+  const jsmProject = createReference(new ElemID(JIRA, 'Project', 'instance', 'Support'), fetchedElements)
 
   const portalSettings = new InstanceElement(
     'Support',
@@ -367,7 +363,7 @@ export const modifyCloudInstances = (fetchedElements: Element[]): ModificationCh
     undefined,
     {
       [CORE_ANNOTATIONS.PARENT]: [
-        createReference(new ElemID(JIRA, 'Project', 'instance', 'test_project@s'), fetchedElements),
+        createReference(new ElemID(JIRA, 'Project', 'instance', 'Test_Project@s'), fetchedElements),
       ],
     },
   )

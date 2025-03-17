@@ -42,7 +42,7 @@ export const createSecurityLevelValues = (name: string, allElements: Element[]):
     {
       holder: {
         type: 'projectRole',
-        parameter: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'administrators'), allElements),
+        parameter: createReference(new ElemID(JIRA, 'ProjectRole', 'instance', 'Administrators'), allElements),
       },
     },
     {
