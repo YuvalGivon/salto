@@ -24,6 +24,7 @@ import {
 } from '../../constants'
 import { createClassicApiDefinitionsForType } from './classic_api_utils'
 import { adjustPolicyOnDeploy } from './policy'
+import { preparePayloadsForDeploy } from './configuration_profile_utils'
 import { UserConfig } from '../../config'
 
 type InstanceDeployApiDefinitions = definitions.deploy.InstanceDeployApiDefinitions<AdditionalAction, ClientOptions>
@@ -49,11 +50,19 @@ const createCustomizations = (userConfig: UserConfig): Record<string, InstanceDe
       userConfig,
       OS_X_CONFIGURATION_PROFILE_TYPE_NAME,
       'osxconfigurationprofiles',
+      {
+        add: preparePayloadsForDeploy,
+        modify: preparePayloadsForDeploy,
+      },
     ),
     [MOBILE_DEVICE_CONFIGURATION_PROFILE_TYPE_NAME]: createClassicApiDefinitionsForType(
       userConfig,
       'configuration_profile',
       'mobiledeviceconfigurationprofiles',
+      {
+        add: preparePayloadsForDeploy,
+        modify: preparePayloadsForDeploy,
+      },
     ),
     [API_ROLE_TYPE_NAME]: {
       requestsByAction: {

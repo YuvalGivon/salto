@@ -5,10 +5,12 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
+import * as plist from 'plist'
 import { regex as lowerdashRegex, values } from '@salto-io/lowerdash'
 import { Values } from '@salto-io/adapter-api'
 import { logger } from '@salto-io/logging'
 import _ from 'lodash'
+import { fetch as fetchUtils } from '@salto-io/adapter-components'
 
 export const SALTO_MASKED_VALUE = '**SALTO_MASKED_VALUE**'
 
@@ -115,5 +117,26 @@ export const maskPasswordsForScriptsObjectArray = (value: Values): void => {
         }
       }),
     )
+  }
+}
+
+/*
+ * Parse XML payloads string to JSON object
+ */
+export const parseXmlPayloadsToJson = (value: Values): void => {
+  const payloads = _.get(value, 'general.payloads')
+  if (typeof payloads === 'string') {
+    try {
+      const parsedPayloads = plist.parse(payloads)
+      if (values.isPlainObject(parsedPayloads)) {
+        // Use the built-in recursiveNaclCase function from adapter-components
+        const naclCasedPayloads = fetchUtils.element.recursiveNaclCase(parsedPayloads, true)
+        _.set(value, 'general.payloads', naclCasedPayloads)
+      } else {
+        throw new Error('payloads is not a valid object')
+      }
+    } catch (error) {
+      log.error('failed to parse XML payloads %o', error)
+    }
   }
 }
