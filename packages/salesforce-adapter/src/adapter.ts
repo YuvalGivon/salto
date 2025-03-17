@@ -385,6 +385,7 @@ const METADATA_TO_RETRIEVE = [
   'TopicsForObjects',
   'Layout', // retrieve returns more information about relatedLists
   'Workflow',
+  'StreamingAppDataConnector',
 ]
 
 export const NESTED_METADATA_TYPES = {
