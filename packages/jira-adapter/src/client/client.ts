@@ -33,6 +33,13 @@ const DEFAULT_PAGE_SIZE: Required<definitions.ClientPageSizeConfig> = {
 
 const RATE_LIMIT_HEADER_PREFIX = 'x-ratelimit-'
 
+const BETA_RATE_LIMITS = (): string[] => [
+  'Beta-Retry-After',
+  'X-Beta-RateLimit-NearLimit',
+  'X-Beta-RateLimit-Reason',
+  'X-Beta-RateLimit-Reset',
+]
+
 export const USE_BOTTLENECK = true
 export const DELAY_PER_REQUEST_MS = 0
 
@@ -136,6 +143,13 @@ export default class JiraClient extends clientUtils.AdapterHTTPClient<Credential
     const rateLimitHeaders = _.pickBy(headers, (_val, key) => key.toLowerCase().startsWith(RATE_LIMIT_HEADER_PREFIX))
     if (rateLimitHeaders !== undefined && rateLimitHeaders['x-ratelimit-nearlimit']) {
       log.trace('temp performance log, rate limit near limit reached')
+    }
+    if (headers !== undefined) {
+      BETA_RATE_LIMITS().forEach(betaHeader => {
+        if (headers[betaHeader] !== undefined) {
+          log.warn(`Received beta rate limit header ${betaHeader} with value ${headers[betaHeader]}`)
+        }
+      })
     }
     return headers !== undefined
       ? {

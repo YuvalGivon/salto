@@ -8,6 +8,7 @@
 import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import * as clientUtils from '@salto-io/adapter-components'
+import { logger } from '@salto-io/logging'
 import JiraClient from '../../src/client/client'
 import { DEFAULT_CLOUD_ID } from '../utils'
 
@@ -98,6 +99,26 @@ describe('client', () => {
     expect(mockAxios.history.delete[0].headers?.['x-atlassian-force-account-id']).toEqual('1234')
     expect(mockAxios.history.put[0].headers?.['x-atlassian-force-account-id']).toEqual('1234')
     await client.patchPrivate({ url: '/myPath', data: { a: 'b' } })
+  })
+  describe('rate limit logs', () => {
+    const logging = logger('jira-adapter/src/client/client')
+    it('should log if a rate limit header is present', async () => {
+      const logSpy = jest.spyOn(logging, 'trace')
+      logSpy.mockClear()
+      mockAxios.onGet('/myPath').reply(200, { response: 'asd' }, { 'x-ratelimit-nearlimit': true })
+      await client.get({ url: '/myPath' })
+      expect(logSpy).toHaveBeenCalledWith('temp performance log, rate limit near limit reached')
+    })
+    it.each(['Beta-Retry-After', 'X-Beta-RateLimit-NearLimit', 'X-Beta-RateLimit-Reason', 'X-Beta-RateLimit-Reset'])(
+      'should log if a rate limit header is present with %s',
+      async header => {
+        const logSpy = jest.spyOn(logging, 'warn')
+        logSpy.mockClear()
+        mockAxios.onGet('/myPath').reply(200, { response: 'asd' }, { [header]: 'some value' })
+        await client.get({ url: '/myPath' })
+        expect(logSpy).toHaveBeenCalledWith(`Received beta rate limit header ${header} with value some value`)
+      },
+    )
   })
   it('check if gqlpost returns a response if it is as expected', async () => {
     const innerData = {
