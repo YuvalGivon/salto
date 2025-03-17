@@ -62,4 +62,24 @@ describe('fetch_criteria', () => {
       expect(fetchCriteria.state({ instance, value: 'tate' })).toBeFalsy()
     })
   })
+  describe('projectTypeKey', () => {
+    it('should match projectTypeKey field', () => {
+      const instance = new InstanceElement('instance', new ObjectType({ elemID: new ElemID('adapter', 'type') }), {
+        projectTypeKey: 'projectTypeKey',
+      })
+
+      expect(fetchCriteria.projectTypeKey({ instance, value: '.*jectTypeKey' })).toBeTruthy()
+      expect(fetchCriteria.projectTypeKey({ instance, value: 'jectTypeKey' })).toBeFalsy()
+    })
+  })
+  describe('style', () => {
+    it('should match style field', () => {
+      const instance = new InstanceElement('instance', new ObjectType({ elemID: new ElemID('adapter', 'type') }), {
+        style: 'style',
+      })
+
+      expect(fetchCriteria.style({ instance, value: '.tyle' })).toBeTruthy()
+      expect(fetchCriteria.style({ instance, value: 'tyle' })).toBeFalsy()
+    })
+  })
 })

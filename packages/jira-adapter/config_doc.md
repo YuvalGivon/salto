@@ -108,7 +108,10 @@ jira {
 
 ## Fetch entry criteria
 
-| Name | Default when undefined | Description                                                                      |
-| ---- | ---------------------- | -------------------------------------------------------------------------------- |
-| name | .\*                    | A regex used to filter instances by matching the regex to their name value       |
-| type | .\*                    | A regex used to filter field instances by matching the regex to their type value |
+| Name           | Default when undefined | Description                                                                                                                       |
+| -------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| name           | .\*                    | A regex used to filter instances by matching the regex to their name value                                                        |
+| type           | .\*                    | A regex used to filter field instances by matching the regex to their type value                                                  |
+| state          | .\*                    | A regex used to filter automation instances based on their state- `ENABLED` or `DISABLED`                                         |
+| style          | .\*                    | A regex used to filter project instances by their type- team-managed (`next-gen`) or company-managed (`classic`)                  |
+| projectTypeKey | .\*                    | A regex used to filter project instances by their type key- JSM (`service_desk`), Business (`business`), or Software (`software`) |

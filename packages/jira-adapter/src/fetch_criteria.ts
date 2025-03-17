@@ -15,4 +15,6 @@ export default {
   name: elementUtils.query.nameCriterion,
   type: typeCriterion,
   state: elementUtils.query.fieldCriterionCreator('state'),
+  projectTypeKey: elementUtils.query.fieldCriterionCreator('projectTypeKey'),
+  style: elementUtils.query.fieldCriterionCreator('style'),
 }
