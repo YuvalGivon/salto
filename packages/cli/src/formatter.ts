@@ -33,6 +33,8 @@ import {
   isStaticFile,
   isSaltoElementError,
   SaltoElementError,
+  PartialFetchTarget,
+  PartialFetchTargetWithPath,
 } from '@salto-io/adapter-api'
 import { getSupportedServiceAdapterNames } from '@salto-io/adapter-creators'
 import {
@@ -782,3 +784,52 @@ export const formatGroups = (groups: GroupProperties[], checkOnly: boolean): str
   }
   return res.join('\n')
 }
+
+const formatPartialFetchTargets = (
+  key: string,
+  value: PartialFetchTarget[],
+  separator: string,
+  indentLevel: number,
+): string[] => {
+  if (value.length === 0) {
+    return [formatListRecord(key, indentLevel)]
+  }
+  return value.map(target => formatListRecord(`${key} (${target.group}${separator}${target.name})`, indentLevel))
+}
+
+const formatPartialFetchTargetsEntry = (
+  { children }: collections.treeMap.TreeMapEntry<PartialFetchTarget>,
+  separator: string,
+  indentLevel = 0,
+): string[] =>
+  Object.entries(children).flatMap(([key, entry]) =>
+    formatPartialFetchTargets(key, entry.value, separator, indentLevel).concat(
+      formatPartialFetchTargetsEntry(entry, separator, indentLevel + 1),
+    ),
+  )
+
+export const formatAccountPartialFetchTargetsWithPath = (
+  account: string,
+  targets: PartialFetchTargetWithPath[],
+  separator: string,
+): string => {
+  if (targets.length === 0) {
+    return error(`${account}: No partial fetch targets available`)
+  }
+
+  const targetsTree = new collections.treeMap.TreeMap(
+    targets.map(target => [target.path.join(separator), [target]]),
+    separator,
+  )
+
+  return [header(`Partial fetch targets for the "${account}" account:`)]
+    .concat(formatPartialFetchTargetsEntry(targetsTree.root, separator))
+    .concat(emptyLine())
+    .join(EOL)
+}
+
+export const formatAccountPartialFetchTargets = (
+  account: string,
+  targets: PartialFetchTarget[],
+  separator: string,
+): string => targets.map(target => [account, target.group, target.name].join(separator)).join(EOL)

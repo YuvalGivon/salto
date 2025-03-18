@@ -15,6 +15,7 @@ import restoreDef from './restore'
 import elementGroupDef from './element'
 import workspaceGroupDef from './workspace'
 import cancelTaskDef from './cancel_task'
+import partialFetchTargetsDef from './partial_fetch_targets'
 
 // The order of the builders determines order of appearance in help text
 export default [
@@ -29,4 +30,5 @@ export default [
   elementGroupDef,
   workspaceGroupDef,
   cancelTaskDef,
+  partialFetchTargetsDef,
 ]
