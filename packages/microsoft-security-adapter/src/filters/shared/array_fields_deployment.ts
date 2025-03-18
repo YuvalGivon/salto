@@ -150,7 +150,7 @@ const calculateAppliedChangesOnArrayField = ({
 }): Values[] => {
   const { valueMapper, fieldName } = arrayFieldDefinition
   const arrFieldBefore = isModificationChange(change) ? change.data.before.value[fieldName] : []
-  const arrFieldAfter = getChangeData(change).value[fieldName]
+  const arrFieldAfter = getChangeData(change).value[fieldName] ?? []
 
   if (_.isEmpty(deployResult.errors)) {
     return arrFieldAfter
