@@ -1229,6 +1229,24 @@ export const referencesRules: JiraFieldReferenceDefinition[] = [
     target: { type: FIELD_TYPE_NAME },
   },
   {
+    src: { field: 'defaultValue', parentTypes: ['issueLayoutItemData'] },
+    serializationStrategy: 'id',
+    missingRefStrategy: 'typeAndValue',
+    target: { type: PROJECT_TYPE },
+  },
+  {
+    src: { field: 'groupId', parentTypes: ['issueLayoutItemDataDefaultValue'] },
+    serializationStrategy: 'groupId',
+    missingRefStrategy: 'typeAndValue',
+    target: { type: GROUP_TYPE_NAME },
+  },
+  {
+    src: { field: 'id', parentTypes: ['issueLayoutItemDataDefaultValue'] },
+    serializationStrategy: 'id',
+    missingRefStrategy: 'typeAndValue',
+    target: { type: FIELD_CONTEXT_OPTION_TYPE_NAME },
+  },
+  {
     src: { field: 'affectedFields', parentTypes: ['Behavior__config'] },
     serializationStrategy: 'id',
     missingRefStrategy: 'typeAndValue',

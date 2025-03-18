@@ -25,7 +25,7 @@ const filter: FilterCreator = ({ config }) => ({
     await referenceUtils.addReferences({
       elements: layouts,
       contextElements: elements,
-      fieldsToGroupBy: ['id'],
+      fieldsToGroupBy: ['id', 'groupId'],
       defs: fixedDefs,
       contextStrategyLookup,
       fieldReferenceResolverCreator: defs => new JiraFieldReferenceResolver(defs),

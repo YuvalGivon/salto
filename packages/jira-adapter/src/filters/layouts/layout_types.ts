@@ -25,12 +25,28 @@ export const createLayoutType = (
   layoutType: ObjectType
   subTypes: ObjectType[]
 } => {
+  const issueLayoutItemDataDefaultValueType = new ObjectType({
+    elemID: new ElemID(JIRA, 'issueLayoutItemDataDefaultValue'),
+    fields: {
+      id: { refType: BuiltinTypes.STRING },
+      groupId: { refType: BuiltinTypes.STRING },
+    },
+  })
+
+  const issueLayoutItemDataType = new ObjectType({
+    elemID: new ElemID(JIRA, 'issueLayoutItemData'),
+    fields: {
+      defaultValue: { refType: issueLayoutItemDataDefaultValueType },
+    },
+  })
+
   const layoutItemType = new ObjectType({
     elemID: new ElemID(JIRA, 'issueLayoutItem'),
     fields: {
       type: { refType: BuiltinTypes.STRING },
       sectionType: { refType: BuiltinTypes.STRING },
       key: { refType: BuiltinTypes.STRING },
+      data: { refType: issueLayoutItemDataType },
     },
   })
 
@@ -63,7 +79,7 @@ export const createLayoutType = (
 
   return {
     layoutType,
-    subTypes: [layoutItemType, layoutConfigType],
+    subTypes: [layoutItemType, layoutConfigType, issueLayoutItemDataType, issueLayoutItemDataDefaultValueType],
   }
 }
 

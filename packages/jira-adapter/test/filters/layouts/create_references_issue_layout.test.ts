@@ -28,6 +28,7 @@ describe('createReferencesIssueLayoutFilter', () => {
   let filter: FilterType
   let elements: Element[]
   let issueLayoutInstance: InstanceElement
+  let issueLayoutDefaultValueInstance: InstanceElement
   const screenType = new ObjectType({
     elemID: new ElemID(JIRA, 'Screen'),
     fields: {
@@ -92,12 +93,44 @@ describe('createReferencesIssueLayoutFilter', () => {
     name: 'TestField1',
     type: 'testField1',
   })
+  const issueLayoutItemDataDefaultValueType = new ObjectType({
+    elemID: new ElemID(JIRA, 'issueLayoutItemDataDefaultValue'),
+    fields: {
+      id: { refType: BuiltinTypes.STRING },
+      groupId: { refType: BuiltinTypes.STRING },
+    },
+  })
+  const issueLayoutItemDataType = new ObjectType({
+    elemID: new ElemID(JIRA, 'issueLayoutItemData'),
+    fields: {
+      defaultValue: { refType: issueLayoutItemDataDefaultValueType },
+    },
+  })
+  const customFieldContextOptionType = createEmptyType('CustomFieldContextOption')
+  const groupIdType = createEmptyType('Group')
+  const projectIdType = createEmptyType('Project')
+  const defaultValueGroupIdInstance = new InstanceElement('defaultValueGroupIdInstance', groupIdType, {
+    groupId: 'a123',
+    name: 'ProjectName',
+    type: 'defaultValueGroupIdInstance',
+  })
+  const defaultValueIdInstance = new InstanceElement('defaultValueIdInstance', customFieldContextOptionType, {
+    id: 2,
+    name: 'CustomFieldContextOptionName',
+    type: 'defaultValueIdInstance',
+  })
+  const defaultValueInstance = new InstanceElement('defaultValueInstance', projectIdType, {
+    id: 'id123',
+    name: 'ProjectName',
+    type: 'defaultValueInstance',
+  })
   const layoutConfigItemType = new ObjectType({
     elemID: new ElemID(JIRA, 'layoutConfigItem'),
     fields: {
       key: { refType: fieldType },
       sectionType: { refType: BuiltinTypes.STRING },
       type: { refType: BuiltinTypes.STRING },
+      data: { refType: issueLayoutItemDataType },
     },
   })
   const layoutConfigType = new ObjectType({
@@ -125,6 +158,23 @@ describe('createReferencesIssueLayoutFilter', () => {
         ],
       },
     })
+    issueLayoutDefaultValueInstance = new InstanceElement('issueLayoutDefaultValueInstance', issueLayoutType, {
+      id: '1',
+      extraDefinerId: '12',
+      issueLayoutConfig: {
+        items: [
+          {
+            type: 'FIELD',
+            sectionType: 'PRIMARY',
+            key: 'testField1',
+            data: {
+              defaultValue: 'id123',
+            },
+          },
+        ],
+      },
+    })
+
     elements = [
       screenType,
       screenInstance,
@@ -136,14 +186,23 @@ describe('createReferencesIssueLayoutFilter', () => {
       projectInstance,
       fieldType,
       fieldInstance1,
+      groupIdType,
+      projectIdType,
+      customFieldContextOptionType,
+      defaultValueGroupIdInstance,
+      defaultValueIdInstance,
+      defaultValueInstance,
       layoutConfigItemType,
       layoutConfigType,
       issueLayoutType,
+      issueLayoutItemDataDefaultValueType,
+      issueLayoutItemDataType,
       issueLayoutInstance,
+      issueLayoutDefaultValueInstance,
     ]
     filter = createReferencesIssueLayoutFilter(getFilterParams({ config })) as typeof filter
   })
-  it('should add references to issue layout', async () => {
+  it('should add references to extraDefinerId and key fields', async () => {
     await filter.onFetch(elements)
     expect(issueLayoutInstance.value).toEqual({
       id: '2',
@@ -163,5 +222,34 @@ describe('createReferencesIssueLayoutFilter', () => {
     fieldInstance1.value.id = 'testField3'
     await filter.onFetch(elements)
     expect(issueLayoutInstance?.value.issueLayoutConfig.items[0].key).toEqual('testField1')
+  })
+  describe('defaultValue field', () => {
+    it('should add reference to default value when its a string', async () => {
+      await filter.onFetch(elements)
+      const { defaultValue } = issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data
+      expect(defaultValue).toEqual(new ReferenceExpression(defaultValueInstance.elemID, defaultValueInstance))
+    })
+    it('should add reference to default value when its an object with id field', async () => {
+      issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data.defaultValue = { id: 2 }
+      await filter.onFetch(elements)
+      const { defaultValue } = issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data
+      expect(defaultValue).toEqual({
+        id: new ReferenceExpression(defaultValueIdInstance.elemID, defaultValueIdInstance),
+      })
+    })
+    it('should add reference to default value when its an array with groupId field', async () => {
+      issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data.defaultValue = [{ groupId: 'a123' }]
+      await filter.onFetch(elements)
+      const { defaultValue } = issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data
+      expect(defaultValue).toEqual([
+        { groupId: new ReferenceExpression(defaultValueGroupIdInstance.elemID, defaultValueGroupIdInstance) },
+      ])
+    })
+    it('should add missing ref if there is no field', async () => {
+      defaultValueInstance.value.id = 'noRef'
+      await filter.onFetch(elements)
+      const { defaultValue } = issueLayoutDefaultValueInstance.value.issueLayoutConfig.items[0].data
+      expect(defaultValue).toEqual(new ReferenceExpression(new ElemID('jira', 'Project', 'instance', 'missing_id123')))
+    })
   })
 })
