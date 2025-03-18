@@ -9,7 +9,7 @@ import { ElemID, InstanceElement, isInstanceElement, isObjectType, ObjectType, E
 import filterCreator from '../../src/filters/settings_type'
 import mockClient from '../client'
 import * as constants from '../../src/constants'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { mockFileProperties, mockDescribeValueResult, mockValueTypeField } from '../connection'
 import { defaultFilterContext } from '../utils'
 import { API_NAME } from '../../src/constants'

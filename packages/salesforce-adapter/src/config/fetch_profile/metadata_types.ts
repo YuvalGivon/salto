@@ -15,7 +15,7 @@ import {
   PROFILE_RELATED_METADATA_TYPES,
   SETTINGS_METADATA_TYPE,
   TOPICS_FOR_OBJECTS_METADATA_TYPE,
-} from '../constants'
+} from '../../constants'
 
 const FOLDER_METADATA_TYPES = ['ReportFolder', 'DashboardFolder', 'DocumentFolder', 'EmailFolder'] as const
 

@@ -26,7 +26,7 @@ import { API_NAME, METADATA_CONTENT_FIELD, SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIE
 import { ComponentSet, ConvertResult, MetadataConverter, SourceComponent } from './salesforce_imports'
 import { UNSUPPORTED_TYPES } from './sfdx_dump'
 import { allFilters } from '../adapter'
-import { buildFetchProfile } from '../fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../config/fetch_profile/fetch_profile'
 import { metadataTypeSync } from '../filters/utils'
 import { getTypesWithContent, getTypesWithMetaFile } from '../fetch'
 import { detailedMessageFromSfError } from './errors'

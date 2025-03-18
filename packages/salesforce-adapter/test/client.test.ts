@@ -29,7 +29,7 @@ import SalesforceClient, {
   validateCredentials,
 } from '../src/client/client'
 import mockClient from './client'
-import { OauthAccessTokenCredentials, UsernamePasswordCredentials } from '../src/types'
+import { OauthAccessTokenCredentials, UsernamePasswordCredentials } from '../src/config/types'
 import Connection from '../src/client/jsforce'
 import {
   APEX_CLASS_METADATA_TYPE,

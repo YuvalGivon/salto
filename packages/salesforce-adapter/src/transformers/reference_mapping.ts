@@ -31,7 +31,7 @@ import {
   TEST_OBJECT_TO_API_MAPPING,
 } from '../constants'
 import { instanceInternalId, isOrderedMapTypeOrRefType } from '../filters/utils'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const log = logger(module)
 const { awu } = collections.asynciterable

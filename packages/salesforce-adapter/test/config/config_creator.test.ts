@@ -7,14 +7,15 @@
  */
 import { ElemID, InstanceElement, ObjectType } from '@salto-io/adapter-api'
 import { createDefaultInstanceFromType } from '@salto-io/adapter-utils'
-import { configType, MetadataInstance } from '../src/types'
-import { optionsType, getConfig, SalesforceConfigOptionsType } from '../src/config_creator'
+import { MetadataInstance } from '../../src/types'
+import { configType } from '../../src/config/types'
+import { optionsType, getConfig, SalesforceConfigOptionsType } from '../../src/config/config_creator'
 import {
   MUTING_PERMISSION_SET_METADATA_TYPE,
   PERMISSION_SET_GROUP_METADATA_TYPE,
   PERMISSION_SET_METADATA_TYPE,
   PROFILE_METADATA_TYPE,
-} from '../src/constants'
+} from '../../src/constants'
 
 const mockLogError = jest.fn()
 jest.mock('@salto-io/logging', () => ({

@@ -28,8 +28,8 @@ import {
   LIGHTNING_COMPONENT_BUNDLE_METADATA_TYPE,
   XML_ATTRIBUTE_PREFIX,
 } from '../../src/constants'
-import { FetchProfile } from '../../src/types'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { FetchProfile } from '../../src/config/types'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 
 describe('XML Transformer', () => {
   let fetchProfile: FetchProfile

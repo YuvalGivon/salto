@@ -9,9 +9,9 @@ import _ from 'lodash'
 import { collections, types } from '@salto-io/lowerdash'
 import { ConfigValidationError, validateRegularExpressions } from '../config_validation'
 import { DataManagement, DataManagementConfig, OutgoingReferenceBehavior, outgoingReferenceBehaviors } from '../types'
-import { DETECTS_PARENTS_INDICATOR } from '../constants'
-import { apiName } from '../transformers/transformer'
-import { namePartsFromApiName } from '../filters/utils'
+import { DETECTS_PARENTS_INDICATOR } from '../../constants'
+import { apiName } from '../../transformers/transformer'
+import { namePartsFromApiName } from '../../filters/utils'
 
 const { makeArray } = collections.array
 

@@ -13,7 +13,7 @@ import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
 import { createInstanceElement } from '../../src/transformers/transformer'
 import filterCreator from '../../src/filters/add_parent_to_approval_process'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 
 describe('addParentToApprovalProcess', () => {
   describe('onFetch', () => {

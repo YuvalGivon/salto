@@ -8,7 +8,7 @@
 import { CredsLease } from '@salto-io/e2e-credentials-store'
 import { logger } from '@salto-io/logging'
 import { CancelServiceAsyncTaskResult, ChangeGroup, StaticFile, toChange } from '@salto-io/adapter-api'
-import { UsernamePasswordCredentials } from '../src/types'
+import { UsernamePasswordCredentials } from '../src/config/types'
 import { createInstanceElement, MetadataInstanceElement } from '../src/transformers/transformer'
 import { API_VERSION } from '../src/client/client'
 // eslint-disable-next-line no-restricted-imports

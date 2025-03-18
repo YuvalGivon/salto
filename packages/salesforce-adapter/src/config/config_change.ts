@@ -22,8 +22,8 @@ import {
   MetadataConfigSuggestion,
   MetadataQueryParams,
 } from './types'
-import * as constants from './constants'
-import { SALESFORCE_ERRORS, SalesforceErrorName, SOCKET_TIMEOUT } from './constants'
+import * as constants from '../constants'
+import { SALESFORCE_ERRORS, SalesforceErrorName, SOCKET_TIMEOUT } from '../constants'
 
 const { isDefined } = values
 const { makeArray } = collections.array

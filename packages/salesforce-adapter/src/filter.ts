@@ -9,7 +9,8 @@ import { ReadOnlyElementsSource } from '@salto-io/adapter-api'
 import { filterUtils } from '@salto-io/adapter-components'
 import { filter } from '@salto-io/adapter-utils'
 import SalesforceClient from './client/client'
-import { ConfigChangeSuggestion, FetchProfile, LastChangeDateOfTypesWithNestedInstances } from './types'
+import { LastChangeDateOfTypesWithNestedInstances } from './types'
+import { ConfigChangeSuggestion, FetchProfile } from './config/types'
 
 export type FilterContext = {
   unsupportedSystemFields?: string[]

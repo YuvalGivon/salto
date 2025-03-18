@@ -8,12 +8,12 @@
 
 import { ElemID, InstanceElement, Values } from '@salto-io/adapter-api'
 import _ from 'lodash'
-import { configType } from '../src/types'
+import { configType } from '../../src/config/types'
 import {
   DEPRECATED_OPTIONS_MESSAGE,
   PACKAGES_INSTANCES_REGEX,
   updateDeprecatedConfiguration,
-} from '../src/deprecated_config'
+} from '../../src/config/deprecated_config'
 
 describe('deprecated config', () => {
   const includedObjectName = '.*Object.*'

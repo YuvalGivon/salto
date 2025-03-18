@@ -6,9 +6,9 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { validateFetchParameters, buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
-import { mergeWithDefaultImportantValues } from '../../src/fetch_profile/important_values'
-import { FetchParameters } from '../../src/types'
+import { validateFetchParameters, buildFetchProfile } from '../../../src/config/fetch_profile/fetch_profile'
+import { mergeWithDefaultImportantValues } from '../../../src/config/fetch_profile/important_values'
+import { FetchParameters } from '../../../src/config/types'
 
 describe('Fetch Profile', () => {
   describe('validateFetchParameters', () => {

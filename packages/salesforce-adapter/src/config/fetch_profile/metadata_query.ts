@@ -16,27 +16,29 @@ import {
   DEFAULT_NAMESPACE,
   MAX_TYPES_TO_SEPARATE_TO_FILE_PER_FIELD,
   SETTINGS_METADATA_TYPE,
-} from '../constants'
+} from '../../constants'
 import { ConfigValidationError, validateRegularExpressions } from '../config_validation'
 import {
-  FetchParameters,
   LastChangeDateOfTypesWithNestedInstances,
+  MetadataInstance,
+  TypeWithNestedInstances,
+  TypeWithNestedInstancesPerParent,
+} from '../../types'
+import {
+  FetchParameters,
   METADATA_EXCLUDE_LIST,
   METADATA_INCLUDE_LIST,
   METADATA_SEPARATE_FIELD_LIST,
-  MetadataInstance,
   MetadataParams,
   MetadataQuery,
   MetadataQueryParams,
-  TypeWithNestedInstances,
-  TypeWithNestedInstancesPerParent,
 } from '../types'
-import { getChangedAtSingletonInstance } from '../filters/utils'
+import { getChangedAtSingletonInstance } from '../../filters/utils'
 import {
   isTypeWithNestedInstances,
   isTypeWithNestedInstancesPerParent,
   NESTED_TYPE_TO_PARENT_TYPE,
-} from '../last_change_date_of_types_with_nested_instances'
+} from '../../last_change_date_of_types_with_nested_instances'
 import { includesSettingsTypes } from './metadata_types'
 import { isFeatureEnabled } from './optional_features'
 

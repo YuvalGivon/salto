@@ -112,7 +112,7 @@ import {
 import SalesforceClient from '../client/client'
 import { allMissingSubTypes } from './salesforce_types'
 import { defaultMissingFields } from './missing_fields'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const log = logger(module)
 const { mapValuesAsync } = promises.object

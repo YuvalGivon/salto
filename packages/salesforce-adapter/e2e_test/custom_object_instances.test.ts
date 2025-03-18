@@ -14,7 +14,7 @@ import { SalesforceRecord } from '../src/client/types'
 import SalesforceAdapter from '../index'
 import realAdapter from './adapter'
 import SalesforceClient from '../src/client/client'
-import { UsernamePasswordCredentials } from '../src/types'
+import { UsernamePasswordCredentials } from '../src/config/types'
 import {
   runFiltersOnFetch,
   createElement,
@@ -34,7 +34,7 @@ import customObjectsInstancesFilter from '../src/filters/custom_objects_instance
 // eslint-disable-next-line no-restricted-imports
 import { createCustomSettingsObject } from '../test/utils'
 import { CUSTOM_OBJECT, LIST_CUSTOM_SETTINGS_TYPE } from '../src/constants'
-import { buildFetchProfile } from '../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
 import { testHelpers } from './jest_environment'
 
 const { awu } = collections.asynciterable

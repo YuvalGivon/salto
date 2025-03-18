@@ -23,8 +23,8 @@ import {
 } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
 import { configType } from './types'
-import * as constants from './constants'
-import { CPQ_NAMESPACE, CUSTOM_OBJECT_ID_FIELD } from './constants'
+import * as constants from '../constants'
+import { CPQ_NAMESPACE, CUSTOM_OBJECT_ID_FIELD } from '../constants'
 
 const log = logger(module)
 

@@ -20,7 +20,7 @@ import {
   CUSTOM_SETTINGS_TYPE,
   LIST_CUSTOM_SETTINGS_TYPE,
 } from '../../src/constants'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { FilterWith } from './mocks'
 
 const { awu } = collections.asynciterable

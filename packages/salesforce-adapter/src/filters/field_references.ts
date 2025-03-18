@@ -42,7 +42,7 @@ import {
   MUTING_PERMISSION_SET_METADATA_TYPE,
 } from '../constants'
 import { buildElementsSourceForFetch, extractFlatCustomObjectFields, hasApiName, isInstanceOfTypeSync } from './utils'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const { awu } = collections.asynciterable
 const log = logger(module)

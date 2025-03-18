@@ -12,6 +12,7 @@ import { FileProperties, MetadataInfo, MetadataObject } from '@salto-io/jsforce-
 import { InstanceElement, ObjectType, TypeElement } from '@salto-io/adapter-api'
 import { collections, objects, values as lowerDashValues } from '@salto-io/lowerdash'
 import { logger } from '@salto-io/logging'
+import { MetadataInstance, ProfileSection } from './types'
 import {
   ConfigChangeSuggestion,
   FetchElements,
@@ -19,10 +20,8 @@ import {
   isMetadataConfigSuggestions,
   MAX_INSTANCES_PER_TYPE,
   MAX_ITEMS_IN_RETRIEVE_REQUEST,
-  MetadataInstance,
   MetadataQuery,
-  ProfileSection,
-} from './types'
+} from './config/types'
 import {
   CUSTOM_OBJECT,
   DEFAULT_NAMESPACE,
@@ -40,7 +39,7 @@ import {
   createRetrieveConfigChange,
   createSkippedListConfigChange,
   createSkippedListConfigChangeFromError,
-} from './config_change'
+} from './config/config_change'
 import {
   apiName,
   createInstanceElement,
@@ -58,7 +57,7 @@ import {
   listMetadataObjects,
   metadataTypeSync,
 } from './filters/utils'
-import { buildFilePropsMetadataQuery } from './fetch_profile/metadata_query'
+import { buildFilePropsMetadataQuery } from './config/fetch_profile/metadata_query'
 
 const { isDefined } = lowerDashValues
 const { makeArray } = collections.array

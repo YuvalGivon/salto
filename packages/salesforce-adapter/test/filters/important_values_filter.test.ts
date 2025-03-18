@@ -8,7 +8,7 @@
 
 import { BuiltinTypes, CORE_ANNOTATIONS, ElemID, ObjectType } from '@salto-io/adapter-api'
 import { ImportantValues } from '@salto-io/adapter-utils'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { METADATA_TYPE } from '../../src/constants'
 import { mockTypes } from '../mock_elements'
 import filterCreator from '../../src/filters/important_values_filter'

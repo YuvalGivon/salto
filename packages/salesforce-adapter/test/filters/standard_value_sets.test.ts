@@ -35,8 +35,8 @@ import { extractFullNamesFromValueList } from '../../src/filters/utils'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { mockInstances, mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
-import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/fetch_profile/metadata_query'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/fetch_profile/metadata_query'
 import { LastChangeDateOfTypesWithNestedInstances } from '../../src/types'
 
 const createStandardValueSetMetadataInfo = (name: string, values: string[]): MetadataInfo =>

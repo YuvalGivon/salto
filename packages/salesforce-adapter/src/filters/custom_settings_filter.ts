@@ -13,7 +13,7 @@ import { FilterResult, FilterCreator } from '../filter'
 import { isCustomSettingsObject, apiName } from '../transformers/transformer'
 import { getAllInstances, getCustomObjectsFetchSettings, CustomObjectFetchSetting } from './custom_objects_instances'
 import { CUSTOM_SETTINGS_TYPE, LIST_CUSTOM_SETTINGS_TYPE } from '../constants'
-import { buildDataManagement } from '../fetch_profile/data_management'
+import { buildDataManagement } from '../config/fetch_profile/data_management'
 
 const { awu, keyByAsync } = collections.asynciterable
 const log = logger(module)

@@ -22,7 +22,7 @@ import { createOrderedMapType } from '../src/filters/convert_maps'
 import { mockTypes } from './mock_elements'
 
 import { getLookUpName, salesforceAdapterResolveValues } from '../src/transformers/reference_mapping'
-import { buildFetchProfile } from '../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
 
 describe('Resolve Salesforce Changes', () => {
   let getLookupNameFunc: GetLookupNameFunc

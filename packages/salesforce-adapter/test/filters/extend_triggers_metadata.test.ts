@@ -24,7 +24,7 @@ import { createMetadataObjectType } from '../../src/transformers/transformer'
 import { APEX_TRIGGER_METADATA_TYPE, API_NAME, INTERNAL_ID_FIELD } from '../../src/constants'
 import { SalesforceRecord } from '../../src/client/types'
 import Connection from '../../src/client/jsforce'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 
 describe('extendTriggersMetadata filter', () => {
   const TRIGGER_API_NAME = 'TestTrigger'

@@ -7,7 +7,7 @@
  */
 import { ElemID, ObjectType, ReferenceExpression } from '@salto-io/adapter-api'
 import { SALESFORCE } from '../../src/constants'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import filterCreator from '../../src/filters/omit_standard_fields_non_deployable_values'
 import { STANDARD_VALUE_SET } from '../../src/filters/standard_value_sets'
 import { Types } from '../../src/transformers/transformer'

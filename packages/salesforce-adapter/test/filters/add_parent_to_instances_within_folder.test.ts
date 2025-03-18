@@ -13,7 +13,7 @@ import { createInstanceElement } from '../../src/transformers/transformer'
 import { FilterWith } from './mocks'
 import filterCreator from '../../src/filters/add_parent_to_instances_within_folder'
 import { defaultFilterContext } from '../utils'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 
 describe('addParentToInstancesWithinFolderFilter', () => {
   describe('onFetch', () => {

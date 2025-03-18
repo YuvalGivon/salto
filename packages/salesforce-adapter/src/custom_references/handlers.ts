@@ -8,6 +8,7 @@
 import _ from 'lodash'
 import { FixElementsFunc, InstanceElement, ReadOnlyElementsSource } from '@salto-io/adapter-api'
 import { combineCustomReferenceGetters, combineElementFixers } from '@salto-io/adapter-components'
+import { WeakReferencesHandler } from '../types'
 import {
   CustomReferencesHandlers,
   CustomReferencesSettings,
@@ -15,8 +16,7 @@ import {
   FixElementsSettings,
   FIX_ELEMENTS_CONFIG,
   SalesforceConfig,
-  WeakReferencesHandler,
-} from '../types'
+} from '../config/types'
 import { profilesAndPermissionSetsHandler } from './profiles_and_permission_sets'
 import { managedElementsHandler } from './managed_elements'
 import { formulaRefsHandler } from './formula_refs'

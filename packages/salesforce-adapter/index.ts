@@ -9,7 +9,7 @@
 export { default } from './src/adapter'
 export { adapter, DeployProgressReporter } from './src/adapter_creator'
 export { default as SalesforceClient } from './src/client/client'
-export { UsernamePasswordCredentials, OauthAccessTokenCredentials } from './src/types'
+export { UsernamePasswordCredentials, OauthAccessTokenCredentials } from './src/config/types'
 export { getAllInstances } from './src/filters/custom_objects_instances'
 export { loadElementsFromFolder } from './src/sfdx_parser/sfdx_parser'
 export { getAccountFetchTargets } from './src/filters/utils'

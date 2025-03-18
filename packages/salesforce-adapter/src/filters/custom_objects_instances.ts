@@ -27,7 +27,7 @@ import {
   createInvalidIdFieldConfigChange,
   createManyInstancesExcludeConfigChange,
   createUnresolvedRefIdFieldConfigChange,
-} from '../config_change'
+} from '../config/config_change'
 import SalesforceClient from '../client/client'
 import { SalesforceRecord } from '../client/types'
 import {
@@ -60,7 +60,7 @@ import {
   buildDataRecordsSoqlQueries,
   isInstanceOfCustomObjectSync,
 } from './utils'
-import { ConfigChangeSuggestion, DataManagement } from '../types'
+import { ConfigChangeSuggestion, DataManagement } from '../config/types'
 
 const { mapValuesAsync, pickAsync } = promises.object
 const { isDefined } = values

@@ -15,8 +15,8 @@ import { FilterResult, FilterCreator } from '../filter'
 import { getSObjectFieldElement, apiName, isSubfieldOfCompound } from '../transformers/transformer'
 import { isInstanceOfType, ensureSafeFilterFetch, toCustomField } from './utils'
 import { CustomField } from '../client/types'
-import { createSkippedListConfigChangeFromError } from '../config_change'
-import { FetchProfile } from '../types'
+import { createSkippedListConfigChangeFromError } from '../config/config_change'
+import { FetchProfile } from '../config/types'
 
 const log = logger(module)
 const { awu, keyByAsync } = collections.asynciterable

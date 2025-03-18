@@ -34,7 +34,7 @@ import {
 } from '../../src/constants'
 import { SalesforceRecord } from '../../src/client/types'
 import { Types } from '../../src/transformers/transformer'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { FilterWith } from './mocks'
 
 const getGeneratedDeps = (elem: Element): ReferenceExpression[] =>

@@ -49,7 +49,7 @@ import {
   isInstanceOfTypeSync,
   isInstanceOfTypeChangeSync,
 } from './utils'
-import { WorkflowField } from '../fetch_profile/metadata_types'
+import { WorkflowField } from '../config/fetch_profile/metadata_types'
 
 const { awu, groupByAsync } = collections.asynciterable
 const { makeArray } = collections.array

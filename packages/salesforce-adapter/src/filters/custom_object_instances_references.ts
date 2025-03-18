@@ -46,7 +46,7 @@ import {
   referenceFieldTargetTypes,
   safeApiName,
 } from './utils'
-import { DataManagement } from '../types'
+import { DataManagement } from '../config/types'
 
 const { awu } = collections.asynciterable
 const { isDefined } = lowerdashValues

@@ -39,14 +39,14 @@ import {
   FETCH_CONFIG,
   MAX_ITEMS_IN_RETRIEVE_REQUEST,
   DEPLOY_CONFIG,
-} from './types'
-import { validateFetchParameters } from './fetch_profile/fetch_profile'
-import { ConfigValidationError } from './config_validation'
-import { updateDeprecatedConfiguration } from './deprecated_config'
+} from './config/types'
+import { validateFetchParameters } from './config/fetch_profile/fetch_profile'
+import { ConfigValidationError } from './config/config_validation'
+import { updateDeprecatedConfiguration } from './config/deprecated_config'
 import createChangeValidator from './change_validator'
 import { getChangeGroupIds } from './group_changes'
-import { ConfigChange } from './config_change'
-import { configCreator } from './config_creator'
+import { ConfigChange } from './config/config_change'
+import { configCreator } from './config/config_creator'
 import { loadElementsFromFolder } from './sfdx_parser/sfdx_parser'
 import { dumpElementsToFolder } from './sfdx_parser/sfdx_dump'
 import { isProjectFolder, createProject } from './sfdx_parser/project'

@@ -22,7 +22,7 @@ import {
   isCustomObjectSync,
   isStandardObjectSync,
 } from '../filters/utils'
-import { SalesforceConfig } from '../types'
+import { SalesforceConfig } from '../config/types'
 
 const profileNameOrNumberOfProfiles = (profiles: string[]): string =>
   profiles.length === 1 ? `the following profile: ${profiles[0]}` : `${profiles.length} profiles`

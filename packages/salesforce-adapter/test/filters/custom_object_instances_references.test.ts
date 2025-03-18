@@ -21,7 +21,7 @@ import {
   isReferenceExpression,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import SalesforceClient from '../../src/client/client'
 import filterCreator from '../../src/filters/custom_object_instances_references'
 import mockClient from '../client'
@@ -45,8 +45,8 @@ import {
 } from '../utils'
 import { mockInstances, mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { FetchProfile, OutgoingReferenceBehavior } from '../../src/types'
-import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/fetch_profile/metadata_query'
+import { FetchProfile, OutgoingReferenceBehavior } from '../../src/config/types'
+import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/fetch_profile/metadata_query'
 import { apiNameSync, isInstanceOfCustomObjectSync } from '../../src/filters/utils'
 
 const { MISSING_REF_PREFIX } = references

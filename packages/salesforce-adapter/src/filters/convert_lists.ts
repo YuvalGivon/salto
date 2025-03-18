@@ -28,7 +28,7 @@ import { SALESFORCE } from '../constants'
 import hardcodedListsData from './hardcoded_lists.json'
 import { metadataType } from '../transformers/transformer'
 import { getMetadataTypeToFieldToMapDef } from './convert_maps'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const { awu } = collections.asynciterable
 

@@ -28,7 +28,7 @@ import {
   isDeactivatedFlowChangeOnly,
   isInstanceOfTypeChangeSync,
 } from '../filters/utils'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 import SalesforceClient from '../client/client'
 import { FLOW_URL_SUFFIX } from '../elements_url_retriever/lightning_url_resolvers'
 

@@ -26,7 +26,7 @@ import { generateProfileType, generatePermissionSetType, defaultFilterContext, c
 import { createInstanceElement, Types } from '../../src/transformers/transformer'
 import { mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { FIELD_ANNOTATIONS, ORDERED_MAP_PREFIX } from '../../src/constants'
 import { getLookUpName, salesforceAdapterResolveValues } from '../../src/transformers/reference_mapping'
 import { isOrderedMapTypeOrRefType } from '../../src/filters/utils'

@@ -7,7 +7,7 @@
  */
 
 import { CORE_ANNOTATIONS, ElemID, Field, ObjectType } from '@salto-io/adapter-api'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { defaultFilterContext } from '../utils'
 import { SALESFORCE, TYPES_PATH } from '../../src/constants'
 import filterCreator from '../../src/filters/hide_types_folder'

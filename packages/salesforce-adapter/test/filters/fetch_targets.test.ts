@@ -9,7 +9,7 @@ import { Element, InstanceElement, isInstanceElement } from '@salto-io/adapter-a
 import filterCreator from '../../src/filters/fetch_targets'
 import { FilterWith } from './mocks'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { createMetadataObjectType, Types } from '../../src/transformers/transformer'
 import {
   APEX_CLASS_METADATA_TYPE,

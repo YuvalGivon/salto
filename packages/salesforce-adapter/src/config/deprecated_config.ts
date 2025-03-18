@@ -12,6 +12,7 @@ import { collections, values } from '@salto-io/lowerdash'
 import _ from 'lodash'
 import { ConfigValidationError, validateRegularExpressions } from './config_validation'
 import { validateDataManagementConfig } from './fetch_profile/data_management'
+import { INSTANCE_SUFFIXES } from '../types'
 import {
   DataManagementConfig,
   DATA_CONFIGURATION,
@@ -21,7 +22,6 @@ import {
   FetchParameters,
   FETCH_CONFIG,
   INSTANCES_REGEX_SKIPPED_LIST,
-  INSTANCE_SUFFIXES,
   MetadataParams,
   METADATA_CONFIG,
   METADATA_TYPES_SKIPPED_LIST,

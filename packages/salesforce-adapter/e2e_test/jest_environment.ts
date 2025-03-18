@@ -16,7 +16,7 @@ import {
 } from '@salto-io/e2e-credentials-store'
 import { logger } from '@salto-io/logging'
 import { ApiLimitsTooLowError, validateCredentials } from '../src/client/client'
-import { UsernamePasswordCredentials } from '../src/types'
+import { UsernamePasswordCredentials } from '../src/config/types'
 import { CUSTOM_OBJECT } from '../src/constants'
 import { CustomObject as tCustomObject } from '../src/client/types'
 

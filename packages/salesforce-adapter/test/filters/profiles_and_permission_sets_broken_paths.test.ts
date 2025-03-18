@@ -13,7 +13,7 @@ import { FilterWith } from './mocks'
 import { mockTypes } from '../mock_elements'
 import { ArtificialTypes, INSTANCE_FULL_NAME_FIELD } from '../../src/constants'
 import { defaultFilterContext } from '../utils'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { ProfileSection } from '../../src/types'
 
 describe('Profiles and PermissionSets broken paths filter', () => {

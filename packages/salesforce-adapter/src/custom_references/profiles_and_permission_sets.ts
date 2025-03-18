@@ -11,7 +11,8 @@ import { collections, promises } from '@salto-io/lowerdash'
 import { logger } from '@salto-io/logging'
 import { Element, ElemID, InstanceElement, ReadOnlyElementsSource, ReferenceInfo, Values } from '@salto-io/adapter-api'
 import { invertNaclCase } from '@salto-io/adapter-utils'
-import { MetadataInstance, MetadataQuery, ProfileSection, WeakReferencesHandler } from '../types'
+import { MetadataInstance, ProfileSection, WeakReferencesHandler } from '../types'
+import { MetadataQuery } from '../config/types'
 import {
   APEX_CLASS_METADATA_TYPE,
   APEX_PAGE_METADATA_TYPE,
@@ -36,7 +37,7 @@ import {
   getProfilesAndPermissionSetsBrokenPaths,
   isInstanceOfTypeSync,
 } from '../filters/utils'
-import { buildMetadataQuery } from '../fetch_profile/metadata_query'
+import { buildMetadataQuery } from '../config/fetch_profile/metadata_query'
 
 const { makeArray } = collections.array
 const { awu } = collections.asynciterable

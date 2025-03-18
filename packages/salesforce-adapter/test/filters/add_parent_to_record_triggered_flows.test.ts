@@ -14,7 +14,7 @@ import { createInstanceElement } from '../../src/transformers/transformer'
 import { OPPORTUNITY_METADATA_TYPE } from '../../src/constants'
 import { FilterWith } from './mocks'
 import filterCreator from '../../src/filters/add_parent_to_record_triggered_flows'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 
 describe('addParentToRecordTriggeredFlows', () => {
   describe('onFetch', () => {

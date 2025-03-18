@@ -51,14 +51,8 @@ import { FileProperties } from '@salto-io/jsforce-types'
 import { chunks, collections, promises, types, values } from '@salto-io/lowerdash'
 import Joi from 'joi'
 import SalesforceClient, { ErrorFilter } from '../client/client'
-import {
-  FetchElements,
-  INSTANCE_SUFFIXES,
-  MetadataQueryParams,
-  OptionalFeatures,
-  ProfileRelatedMetadataType,
-  SalesforceConfig,
-} from '../types'
+import { INSTANCE_SUFFIXES, ProfileRelatedMetadataType } from '../types'
+import { FetchElements, MetadataQueryParams, OptionalFeatures, SalesforceConfig } from '../config/types'
 import {
   ACTIVE,
   API_NAME,
@@ -119,8 +113,8 @@ import {
   Types,
 } from '../transformers/transformer'
 import { Filter, FilterContext } from '../filter'
-import { createListMetadataObjectsConfigChange } from '../config_change'
-import { getFetchTargetsWithDependencies, SUPPORTED_METADATA_TYPES } from '../fetch_profile/metadata_types'
+import { createListMetadataObjectsConfigChange } from '../config/config_change'
+import { getFetchTargetsWithDependencies, SUPPORTED_METADATA_TYPES } from '../config/fetch_profile/metadata_types'
 import { SalesforceFetchTargets } from './fetch_targets'
 
 const { toArrayAsync, awu } = collections.asynciterable

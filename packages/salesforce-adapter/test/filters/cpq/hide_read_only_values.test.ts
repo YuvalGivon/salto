@@ -7,8 +7,8 @@
  */
 import _ from 'lodash'
 import { ObjectType, ElemID, Element, CORE_ANNOTATIONS } from '@salto-io/adapter-api'
-import { buildDataManagement } from '../../../src/fetch_profile/data_management'
-import { SaltoIDSettings, DataManagementConfig } from '../../../src/types'
+import { buildDataManagement } from '../../../src/config/fetch_profile/data_management'
+import { SaltoIDSettings, DataManagementConfig } from '../../../src/config/types'
 import {
   SALESFORCE,
   API_NAME,

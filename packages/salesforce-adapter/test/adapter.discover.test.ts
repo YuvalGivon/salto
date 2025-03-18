@@ -47,7 +47,7 @@ import {
   mockRetrieveLocator,
   mockRetrieveResult,
 } from './connection'
-import { ConfigChangeSuggestion, FetchElements, FetchProfile, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/types'
+import { ConfigChangeSuggestion, FetchElements, FetchProfile, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/config/types'
 import * as fetchModule from '../src/fetch'
 import { fetchMetadataInstances, retrieveMetadataInstances } from '../src/fetch'
 import * as xmlTransformerModule from '../src/transformers/xml_transformer'
@@ -68,11 +68,11 @@ import {
   SOCKET_TIMEOUT,
 } from '../src/constants'
 import { apiNameSync, isInstanceOfType, isInstanceOfTypeSync } from '../src/filters/utils'
-import { NON_TRANSIENT_SALESFORCE_ERRORS } from '../src/config_change'
+import { NON_TRANSIENT_SALESFORCE_ERRORS } from '../src/config/config_change'
 import SalesforceClient from '../src/client/client'
 import createMockClient from './client'
 import { mockInstances, mockTypes } from './mock_elements'
-import { buildFetchProfile } from '../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
 import * as customListFuncsModule from '../src/client/custom_list_funcs'
 
 const { makeArray } = collections.array

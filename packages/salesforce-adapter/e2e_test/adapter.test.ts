@@ -54,7 +54,7 @@ import {
   ProfileInfo,
   TopicsForObjectsInfo,
 } from '../src/client/types'
-import { FetchProfile, UsernamePasswordCredentials } from '../src/types'
+import { FetchProfile, UsernamePasswordCredentials } from '../src/config/types'
 import {
   Types,
   metadataType,
@@ -104,7 +104,7 @@ import {
   verifyElementsExist,
 } from './setup'
 import { testHelpers } from './jest_environment'
-import { buildFetchProfile } from '../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
 import { ORDERED_MAP_VALUES_FIELD } from '../src/filters/convert_maps'
 
 const { awu } = collections.asynciterable

@@ -59,10 +59,10 @@ import {
   ReadMetadataChunkSizeConfig,
   SalesforceClientConfig,
   UsernamePasswordCredentials,
-} from '../types'
+} from '../config/types'
 import Connection from './jsforce'
 import { mapToUserFriendlyErrorMessages } from './user_facing_errors'
-import { HANDLED_ERROR_PREDICATES } from '../config_change'
+import { HANDLED_ERROR_PREDICATES } from '../config/config_change'
 import { getFullName } from '../filters/utils'
 
 const { makeArray } = collections.array

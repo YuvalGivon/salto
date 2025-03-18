@@ -49,7 +49,7 @@ import {
   toDeployableInstance,
   assertMetadataObjectType,
 } from './transformer'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const { isDefined } = lowerDashValues
 const { isPlainObject } = lowerDashValues

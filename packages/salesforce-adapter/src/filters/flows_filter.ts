@@ -33,7 +33,7 @@ import {
 import { fetchMetadataInstances } from '../fetch'
 import { createInstanceElement } from '../transformers/transformer'
 import SalesforceClient from '../client/client'
-import { FetchElements, FetchProfile } from '../types'
+import { FetchElements, FetchProfile } from '../config/types'
 import {
   apiNameSync,
   findObjectType,

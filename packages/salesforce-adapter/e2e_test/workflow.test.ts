@@ -12,7 +12,7 @@ import { logger } from '@salto-io/logging'
 import { CredsLease } from '@salto-io/e2e-credentials-store'
 import realAdapter from './adapter'
 import SalesforceClient from '../src/client/client'
-import { UsernamePasswordCredentials } from '../src/types'
+import { UsernamePasswordCredentials } from '../src/config/types'
 import { findObjectType } from '../src/filters/utils'
 import {
   WORKFLOW_ALERTS_FIELD,

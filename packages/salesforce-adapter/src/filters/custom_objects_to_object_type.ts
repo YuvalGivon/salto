@@ -134,7 +134,7 @@ import { DEPLOY_WRAPPER_INSTANCE_MARKER } from '../metadata_deploy'
 import { CustomObject } from '../client/types'
 import { WORKFLOW_FIELD_TO_TYPE, WORKFLOW_TYPE_TO_FIELD, WORKFLOW_DIR_NAME } from './workflow'
 import { INSTANCE_SUFFIXES } from '../types'
-import { CustomObjectField } from '../fetch_profile/metadata_types'
+import { CustomObjectField } from '../config/fetch_profile/metadata_types'
 
 const log = logger(module)
 const { makeArray } = collections.array

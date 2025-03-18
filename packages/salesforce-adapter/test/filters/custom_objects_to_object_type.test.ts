@@ -77,7 +77,7 @@ import {
   createMetadataObjectType,
 } from '../../src/transformers/transformer'
 import { DEPLOY_WRAPPER_INSTANCE_MARKER } from '../../src/metadata_deploy'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { FilterWith } from './mocks'
 import { CustomField } from '../../src/client/types'
 import mockClient from '../client'

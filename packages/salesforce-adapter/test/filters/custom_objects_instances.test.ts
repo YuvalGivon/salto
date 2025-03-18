@@ -32,7 +32,7 @@ import {
   FetchProfile,
   isDataManagementConfigSuggestions,
   SaltoAliasSettings,
-} from '../../src/types'
+} from '../../src/config/types'
 import { buildSelectQueries, getFieldNamesForQuery, QueryOperator, SoqlQuery } from '../../src/filters/utils'
 import { FilterResult } from '../../src/filter'
 import SalesforceClient from '../../src/client/client'
@@ -57,7 +57,7 @@ import {
   SoqlQueryLimits,
 } from '../../src/constants'
 import { Types } from '../../src/transformers/transformer'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { defaultFilterContext, emptyLastChangeDateOfTypesWithNestedInstances } from '../utils'
 import { mockInstances, mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
@@ -65,9 +65,9 @@ import { SalesforceRecord } from '../../src/client/types'
 import {
   buildMetadataQuery,
   buildMetadataQueryForFetchWithChangesDetection,
-} from '../../src/fetch_profile/metadata_query'
+} from '../../src/config/fetch_profile/metadata_query'
 import * as filtersUtil from '../../src/filters/utils'
-import { bigObjectExcludeConfigChange } from '../../src/config_change'
+import { bigObjectExcludeConfigChange } from '../../src/config/config_change'
 
 const { awu } = collections.asynciterable
 

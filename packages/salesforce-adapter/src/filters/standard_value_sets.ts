@@ -28,7 +28,7 @@ import { FilterResult, FilterCreator } from '../filter'
 import { FIELD_ANNOTATIONS, VALUE_SET_FIELDS } from '../constants'
 import { metadataType, isCustomObject, Types, isCustom } from '../transformers/transformer'
 import { apiNameSync, extractFullNamesFromValueList, isInstanceOfTypeSync } from './utils'
-import { ConfigChangeSuggestion } from '../types'
+import { ConfigChangeSuggestion } from '../config/types'
 import { fetchMetadataInstances } from '../fetch'
 
 const { awu } = collections.asynciterable

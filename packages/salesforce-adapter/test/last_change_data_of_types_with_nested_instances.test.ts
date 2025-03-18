@@ -14,9 +14,10 @@ import Connection from '../src/client/jsforce'
 import mockClient from './client'
 import { mockFileProperties } from './connection'
 import { getLastChangeDateOfTypesWithNestedInstances } from '../src/last_change_date_of_types_with_nested_instances'
-import { buildFilePropsMetadataQuery, buildMetadataQuery } from '../src/fetch_profile/metadata_query'
-import { LastChangeDateOfTypesWithNestedInstances, MetadataQuery } from '../src/types'
-import { CUSTOM_OBJECT_FIELDS } from '../src/fetch_profile/metadata_types'
+import { buildFilePropsMetadataQuery, buildMetadataQuery } from '../src/config/fetch_profile/metadata_query'
+import { LastChangeDateOfTypesWithNestedInstances } from '../src/types'
+import { MetadataQuery } from '../src/config/types'
+import { CUSTOM_OBJECT_FIELDS } from '../src/config/fetch_profile/metadata_types'
 
 const { makeArray } = collections.array
 

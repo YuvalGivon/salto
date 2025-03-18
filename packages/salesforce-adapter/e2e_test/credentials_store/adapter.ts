@@ -7,7 +7,7 @@
  */
 import { Adapter } from '@salto-io/e2e-credentials-store'
 import { validateCredentials } from '../../src/client/client'
-import { UsernamePasswordCredentials } from '../../src/types'
+import { UsernamePasswordCredentials } from '../../src/config/types'
 
 type Args = {
   username: string

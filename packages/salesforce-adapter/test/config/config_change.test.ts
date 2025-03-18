@@ -8,9 +8,9 @@
 import { InstanceElement } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { formatConfigSuggestionsReasons } from '@salto-io/adapter-utils'
-import { ConfigChangeSuggestion, SalesforceConfig, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/types'
-import { getConfigFromConfigChanges, ConfigChange } from '../src/config_change'
-import { MINIMUM_MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/constants'
+import { ConfigChangeSuggestion, SalesforceConfig, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../../src/config/types'
+import { getConfigFromConfigChanges, ConfigChange } from '../../src/config/config_change'
+import { MINIMUM_MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../../src/constants'
 
 describe('Config Changes', () => {
   const includedObjectName = '.*Object.*'

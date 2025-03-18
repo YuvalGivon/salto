@@ -57,7 +57,7 @@ import {
 import { metadataType } from '../transformers/transformer'
 import { GLOBAL_VALUE_SET } from './global_value_sets'
 import { STANDARD_VALUE_SET } from './standard_value_sets'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 import { apiNameSync, isOrderedMapTypeOrRefType, metadataTypeSync } from './utils'
 
 const { awu } = collections.asynciterable

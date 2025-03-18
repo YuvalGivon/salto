@@ -8,7 +8,7 @@
 import { InstanceElement, isInstanceElement, ObjectType, Element } from '@salto-io/adapter-api'
 import filterCreator from '../../src/filters/settings_types'
 import { INSTANCE_FULL_NAME_FIELD, RECORDS_PATH, SALESFORCE, SETTINGS_DIR_NAME } from '../../src/constants'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { createMetadataTypeElement, defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
 import { mockTypes } from '../mock_elements'

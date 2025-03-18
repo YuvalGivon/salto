@@ -127,7 +127,7 @@ import generatedDependenciesFilter from './filters/generated_dependencies'
 import extendTriggersMetadataFilter from './filters/extend_triggers_metadata'
 import profilesAndPermissionSetsBrokenPathsFilter from './filters/profiles_and_permission_sets_broken_paths'
 import fetchTargetsFilter from './filters/fetch_targets'
-import { CUSTOM_REFS_CONFIG, FetchElements, FetchProfile, MetadataQuery, SalesforceConfig } from './types'
+import { CUSTOM_REFS_CONFIG, FetchElements, FetchProfile, MetadataQuery, SalesforceConfig } from './config/types'
 import mergeProfilesWithSourceValuesFilter from './filters/merge_profiles_with_source_values'
 import flowCoordinatesFilter from './filters/flow_coordinates'
 import taskAndEventCustomFields from './filters/task_and_event_custom_fields'
@@ -135,7 +135,7 @@ import picklistReferences from './filters/picklist_references'
 import addParentToInstancesWithinFolderFilter from './filters/add_parent_to_instances_within_folder'
 import addParentToRecordTriggeredFlows from './filters/add_parent_to_record_triggered_flows'
 import addParentToApprovalProcess from './filters/add_parent_to_approval_process'
-import { getConfigFromConfigChanges } from './config_change'
+import { getConfigFromConfigChanges } from './config/config_change'
 import { Filter, FilterContext, FilterCreator, FilterResult } from './filter'
 import {
   addDefaults,
@@ -167,12 +167,12 @@ import {
 } from './transformers/reference_mapping'
 import { deployMetadata, NestedMetadataTypeInfo } from './metadata_deploy'
 import nestedInstancesAuthorInformation from './filters/author_information/nested_instances'
-import { buildFetchProfile } from './fetch_profile/fetch_profile'
+import { buildFetchProfile } from './config/fetch_profile/fetch_profile'
 import {
   buildFilePropsMetadataQuery,
   buildMetadataQuery,
   buildMetadataQueryForFetchWithChangesDetection,
-} from './fetch_profile/metadata_query'
+} from './config/fetch_profile/metadata_query'
 import { getLastChangeDateOfTypesWithNestedInstances } from './last_change_date_of_types_with_nested_instances'
 import { fixElementsFunc } from './custom_references/handlers'
 import { createListApexClassesDef, createListMissingWaveDataflowsDef } from './client/custom_list_funcs'

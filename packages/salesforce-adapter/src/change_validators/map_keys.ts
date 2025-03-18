@@ -26,7 +26,7 @@ import {
   PROFILE_METADATA_TYPE,
 } from '../constants'
 import { apiNameSync, isInstanceOfTypeSync } from '../filters/utils'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const metadataTypesToValidate = [
   PROFILE_METADATA_TYPE,

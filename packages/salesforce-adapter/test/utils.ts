@@ -30,10 +30,11 @@ import * as constants from '../src/constants'
 import { FIELD_ANNOTATIONS, SYSTEM_FIELDS } from '../src/constants'
 import { annotationsFileName, customFieldsFileName, standardFieldsFileName } from '../src/filters/custom_type_split'
 import { FilterContext } from '../src/filter'
-import { buildFetchProfile } from '../src/fetch_profile/fetch_profile'
-import { CustomReferencesSettings, LastChangeDateOfTypesWithNestedInstances, OptionalFeatures } from '../src/types'
+import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
 import { createDeployProgressReporter, DeployProgressReporter } from '../src/adapter_creator'
 import { SalesforceClient } from '../index'
+import { LastChangeDateOfTypesWithNestedInstances } from '../src/types'
+import { CustomReferencesSettings, OptionalFeatures } from '../src/config/types'
 
 export const findElements = (elements: ReadonlyArray<Element>, ...name: ReadonlyArray<string>): Element[] => {
   const expectedElemId =

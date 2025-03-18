@@ -15,7 +15,7 @@ import { objects, promises, values } from '@salto-io/lowerdash'
 import { allFilters, NESTED_METADATA_TYPES } from '../adapter'
 import { SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIELDS } from '../constants'
 import { getLookUpName, resolveSalesforceChanges } from '../transformers/reference_mapping'
-import { buildFetchProfile } from '../fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../config/fetch_profile/fetch_profile'
 import { createDeployPackage, DeployPackage, PACKAGE } from '../transformers/xml_transformer'
 import { addChangeToPackage, validateChanges } from '../metadata_deploy'
 import {

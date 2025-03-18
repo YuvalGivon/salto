@@ -8,7 +8,7 @@
 import { ReferenceExpression, InstanceElement, ObjectType, ElemID, CORE_ANNOTATIONS } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements, naclCase } from '@salto-io/adapter-utils'
 import filterCreator, { BUSINESS_PROCESS_PARENTS, BusinessProcessParent } from '../../src/filters/picklist_references'
-import { buildFetchProfile } from '../../src/fetch_profile/fetch_profile'
+import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
 import { mockTypes } from '../mock_elements'

@@ -25,7 +25,7 @@ import {
   getElementValueOrAnnotations,
   getChangesWithFieldType,
 } from '../filters/convert_maps'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const getOrderedMapErrors = (element: Element, fieldName: string): ChangeError[] => {
   const elementValues = getElementValueOrAnnotations(element)

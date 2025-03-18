@@ -10,7 +10,7 @@ import * as removeFieldsAndValuesFilter from '../../src/filters/remove_fields_an
 import * as constants from '../../src/constants'
 import { defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
-import * as optionalFeatures from '../../src/fetch_profile/optional_features'
+import * as optionalFeatures from '../../src/config/fetch_profile/optional_features'
 
 describe('remove fields filter', () => {
   const mockObjId = new ElemID(constants.SALESFORCE, 'typeRemoval')

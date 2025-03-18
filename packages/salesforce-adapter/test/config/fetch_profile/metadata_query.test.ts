@@ -14,7 +14,7 @@ import {
   buildMetadataQuery,
   buildMetadataQueryForFetchWithChangesDetection,
   validateMetadataParams,
-} from '../../src/fetch_profile/metadata_query'
+} from '../../../src/config/fetch_profile/metadata_query'
 import {
   CUSTOM_METADATA,
   CUSTOM_OBJECT,
@@ -22,12 +22,13 @@ import {
   FLOW_METADATA_TYPE,
   SETTINGS_METADATA_TYPE,
   TOPICS_FOR_OBJECTS_METADATA_TYPE,
-} from '../../src/constants'
-import { MetadataInstance, MetadataQuery, MetadataQueryParams } from '../../src/types'
-import { mockInstances } from '../mock_elements'
-import { mockFileProperties } from '../connection'
-import { emptyLastChangeDateOfTypesWithNestedInstances } from '../utils'
-import { getMetadataIncludeFromFetchTargets } from '../../src/filters/utils'
+} from '../../../src/constants'
+import { MetadataInstance } from '../../../src/types'
+import { MetadataQuery, MetadataQueryParams } from '../../../src/config/types'
+import { mockInstances } from '../../mock_elements'
+import { mockFileProperties } from '../../connection'
+import { emptyLastChangeDateOfTypesWithNestedInstances } from '../../utils'
+import { getMetadataIncludeFromFetchTargets } from '../../../src/filters/utils'
 
 describe('validateMetadataParams', () => {
   describe('invalid include list', () => {

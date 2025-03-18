@@ -14,7 +14,7 @@ import { ensureSafeFilterFetch, queryClient, safeApiName } from './utils'
 import { getSObjectFieldElement } from '../transformers/transformer'
 import { API_NAME, getTypePath, ORGANIZATION_SETTINGS, RECORDS_PATH, SALESFORCE, SETTINGS_PATH } from '../constants'
 import SalesforceClient from '../client/client'
-import { FetchProfile } from '../types'
+import { FetchProfile } from '../config/types'
 
 const log = logger(module)
 

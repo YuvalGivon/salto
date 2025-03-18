@@ -10,7 +10,7 @@ import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { ElemID, ServiceIds } from '@salto-io/adapter-api'
 import SalesforceClient from '../src/client/client'
 import SalesforceAdapter, { SalesforceAdapterParams } from '../src/adapter'
-import { SalesforceConfig, Credentials } from '../src/types'
+import { SalesforceConfig, Credentials } from '../src/config/types'
 
 type Reals = {
   client: SalesforceClient

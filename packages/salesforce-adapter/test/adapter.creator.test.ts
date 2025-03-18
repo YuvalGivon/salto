@@ -18,7 +18,7 @@ import {
   OauthAccessTokenCredentials,
   accessTokenCredentialsType,
   METADATA_TYPES_SKIPPED_LIST,
-} from '../src/types'
+} from '../src/config/types'
 import { METADATA_DEPLOY_PENDING_STATUS, RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS } from '../src/constants'
 import { createMockProgressReporter, MockDeployProgressReporter } from './utils'
 import createMockClient from './client'

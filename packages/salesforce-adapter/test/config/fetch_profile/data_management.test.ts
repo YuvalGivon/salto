@@ -6,11 +6,11 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { buildDataManagement } from '../../src/fetch_profile/data_management'
-import { API_NAME, DETECTS_PARENTS_INDICATOR } from '../../src/constants'
-import { createCustomObjectType } from '../utils'
-import { Types } from '../../src/transformers/transformer'
-import { DataManagement } from '../../src/types'
+import { buildDataManagement } from '../../../src/config/fetch_profile/data_management'
+import { API_NAME, DETECTS_PARENTS_INDICATOR } from '../../../src/constants'
+import { createCustomObjectType } from '../../utils'
+import { Types } from '../../../src/transformers/transformer'
+import { DataManagement } from '../../../src/config/types'
 
 describe('buildDataManagement', () => {
   let dataManagement: DataManagement
