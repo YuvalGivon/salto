@@ -570,9 +570,14 @@ const runPostFetch = async ({
 }
 
 // SALTO-5878 safety due to changed order of precedence when resolving referenced values / types - can remove if we don't see this log
-const updateInconsistentTypes = (validAccountElements: Element[]): void =>
-  log.timeDebug(() => {
-    const objectTypesByElemID = _.keyBy(validAccountElements.filter(isObjectType), e => e.elemID.getFullName())
+const updateInconsistentTypes = async (
+  validAccountElements: Element[],
+  mergedElements: remoteMap.ReadOnlyRemoteMap<Element>,
+): Promise<void> =>
+  log.timeDebug(async () => {
+    const objectTypesByElemID = await awu(mergedElements.values())
+      .filter(isObjectType)
+      .keyBy(e => e.elemID.getFullName())
     const isInconsistentType = (e: InstanceElement | Field): boolean =>
       e.refType.type !== undefined &&
       objectTypesByElemID[e.refType.elemID.getFullName()] !== undefined &&
@@ -755,7 +760,7 @@ const fetchAndProcessMergeErrors = async (
       `after merge there are ${processErrorsResult.keptElements.length} elements [errors=${mergeErrorsArr.length}]`,
     )
 
-    updateInconsistentTypes(validAccountElements)
+    await updateInconsistentTypes(validAccountElements, elements)
 
     return {
       accountElements: validAccountElements,
