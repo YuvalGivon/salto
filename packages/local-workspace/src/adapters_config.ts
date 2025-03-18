@@ -18,6 +18,8 @@ import {
 import { Adapter, DetailedChange, ObjectType } from '@salto-io/adapter-api'
 import { localDirectoryStore, createExtensionFileFilter } from './dir_store'
 
+export const ADAPTERS_CONFIG_SOURCE_NAME = 'salto.config/adapters'
+
 const createNaclSource = async (
   baseDir: string,
   remoteMapCreator: remoteMap.RemoteMapCreator,
@@ -41,7 +43,7 @@ const createNaclSource = async (
   )
 
   const source = await nacl.naclFilesSource(
-    'salto.config/adapters',
+    ADAPTERS_CONFIG_SOURCE_NAME,
     naclFilesStore,
     staticFileSource,
     remoteMapCreator,

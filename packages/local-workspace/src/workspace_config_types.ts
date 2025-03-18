@@ -26,7 +26,6 @@ export type UserDataConfig = Pick<WorkspaceConfig, 'currentEnv'>
 export const WORKSPACE_CONFIG_NAME = 'workspace'
 export const ENVS_CONFIG_NAME = 'envs'
 export const USER_CONFIG_NAME = 'workspaceUser'
-export const ADAPTERS_CONFIG_NAME = 'adapters'
 
 const requireAnno = { [CORE_ANNOTATIONS.REQUIRED]: true }
 

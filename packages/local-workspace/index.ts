@@ -18,14 +18,16 @@ export {
   workspaceConfigSource as localWorkspaceConfigSource,
   WorkspaceConfigSource as LocalWorkspaceConfigSource,
 } from './src/workspace_config'
-export { buildLocalAdaptersConfigSource as localAdaptersConfigSource } from './src/adapters_config'
+export {
+  buildLocalAdaptersConfigSource as localAdaptersConfigSource,
+  ADAPTERS_CONFIG_SOURCE_NAME,
+} from './src/adapters_config'
 export { SALTO_HOME_VAR, AppConfig, configFromDisk, CommandConfig, CONFIG_DIR_NAME } from './src/app_config'
 export { localDirectoryStore } from './src/dir_store'
 export { buildS3DirectoryStore } from './src/s3_dir_store'
 export {
   WORKSPACE_CONFIG_NAME,
   USER_CONFIG_NAME,
-  ADAPTERS_CONFIG_NAME,
   ENVS_CONFIG_NAME,
   workspaceConfigTypes,
   EnvsConfig,
