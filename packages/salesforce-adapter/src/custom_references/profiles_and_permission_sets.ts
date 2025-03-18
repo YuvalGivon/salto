@@ -158,11 +158,13 @@ const layoutReferences: RefTargetsGetter = sectionEntry => {
   return [layoutRef].concat(recordTypeRefs)
 }
 
+const isAnyRecordTypeVisible = (recordTypeVisibilitiesSectionEntry: Values): boolean =>
+  Object.values(recordTypeVisibilitiesSectionEntry).some(
+    recordTypeVisibility => recordTypeVisibility.default === true || recordTypeVisibility.visible === true,
+  )
+
 const recordTypeReferences: RefTargetsGetter = sectionEntry =>
   Object.entries(sectionEntry)
-    .filter(
-      ([, recordTypeVisibility]) => recordTypeVisibility.default === true || recordTypeVisibility.visible === true,
-    )
     .filter(([, recordTypeVisibility]) => _.isString(recordTypeVisibility.recordType))
     .map(([recordTypeVisibilityKey, recordTypeVisibility]) => ({
       target: new ElemID(
@@ -222,6 +224,7 @@ const sectionsReferenceParams: Record<ProfileSection, ReferenceFromSectionParams
     targetsGetter: referenceToInstance('apexPage', APEX_PAGE_METADATA_TYPE),
   },
   [ProfileSection.RecordTypeVisibilities]: {
+    filter: isAnyRecordTypeVisible,
     targetsGetter: recordTypeReferences,
   },
   [ProfileSection.TabVisibilities]: {

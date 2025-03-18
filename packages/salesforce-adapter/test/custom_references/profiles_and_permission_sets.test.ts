@@ -904,6 +904,68 @@ describe('Profiles And Permission Sets Custom References', () => {
         })
       })
 
+      describe('when some default, some visible and some neither', () => {
+        beforeEach(async () => {
+          profileInstance = createTestInstance({
+            recordTypeVisibilities: {
+              Case: {
+                SomeDefaultCaseRecordType: {
+                  default: true,
+                  recordType: 'Case.SomeDefaultCaseRecordType',
+                  visible: false,
+                },
+                SomeVisibleCaseRecordType: {
+                  default: false,
+                  recordType: 'Case.SomeVisibleCaseRecordType',
+                  visible: true,
+                },
+                SomeHiddenCaseRecordType: {
+                  default: false,
+                  recordType: 'Case.SomeHiddenCaseRecordType',
+                  visible: false,
+                },
+              },
+            },
+          })
+          refs = await profilesAndPermissionSetsHandler.findWeakReferences([profileInstance])
+        })
+
+        it('should create references for all record types', () => {
+          expect(refs).toEqual([
+            {
+              source: profileInstance.elemID.createNestedID(
+                'recordTypeVisibilities',
+                'Case',
+                'SomeDefaultCaseRecordType',
+              ),
+              target: new ElemID(SALESFORCE, RECORD_TYPE_METADATA_TYPE, 'instance', 'Case_SomeDefaultCaseRecordType'),
+              type: 'weak',
+              sourceScope: 'value',
+            },
+            {
+              source: profileInstance.elemID.createNestedID(
+                'recordTypeVisibilities',
+                'Case',
+                'SomeVisibleCaseRecordType',
+              ),
+              target: new ElemID(SALESFORCE, RECORD_TYPE_METADATA_TYPE, 'instance', 'Case_SomeVisibleCaseRecordType'),
+              type: 'weak',
+              sourceScope: 'value',
+            },
+            {
+              source: profileInstance.elemID.createNestedID(
+                'recordTypeVisibilities',
+                'Case',
+                'SomeHiddenCaseRecordType',
+              ),
+              target: new ElemID(SALESFORCE, RECORD_TYPE_METADATA_TYPE, 'instance', 'Case_SomeHiddenCaseRecordType'),
+              type: 'weak',
+              sourceScope: 'value',
+            },
+          ])
+        })
+      })
+
       describe('when visible and a reference already exists', () => {
         beforeEach(async () => {
           profileInstance = createTestInstance({
