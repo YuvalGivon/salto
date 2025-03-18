@@ -24,4 +24,5 @@ export const getSaltoFlagBool = (flagName: string): boolean => {
 export const WORKSPACE_FLAGS = {
   replaceGetPlanWithCalculateDiff: 'REPLACE_GET_PLAN_WITH_CALCULATE_DIFF',
   skipStaticFilesCacheUpdate: 'SKIP_STATIC_FILES_CACHE_UPDATE',
+  resolveTypesInCacheUpdate: 'RESOLVE_TYPES_IN_CACHE_UPDATE',
 } as const

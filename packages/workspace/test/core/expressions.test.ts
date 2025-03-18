@@ -28,10 +28,18 @@ import {
   PlaceholderObjectType,
   UnresolvedReference,
   ReadOnlyElementsSource,
+  toChange,
+  isAdditionChange,
+  isModificationChange,
+  isRemovalChange,
+  AdditionChange,
+  ModificationChange,
+  RemovalChange,
+  Change,
 } from '@salto-io/adapter-api'
 import { collections } from '@salto-io/lowerdash'
 import { TestFuncImpl, getFieldsAndAnnoTypes } from '../utils'
-import { resolve, CircularReference } from '../../src/expressions'
+import { resolve, resolveChanges, CircularReference } from '../../src/expressions'
 import { createInMemoryElementSource, mapReadOnlyElementsSource } from '../../src/workspace/elements_source'
 
 const { awu } = collections.asynciterable
@@ -774,6 +782,145 @@ describe('Test Salto Expressions', () => {
       expect(resolvedInstances).toHaveLength(2)
       expect(resolvedInstances[0].refType.type).toBe(resolvedType)
       expect(resolvedInstances[1].refType.type).toBe(resolvedType)
+    })
+  })
+
+  describe('resolveChanges', () => {
+    let type: ObjectType
+    let instance: InstanceElement
+    let referencedInstance: InstanceElement
+    let instanceWithRef: InstanceElement
+    let elementsSource: ReadOnlyElementsSource
+
+    beforeEach(() => {
+      type = new ObjectType({
+        elemID: new ElemID('salto', 'type'),
+        fields: { test: { refType: BuiltinTypes.STRING } },
+        annotations: {
+          from: 'before',
+        },
+      })
+      instance = new InstanceElement('inst', new TypeReference(type.elemID), { test: 'test' })
+      referencedInstance = new InstanceElement('ref', new TypeReference(type.elemID), { test: 'referenced' })
+      instanceWithRef = new InstanceElement('withRef', new TypeReference(type.elemID), {
+        test: new ReferenceExpression(referencedInstance.elemID.createNestedID('test')),
+      })
+
+      elementsSource = createInMemoryElementSource([type, instance, referencedInstance, instanceWithRef])
+    })
+
+    it('should resolve references in addition changes', async () => {
+      const changes = [toChange({ after: instanceWithRef })]
+      const resolvedChanges = await resolveChanges({
+        changes,
+        elementsSource,
+      })
+      expect(resolvedChanges).toHaveLength(1)
+      const change = resolvedChanges[0] as AdditionChange<InstanceElement>
+      expect(isAdditionChange(change)).toBe(true)
+      const { after } = change.data
+      expect(after.refType.type).toEqual(type)
+      expect(after.value.test.value).toBe('referenced')
+    })
+
+    it('should resolve references in modification changes', async () => {
+      const beforeInstance = instanceWithRef.clone()
+      const afterInstance = instanceWithRef.clone()
+      const changes = [toChange({ before: beforeInstance, after: afterInstance })]
+      const resolvedChanges = await resolveChanges({
+        changes,
+        elementsSource,
+      })
+      expect(resolvedChanges).toHaveLength(1)
+      const change = resolvedChanges[0] as ModificationChange<InstanceElement>
+      expect(isModificationChange(change)).toBe(true)
+      const { after, before } = change.data
+      expect(after.refType.type).toEqual(type)
+      expect(after.value.test.value).toBe('referenced')
+      expect(before.refType.type).toEqual(type)
+      expect(before.value.test.value).toBe('referenced')
+    })
+
+    it('should resolve references in removal changes', async () => {
+      const changes = [toChange({ before: instanceWithRef })]
+      const resolvedChanges = await resolveChanges({
+        changes,
+        elementsSource,
+      })
+      expect(resolvedChanges).toHaveLength(1)
+      const change = resolvedChanges[0] as RemovalChange<InstanceElement>
+      expect(isRemovalChange(change)).toBe(true)
+      const { before } = change.data
+      expect(before.refType.type).toEqual(type)
+      expect(before.value.test.value).toBe('referenced')
+    })
+
+    it('should handle changes with no references', async () => {
+      const changes = [
+        toChange({ after: instance }),
+        toChange({ before: instance, after: instance }),
+        toChange({ before: instance }),
+      ]
+      const resolvedChanges = await resolveChanges({
+        changes,
+        elementsSource,
+      })
+      expect(resolvedChanges).toHaveLength(3)
+      const [additionChange, modificationChange, removalChange] = resolvedChanges as [
+        AdditionChange<InstanceElement>,
+        ModificationChange<InstanceElement>,
+        RemovalChange<InstanceElement>,
+      ]
+      expect(isAdditionChange(additionChange)).toBe(true)
+      expect(isModificationChange(modificationChange)).toBe(true)
+      expect(isRemovalChange(removalChange)).toBe(true)
+      const { after: additionAfter } = additionChange.data
+      const { after: modificationAfter, before: modificationBefore } = modificationChange.data
+      const { before: removalBefore } = removalChange.data
+      expect(additionAfter.refType.type).toEqual(type)
+      expect(modificationAfter.refType.type).toEqual(type)
+      expect(modificationBefore.refType.type).toEqual(type)
+      expect(removalBefore.refType.type).toEqual(type)
+      expect(additionAfter.value.test).toBe('test')
+      expect(modificationAfter.value.test).toBe('test')
+      expect(modificationBefore.value.test).toBe('test')
+      expect(removalBefore.value.test).toBe('test')
+    })
+
+    it('should handle empty changes array', async () => {
+      const resolvedChanges = await resolveChanges({
+        changes: [],
+        elementsSource,
+      })
+      expect(resolvedChanges).toHaveLength(0)
+    })
+
+    it('should prefer resolved types and values in changes for after', async () => {
+      const afterReferencedInstance = new InstanceElement('ref', new TypeReference(type.elemID), {
+        test: 'referenced_after',
+      })
+      const afterType = new ObjectType({
+        elemID: new ElemID('salto', 'type'),
+        fields: { test: { refType: BuiltinTypes.STRING } },
+        annotations: {
+          from: 'after',
+        },
+      })
+      const changes: Change<InstanceElement | ObjectType>[] = [
+        toChange({ before: instanceWithRef, after: instanceWithRef }),
+        toChange({ before: referencedInstance, after: afterReferencedInstance }),
+        toChange({ before: type, after: afterType }),
+      ]
+      const resolvedChanges = await resolveChanges({
+        changes,
+        elementsSource,
+      })
+      expect(isModificationChange(resolvedChanges[0])).toBe(true)
+      const { after, before } = (resolvedChanges[0] as ModificationChange<InstanceElement>).data
+      expect(after.refType.type).toEqual(afterType)
+      expect(before.refType.type).toEqual(type)
+      expect(after.value.test.value).toBe('referenced_after')
+      expect(before.value.test.value).toBe('referenced')
     })
   })
 })

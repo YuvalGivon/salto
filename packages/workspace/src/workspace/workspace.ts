@@ -746,7 +746,7 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
       const updateWorkspace = async (envName: string): Promise<void> => {
         const source = naclFilesSource
 
-        // When we load the workspace with a clean cache from existings nacls, we need
+        // When we load the workspace with a clean cache from existing nacls, we need
         // to add hidden elements from the state since they will not be a part of the nacl
         // changes. In any other load - the state changes will be reflected by the workspace
         // / hidden changes.

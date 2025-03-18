@@ -30,6 +30,11 @@ import {
   isExpression,
   isField,
   UnresolvedReference,
+  Change,
+  ChangeDataType,
+  isAdditionChange,
+  toChange,
+  isModificationChange,
 } from '@salto-io/adapter-api'
 import { resolvePath, safeJsonStringify, walkOnElement, WALK_NEXT_STEP } from '@salto-io/adapter-utils'
 import { values, collections } from '@salto-io/lowerdash'
@@ -421,3 +426,49 @@ export const resolve = (
     'resolve %d elements',
     elements.length,
   )
+
+export const resolveChanges = async <T extends ChangeDataType>({
+  changes,
+  elementsSource,
+  opts,
+}: {
+  changes: ReadonlyArray<Change<T>>
+  elementsSource: ReadOnlyElementsSource
+  opts?: ResolveOpts
+}): Promise<Change<T>[]> => {
+  const beforeElements: ChangeDataType[] = []
+  const afterElements: ChangeDataType[] = []
+
+  changes.forEach(change => {
+    if (change.action !== 'add') {
+      beforeElements.push(change.data.before)
+    }
+    if (change.action !== 'remove') {
+      afterElements.push(change.data.after)
+    }
+  })
+
+  const resolvedBeforeElements = _.keyBy(await resolve(beforeElements, elementsSource, opts), element =>
+    element.elemID.getFullName(),
+  ) as Record<string, T>
+  const resolvedAfterElements = _.keyBy(await resolve(afterElements, elementsSource, opts), element =>
+    element.elemID.getFullName(),
+  ) as Record<string, T>
+
+  return changes.map(change => {
+    if (isAdditionChange(change)) {
+      return toChange({
+        after: resolvedAfterElements[change.data.after.elemID.getFullName()],
+      })
+    }
+    if (isModificationChange(change)) {
+      return toChange({
+        before: resolvedBeforeElements[change.data.before.elemID.getFullName()],
+        after: resolvedAfterElements[change.data.after.elemID.getFullName()],
+      })
+    }
+    return toChange({
+      before: resolvedBeforeElements[change.data.before.elemID.getFullName()],
+    })
+  })
+}
