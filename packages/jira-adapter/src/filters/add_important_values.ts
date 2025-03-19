@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { CORE_ANNOTATIONS, Element, isObjectType } from '@salto-io/adapter-api'
+import { CORE_ANNOTATIONS, Element, isObjectType, ObjectType } from '@salto-io/adapter-api'
 import { ImportantValues } from '@salto-io/adapter-utils'
 import { FilterCreator } from '../filter'
 import {
@@ -24,6 +24,8 @@ import {
   WEBHOOK_TYPE,
 } from '../constants'
 import { FIELD_TYPE_NAME } from './fields/constants'
+import { PROJECT_SCOPE_FIELD_NAME } from './projects_scope'
+import { addOrUpdate } from '../utils'
 
 const importantValuesMap: Record<string, ImportantValues> = {
   [APPLICATION_PROPERTY_TYPE]: [{ value: 'type', highlighted: false, indexed: true }],
@@ -95,11 +97,25 @@ const importantValuesMap: Record<string, ImportantValues> = {
   [WEBHOOK_TYPE]: [{ value: 'Enabled', highlighted: false, indexed: true }],
 }
 
+const addProjectsScopeToImportantValuesMap = (objectTypes: ObjectType[]): void => {
+  objectTypes
+    .filter(objectType => objectType.fields[PROJECT_SCOPE_FIELD_NAME] !== undefined)
+    .forEach(objectType => {
+      const { typeName } = objectType.elemID
+      addOrUpdate(importantValuesMap, typeName, {
+        value: PROJECT_SCOPE_FIELD_NAME,
+        highlighted: false,
+        indexed: true,
+      })
+    })
+}
 // Adds relevant important values for the Jira adapter
 const filter: FilterCreator = () => ({
   name: 'addImportantValues',
   onFetch: async (elements: Element[]): Promise<void> => {
     const objectTypes = elements.filter(isObjectType)
+    addProjectsScopeToImportantValuesMap(objectTypes)
+
     objectTypes.forEach(obj => {
       const { typeName } = obj.elemID
       const importantValuesArray = importantValuesMap[typeName]
