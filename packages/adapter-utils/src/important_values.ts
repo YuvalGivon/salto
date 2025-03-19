@@ -7,7 +7,7 @@
  */
 import _ from 'lodash'
 import { logger } from '@salto-io/logging'
-import { values } from '@salto-io/lowerdash'
+import { values, collections } from '@salto-io/lowerdash'
 import {
   CORE_ANNOTATIONS,
   Element,
@@ -24,6 +24,7 @@ import {
 
 const log = logger(module)
 const { isDefined } = values
+const { makeArray } = collections.array
 
 export type ImportantValue = { value: string; indexed: boolean; highlighted: boolean }
 export type ImportantValues = ImportantValue[]
@@ -74,24 +75,24 @@ const getRelevantImportantValues = (
     : indexedValues
 }
 
-const extractImportantValuesFromElement = ({
-  importantValues,
+export const extractImportantValuesFromElement = ({
+  importantValuesDefinitions,
   element,
   indexedOnly,
   highlightedOnly,
 }: {
-  importantValues: ImportantValues
+  importantValuesDefinitions: ImportantValues
   element: Element
   indexedOnly?: boolean
   highlightedOnly?: boolean
 }): FormattedImportantValueData[] => {
-  if (_.isEmpty(importantValues)) {
-    if (importantValues === undefined) {
+  if (_.isEmpty(importantValuesDefinitions)) {
+    if (importantValuesDefinitions === undefined) {
       log.trace('important value is undefined for element %s', element.elemID.getFullName())
     }
     return []
   }
-  const relevantImportantValues = getRelevantImportantValues(importantValues, indexedOnly, highlightedOnly)
+  const relevantImportantValues = getRelevantImportantValues(importantValuesDefinitions, indexedOnly, highlightedOnly)
   const getFrom = isInstanceElement(element) ? element.value : element.annotations
   const finalImportantValues = relevantImportantValues
     .map(importantValue => {
@@ -109,23 +110,25 @@ const extractImportantValuesFromElement = ({
   return finalImportantValues
 }
 
-// this function returns the important values of an element. if the element is an instance or a field the important
-// values will be calculated from the type. When the flag indexedOnly is on, only values with indexed = true will be
-// returned
-export const getImportantValues = async ({
+const hasHiddenImportantValues = (objectType: ObjectType, importantValues: ImportantValues): boolean =>
+  importantValues.some(importantValue => {
+    const field = objectType.fields[importantValue.value]
+    return field?.annotations[CORE_ANNOTATIONS.HIDDEN_VALUE]
+  })
+
+export const getImportantValuesDefinitions = async ({
   element,
   elementSource,
-  indexedOnly,
-  highlightedOnly,
 }: {
   element: Element
   elementSource?: ReadOnlyElementsSource
-  indexedOnly?: boolean
-  highlightedOnly?: boolean
-}): Promise<FormattedImportantValueData[]> => {
+}): Promise<{ importantValuesDefinitions: ImportantValues; isHiddenImportantValue: boolean }> => {
   if (isObjectType(element)) {
-    const importantValues = element.annotations[CORE_ANNOTATIONS.SELF_IMPORTANT_VALUES]
-    return extractImportantValuesFromElement({ importantValues, element, indexedOnly, highlightedOnly })
+    const importantValuesDefinitions = makeArray(element.annotations[CORE_ANNOTATIONS.SELF_IMPORTANT_VALUES])
+    return {
+      importantValuesDefinitions,
+      isHiddenImportantValue: false,
+    }
   }
   if (isField(element) || isInstanceElement(element)) {
     const getTypeObj = async (): Promise<ObjectType> => {
@@ -138,18 +141,52 @@ export const getImportantValues = async ({
         log.trace(
           `could not get important values as type is undefined returning [] for element ${element.elemID.getFullName()}`,
         )
-        return []
+        return { importantValuesDefinitions: [], isHiddenImportantValue: false }
       }
-      const importantValues = typeObj.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES]
-      return extractImportantValuesFromElement({ importantValues, element, indexedOnly, highlightedOnly })
+      const importantValuesDefinitions = makeArray(typeObj?.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES])
+      return {
+        importantValuesDefinitions,
+        isHiddenImportantValue: isInstanceElement(element)
+          ? // currently we support hidden important values only for instances
+            hasHiddenImportantValues(typeObj, importantValuesDefinitions)
+          : false,
+      }
     } catch (e) {
       // getType throws an error when the type calculated is not a valid type, or when
       // resolvedValue === undefined && elementsSource === undefined in getResolvedValue
       log.warn(
         `could not get important values for element ${element.elemID.getFullName()}, received error ${e}, returning []`,
       )
-      return []
+      return { importantValuesDefinitions: [], isHiddenImportantValue: false }
     }
   }
-  return []
+  return { importantValuesDefinitions: [], isHiddenImportantValue: false }
+}
+
+// this function returns the important values of an element. if the element is an instance or a field the important
+// values will be calculated from the type. When the flag indexedOnly is on, only values with indexed = true will be
+// returned
+export const getImportantValues = async ({
+  element,
+  elementSource,
+  indexedOnly,
+  highlightedOnly,
+}: {
+  element: Element
+  elementSource?: ReadOnlyElementsSource
+  allowHiddenValues?: boolean
+  indexedOnly?: boolean
+  highlightedOnly?: boolean
+}): Promise<FormattedImportantValueData[]> => {
+  const { importantValuesDefinitions } = await getImportantValuesDefinitions({
+    element,
+    elementSource,
+  })
+
+  return extractImportantValuesFromElement({
+    importantValuesDefinitions,
+    element,
+    indexedOnly,
+    highlightedOnly,
+  })
 }

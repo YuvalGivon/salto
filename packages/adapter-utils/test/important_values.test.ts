@@ -19,7 +19,12 @@ import {
   TypeReference,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '../src/element_source'
-import { getImportantValues, toImportantValues } from '../src/important_values'
+import {
+  getImportantValues,
+  getImportantValuesDefinitions,
+  ImportantValues,
+  toImportantValues,
+} from '../src/important_values'
 
 const userType = new ObjectType({
   elemID: new ElemID('salto', 'user'),
@@ -395,5 +400,388 @@ describe('getImportantValues', () => {
       { key: 'reference', value: new ReferenceExpression(inst.elemID) },
       { key: 'obj.id', value: 12345 },
     ])
+  })
+})
+
+describe('getImportantValuesDefinitions', () => {
+  let elementSource: ReadOnlyElementsSource
+  let objectTypeWithHiddenImportantValue: ObjectType
+  let instanceWithHiddenValue: InstanceElement
+  let result: { importantValuesDefinitions: ImportantValues; isHiddenImportantValue: boolean }
+
+  beforeEach(async () => {
+    objectTypeWithHiddenImportantValue = new ObjectType({
+      elemID: new ElemID('salto', 'obj1'),
+      fields: {
+        active: {
+          refType: BuiltinTypes.BOOLEAN,
+        },
+        name: {
+          refType: BuiltinTypes.STRING,
+        },
+        user: {
+          refType: userType,
+          annotations: {
+            label: 'Active',
+          },
+        },
+        hiddenField: {
+          refType: BuiltinTypes.STRING,
+          annotations: {
+            [CORE_ANNOTATIONS.HIDDEN_VALUE]: true,
+          },
+        },
+      },
+      annotations: {
+        name: 'test',
+        apiName: 123,
+        other: 'bla',
+        [CORE_ANNOTATIONS.IMPORTANT_VALUES]: [
+          {
+            value: 'name',
+            indexed: false,
+            highlighted: true,
+          },
+          {
+            value: 'active',
+            indexed: true,
+            highlighted: false,
+          },
+          {
+            value: 'doesNotExist',
+            indexed: true,
+            highlighted: true,
+          },
+          {
+            value: 'hiddenField',
+            indexed: true,
+            highlighted: true,
+          },
+        ],
+      },
+    })
+
+    instanceWithHiddenValue = new InstanceElement('test inst', objectTypeWithHiddenImportantValue, {
+      active: true,
+      name: 'test inst',
+      user: {
+        id: 12345,
+      },
+      hiddenField: 'hiddenField',
+    })
+
+    elementSource = buildElementsSourceFromElements([objectTypeWithHiddenImportantValue, instanceWithHiddenValue])
+  })
+
+  describe('when the element is an object type', () => {
+    let objectTypeWithSelfImportantValues: ObjectType
+    beforeEach(async () => {
+      objectTypeWithSelfImportantValues = new ObjectType({
+        elemID: new ElemID('salto', 'obj1'),
+        fields: {
+          active: {
+            refType: BuiltinTypes.BOOLEAN,
+          },
+          name: {
+            refType: BuiltinTypes.STRING,
+          },
+        },
+        annotations: {
+          name: 'test',
+          apiName: 123,
+          other: 'bla',
+          [CORE_ANNOTATIONS.SELF_IMPORTANT_VALUES]: [
+            {
+              value: 'name',
+              indexed: false,
+              highlighted: true,
+            },
+            {
+              value: 'apiName',
+              indexed: true,
+              highlighted: false,
+            },
+            {
+              value: 'doesNotExist',
+              indexed: true,
+              highlighted: true,
+            },
+            {
+              value: 'hiddenField',
+              indexed: true,
+              highlighted: true,
+            },
+          ],
+        },
+      })
+      elementSource = buildElementsSourceFromElements([objectTypeWithSelfImportantValues])
+      result = await getImportantValuesDefinitions({
+        element: objectTypeWithSelfImportantValues,
+        elementSource,
+      })
+    })
+    it('should return the self important values definitions from the type', async () => {
+      expect(result.importantValuesDefinitions).toEqual(
+        objectTypeWithSelfImportantValues.annotations[CORE_ANNOTATIONS.SELF_IMPORTANT_VALUES],
+      )
+    })
+    it('should return isHiddenImportantValue false', async () => {
+      expect(result.isHiddenImportantValue).toEqual(false)
+    })
+  })
+  describe('when there is hidden important value', () => {
+    beforeEach(async () => {
+      elementSource = buildElementsSourceFromElements([objectTypeWithHiddenImportantValue, instanceWithHiddenValue])
+      result = await getImportantValuesDefinitions({
+        element: instanceWithHiddenValue,
+        elementSource,
+      })
+    })
+    it('should return important values definitions from the type', async () => {
+      expect(result.importantValuesDefinitions).toEqual(
+        objectTypeWithHiddenImportantValue.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES],
+      )
+    })
+    it('should return isHiddenImportantValue true', async () => {
+      expect(result.isHiddenImportantValue).toEqual(true)
+    })
+  })
+
+  describe('when there is no hidden important value', () => {
+    beforeEach(async () => {
+      elementSource = buildElementsSourceFromElements([inst, obj])
+      result = await getImportantValuesDefinitions({
+        element: inst,
+        elementSource,
+      })
+    })
+    it('should return important values definitions from the type', async () => {
+      expect(result.importantValuesDefinitions).toEqual(obj.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES])
+    })
+    it('should return isHiddenImportantValue false', async () => {
+      expect(result.isHiddenImportantValue).toEqual(false)
+    })
+  })
+
+  describe('when there are no important values definitions', () => {
+    let instanceWithoutImportantValues: InstanceElement
+    let objectTypeWithoutImportantValues: ObjectType
+    beforeEach(async () => {
+      objectTypeWithoutImportantValues = new ObjectType({
+        elemID: new ElemID('salto', 'obj2'),
+        fields: {
+          active: {
+            refType: BuiltinTypes.BOOLEAN,
+          },
+        },
+      })
+      instanceWithoutImportantValues = new InstanceElement('test inst', objectTypeWithoutImportantValues, {
+        active: true,
+      })
+      elementSource = buildElementsSourceFromElements([
+        objectTypeWithoutImportantValues,
+        instanceWithoutImportantValues,
+      ])
+      result = await getImportantValuesDefinitions({
+        element: instanceWithoutImportantValues,
+        elementSource,
+      })
+    })
+
+    it('should return empty important values definitions', async () => {
+      expect(result.importantValuesDefinitions).toEqual([])
+    })
+    it('should return isHiddenImportantValue false', async () => {
+      expect(result.isHiddenImportantValue).toEqual(false)
+    })
+  })
+
+  describe('when there are not visible important values', () => {
+    let instanceWithoutVisibleImportantValues: InstanceElement
+    let objectTypeWithoutVisibleImportantValues: ObjectType
+    beforeEach(async () => {
+      objectTypeWithoutVisibleImportantValues = new ObjectType({
+        elemID: new ElemID('salto', 'obj3'),
+        fields: {
+          hiddenField: {
+            refType: BuiltinTypes.STRING,
+            annotations: {
+              [CORE_ANNOTATIONS.HIDDEN_VALUE]: true,
+            },
+          },
+        },
+        annotations: {
+          [CORE_ANNOTATIONS.IMPORTANT_VALUES]: [
+            {
+              value: 'hiddenField',
+              indexed: true,
+              highlighted: true,
+            },
+          ],
+        },
+      })
+      instanceWithoutVisibleImportantValues = new InstanceElement(
+        'test inst',
+        objectTypeWithoutVisibleImportantValues,
+        {
+          hiddenField: 'hiddenField',
+        },
+      )
+      elementSource = buildElementsSourceFromElements([
+        objectTypeWithoutVisibleImportantValues,
+        instanceWithoutVisibleImportantValues,
+      ])
+      result = await getImportantValuesDefinitions({
+        element: instanceWithoutVisibleImportantValues,
+        elementSource,
+      })
+    })
+
+    it('should return important values definitions from the type', async () => {
+      expect(result.importantValuesDefinitions).toEqual(
+        objectTypeWithoutVisibleImportantValues.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES],
+      )
+    })
+    it('should return isHiddenImportantValue true', async () => {
+      expect(result.isHiddenImportantValue).toEqual(true)
+    })
+  })
+
+  describe('when the object type is not resolved', () => {
+    let instanceWithoutObjectType: InstanceElement
+    beforeEach(async () => {
+      instanceWithoutObjectType = new InstanceElement(
+        'test inst',
+        new TypeReference(objectTypeWithHiddenImportantValue.elemID),
+        {
+          active: true,
+          name: 'test inst',
+          user: {
+            id: 12345,
+          },
+        },
+      )
+    })
+    describe('when there is an elementSource', () => {
+      beforeEach(async () => {
+        elementSource = buildElementsSourceFromElements([objectTypeWithHiddenImportantValue, instanceWithoutObjectType])
+        result = await getImportantValuesDefinitions({
+          element: instanceWithoutObjectType,
+          elementSource,
+        })
+      })
+      it('should return important values definitions from the type', async () => {
+        expect(result.importantValuesDefinitions).toEqual(
+          objectTypeWithHiddenImportantValue.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES],
+        )
+      })
+      it('should return isHiddenImportantValue true', async () => {
+        expect(result.isHiddenImportantValue).toEqual(true)
+      })
+    })
+    describe('when there is no elementSource', () => {
+      beforeEach(async () => {
+        result = await getImportantValuesDefinitions({
+          element: instanceWithoutObjectType,
+        })
+      })
+      it('should return empty important values definitions when there is no elementSource', async () => {
+        const { importantValuesDefinitions } = await getImportantValuesDefinitions({
+          element: instanceWithoutObjectType,
+        })
+        expect(importantValuesDefinitions).toEqual([])
+      })
+      it('should return isHiddenImportantValue true when false is no elementSource', async () => {
+        const { isHiddenImportantValue } = await getImportantValuesDefinitions({
+          element: instanceWithoutObjectType,
+        })
+        expect(isHiddenImportantValue).toEqual(false)
+      })
+    })
+  })
+
+  describe('when the element is a field', () => {
+    let field: Field
+    beforeEach(async () => {
+      field = new Field(obj, 'test field', userType, {
+        [CORE_ANNOTATIONS.IMPORTANT_VALUES]: [{ value: 'label', indexed: true, highlighted: true }],
+      })
+      result = await getImportantValuesDefinitions({
+        element: field,
+      })
+    })
+    it('should return important values definitions from the field', async () => {
+      expect(result.importantValuesDefinitions).toEqual(field.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES])
+    })
+
+    it('should return isHiddenImportantValue false', async () => {
+      expect(result.isHiddenImportantValue).toEqual(false)
+    })
+  })
+
+  describe('when the element is an object type without annotations', () => {
+    let objectTypeWithoutAnnotations: ObjectType
+    beforeEach(async () => {
+      objectTypeWithoutAnnotations = new ObjectType({
+        elemID: new ElemID('salto', 'obj4'),
+        fields: {
+          active: {
+            refType: BuiltinTypes.BOOLEAN,
+          },
+        },
+      })
+      elementSource = buildElementsSourceFromElements([objectTypeWithoutAnnotations])
+      result = await getImportantValuesDefinitions({
+        element: objectTypeWithoutAnnotations,
+        elementSource,
+      })
+    })
+
+    it('should return empty important values definition', async () => {
+      expect(result.importantValuesDefinitions).toEqual([])
+    })
+    it('should return isHiddenImportantValue false', async () => {
+      expect(result.isHiddenImportantValue).toEqual(false)
+    })
+  })
+
+  describe('when there is no elementSource', () => {
+    describe('when the instance reference is resolved', () => {
+      beforeEach(async () => {
+        result = await getImportantValuesDefinitions({
+          element: instanceWithHiddenValue,
+        })
+      })
+      it('should return important values definitions from the type', async () => {
+        expect(result.importantValuesDefinitions).toEqual(
+          objectTypeWithHiddenImportantValue.annotations[CORE_ANNOTATIONS.IMPORTANT_VALUES],
+        )
+      })
+      it('should return isHiddenImportantValue true', async () => {
+        expect(result.isHiddenImportantValue).toEqual(true)
+      })
+    })
+    describe('when the instance reference is not resolved', () => {
+      let instanceWithoutObjectType: InstanceElement
+      beforeEach(async () => {
+        instanceWithoutObjectType = new InstanceElement(
+          'test inst',
+          new TypeReference(objectTypeWithHiddenImportantValue.elemID),
+          {
+            active: true,
+            name: 'test inst',
+          },
+        )
+        result = await getImportantValuesDefinitions({
+          element: instanceWithoutObjectType,
+        })
+      })
+      it('should return empty important values definition', async () => {
+        expect(result.importantValuesDefinitions).toEqual([])
+      })
+      it('should return isHiddenImportantValue false', async () => {
+        expect(result.isHiddenImportantValue).toEqual(false)
+      })
+    })
   })
 })

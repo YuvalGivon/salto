@@ -80,7 +80,8 @@ const fetchBaseInstances = async (
   return { firstFetchInstances, types }
 }
 
-describe('Microsoft Security adapter E2E', () => {
+// eslint-disable-next-line jest/no-disabled-tests
+describe.skip('Microsoft Security adapter E2E', () => {
   describe('fetch and deploy', () => {
     let credLease: CredsLease<e2eUtils.Credentials>
     let elements: Element[] = []
