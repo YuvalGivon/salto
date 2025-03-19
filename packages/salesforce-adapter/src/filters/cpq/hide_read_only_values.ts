@@ -16,7 +16,7 @@ const { awu } = collections.asynciterable
 const filter: FilterCreator = ({ config }) => ({
   name: 'hideReadOnlyValuesFilter',
   onFetch: async (elements: Element[]) => {
-    if (config.fetchProfile.dataManagement?.showReadOnlyValues === true) {
+    if (config.context.dataManagement?.showReadOnlyValues === true) {
       return
     }
     await awu(elements)

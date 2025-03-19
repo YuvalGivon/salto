@@ -13,7 +13,7 @@ import { createInstanceElement } from '../../src/transformers/transformer'
 import { FilterWith } from './mocks'
 import filterCreator from '../../src/filters/add_parent_to_instances_within_folder'
 import { defaultFilterContext } from '../utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 describe('addParentToInstancesWithinFolderFilter', () => {
   describe('onFetch', () => {
@@ -54,7 +54,7 @@ describe('addParentToInstancesWithinFolderFilter', () => {
           const filter: FilterWith<'onFetch'> = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: { target: [], optionalFeatures: { addParentToInstancesWithinFolder: true } },
               }),
               elementsSource: buildElementsSourceFromElements(elementsSource),
@@ -88,7 +88,7 @@ describe('addParentToInstancesWithinFolderFilter', () => {
           const filter: FilterWith<'onFetch'> = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: { target: [], optionalFeatures: { addParentToInstancesWithinFolder: false } },
               }),
               elementsSource: buildElementsSourceFromElements(elementsSource),

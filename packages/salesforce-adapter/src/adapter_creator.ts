@@ -40,7 +40,7 @@ import {
   MAX_ITEMS_IN_RETRIEVE_REQUEST,
   DEPLOY_CONFIG,
 } from './config/types'
-import { validateFetchParameters } from './config/fetch_profile/fetch_profile'
+import { validateFetchParameters } from './config/context/context'
 import { ConfigValidationError } from './config/config_validation'
 import { updateDeprecatedConfiguration } from './config/deprecated_config'
 import createChangeValidator from './change_validator'

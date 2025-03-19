@@ -26,7 +26,7 @@ import { API_NAME, METADATA_CONTENT_FIELD, SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIE
 import { ComponentSet, ConvertResult, MetadataConverter, SourceComponent } from './salesforce_imports'
 import { UNSUPPORTED_TYPES } from './sfdx_dump'
 import { allFilters } from '../adapter'
-import { buildFetchProfile } from '../config/fetch_profile/fetch_profile'
+import { buildContext } from '../config/context/context'
 import { metadataTypeSync } from '../filters/utils'
 import { getTypesWithContent, getTypesWithMetaFile } from '../fetch'
 import { detailedMessageFromSfError } from './errors'
@@ -175,7 +175,7 @@ export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseD
     const typesWithMetaFile = await getTypesWithMetaFile(allTypes)
     const typesWithContent = await getTypesWithContent(allTypes)
 
-    const fetchProfile = buildFetchProfile({
+    const context = buildContext({
       fetchParams: {
         // We set a fetch target here to make the filters think we are in partial fetch
         // this should make the filters not assume all elements are in the elements list
@@ -193,7 +193,7 @@ export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseD
       typesWithMetaFile,
       typesWithContent,
       packagePath: '',
-      fetchProfile,
+      context,
     })
 
     const instancesFromZip = propsAndValues.map(({ values, file }) =>
@@ -205,7 +205,7 @@ export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseD
         config: {
           unsupportedSystemFields: UNSUPPORTED_SYSTEM_FIELDS,
           systemFields: SYSTEM_FIELDS,
-          fetchProfile,
+          context,
           elementsSource,
           flsProfiles: [],
         },

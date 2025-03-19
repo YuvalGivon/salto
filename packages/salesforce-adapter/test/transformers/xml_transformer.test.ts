@@ -28,13 +28,13 @@ import {
   LIGHTNING_COMPONENT_BUNDLE_METADATA_TYPE,
   XML_ATTRIBUTE_PREFIX,
 } from '../../src/constants'
-import { FetchProfile } from '../../src/config/types'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { Context } from '../../src/config/types'
+import { buildContext } from '../../src/config/context/context'
 
 describe('XML Transformer', () => {
-  let fetchProfile: FetchProfile
+  let context: Context
   beforeEach(() => {
-    fetchProfile = buildFetchProfile({
+    context = buildContext({
       fetchParams: {},
     })
   })
@@ -431,7 +431,7 @@ describe('XML Transformer', () => {
           fileProps: fileProperties,
           typesWithMetaFile: new Set(['ApexClass']),
           typesWithContent: new Set(['ApexClass']),
-          fetchProfile,
+          context,
         })
         expect(values).toHaveLength(1)
         const [apex] = values
@@ -491,7 +491,7 @@ describe('XML Transformer', () => {
           fileProps: fileProperties,
           typesWithMetaFile: new Set(['ApexClass']),
           typesWithContent: new Set(['ApexClass']),
-          fetchProfile,
+          context,
         })
         expect(values).toHaveLength(1)
         const [apex] = values
@@ -564,7 +564,7 @@ describe('XML Transformer', () => {
           fileProps: fileProperties,
           typesWithMetaFile: new Set(['EmailTemplate', 'EmailFolder']),
           typesWithContent: new Set(['EmailTemplate']),
-          fetchProfile,
+          context,
         })
         emailFolder = values.find(value => value.file.type === 'EmailFolder')?.values
         emailTemplate = values.find(value => value.file.type === 'EmailTemplate')?.values
@@ -661,7 +661,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(
             values,
@@ -678,7 +678,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(
             values,
@@ -804,7 +804,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(
             values,
@@ -821,7 +821,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(
             values,
@@ -901,7 +901,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(values, fileProperties, 'salesforce/Records/GenAiFunction/myGenAiFunction')
         })
@@ -914,7 +914,7 @@ describe('XML Transformer', () => {
             fileProps: [fileProperties],
             typesWithMetaFile: new Set(),
             typesWithContent: new Set(),
-            fetchProfile,
+            context,
           })
           await verifyMetadataValues(
             values,
@@ -954,7 +954,7 @@ describe('XML Transformer', () => {
           fileProps: fileProperties,
           typesWithMetaFile: new Set(),
           typesWithContent: new Set(),
-          fetchProfile,
+          context,
         })
         expect(values).toContainEqual(
           expect.objectContaining({

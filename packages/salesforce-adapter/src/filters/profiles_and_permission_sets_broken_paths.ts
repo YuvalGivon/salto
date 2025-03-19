@@ -33,7 +33,7 @@ const filter: FilterCreator = ({ config }) => ({
       const { paths } = await getProfilesAndPsBrokenReferenceFields({
         elementsSource,
         profilesAndPermissionSets,
-        metadataQuery: config.fetchProfile.metadataQuery,
+        metadataQuery: config.context.metadataQuery,
       })
       if (paths.length === 0) {
         return
@@ -41,7 +41,7 @@ const filter: FilterCreator = ({ config }) => ({
       const uniquePaths = _.uniq(
         paths.concat(
           // We should concat the existing broken paths in case of partial fetch, and override them in full fetch
-          config.fetchProfile.metadataQuery.isPartialFetch()
+          config.context.metadataQuery.isPartialFetch()
             ? await getProfilesAndPermissionSetsBrokenPaths(elementsSource)
             : [],
         ),

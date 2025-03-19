@@ -133,7 +133,7 @@ const setTopicsForObjectsForFetchWithChangesDetection = async ({
 const filterCreator: FilterCreator = ({ config }) => ({
   name: 'topicsForObjectsFilter',
   onFetch: async (elements: Element[]): Promise<void> => {
-    if (!config.fetchProfile.metadataQuery.isTypeMatch(TOPICS_FOR_OBJECTS_METADATA_TYPE)) {
+    if (!config.context.metadataQuery.isTypeMatch(TOPICS_FOR_OBJECTS_METADATA_TYPE)) {
       log.debug('skipping topicsForObjectsFilter since the MetadataType TopicsForObjects is excluded')
       return
     }
@@ -160,7 +160,7 @@ const filterCreator: FilterCreator = ({ config }) => ({
     const topics: Record<string, boolean> = _.merge({}, ...topicsPerObject)
 
     // Add topics for objects to all fetched elements
-    if (config.fetchProfile.metadataQuery.isFetchWithChangesDetection()) {
+    if (config.context.metadataQuery.isFetchWithChangesDetection()) {
       await setTopicsForObjectsForFetchWithChangesDetection({
         customObjects: customObjectTypes,
         isTopicsEnabledByType: topics,

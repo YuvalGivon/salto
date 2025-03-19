@@ -10,11 +10,11 @@ import changeValidatorCreator from '../../src/change_validators/ordered_maps'
 import { METADATA_TYPE, SALESFORCE } from '../../src/constants'
 import { GLOBAL_VALUE_SET } from '../../src/filters/global_value_sets'
 import { Types } from '../../src/transformers/transformer'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 describe('OrderedMap Change Validator', () => {
   const changeValidator = changeValidatorCreator(
-    buildFetchProfile({ fetchParams: { optionalFeatures: { picklistsAsMaps: true } } }),
+    buildContext({ fetchParams: { optionalFeatures: { picklistsAsMaps: true } } }),
   )
   describe('InstanceElement with ordered map', () => {
     const gvsType = new ObjectType({

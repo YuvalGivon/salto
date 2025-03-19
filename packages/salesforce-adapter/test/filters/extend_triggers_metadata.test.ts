@@ -24,7 +24,7 @@ import { createMetadataObjectType } from '../../src/transformers/transformer'
 import { APEX_TRIGGER_METADATA_TYPE, API_NAME, INTERNAL_ID_FIELD } from '../../src/constants'
 import { SalesforceRecord } from '../../src/client/types'
 import Connection from '../../src/client/jsforce'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 describe('extendTriggersMetadata filter', () => {
   const TRIGGER_API_NAME = 'TestTrigger'
@@ -155,7 +155,7 @@ describe('extendTriggersMetadata filter', () => {
             client,
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: {
                   limits: { extendTriggersMetadataChunkSize: 1 },
                 },
@@ -174,7 +174,7 @@ describe('extendTriggersMetadata filter', () => {
             client,
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: {
                   limits: { extendTriggersMetadataChunkSize: 2 },
                 },

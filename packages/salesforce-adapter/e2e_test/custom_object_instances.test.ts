@@ -34,7 +34,7 @@ import customObjectsInstancesFilter from '../src/filters/custom_objects_instance
 // eslint-disable-next-line no-restricted-imports
 import { createCustomSettingsObject } from '../test/utils'
 import { CUSTOM_OBJECT, LIST_CUSTOM_SETTINGS_TYPE } from '../src/constants'
-import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../src/config/context/context'
 import { testHelpers } from './jest_environment'
 
 const { awu } = collections.asynciterable
@@ -93,7 +93,7 @@ describe('custom object instances e2e', () => {
   }
 
   const filtersContext = {
-    fetchProfile: buildFetchProfile({
+    context: buildContext({
       fetchParams: config.fetch,
     }),
   }

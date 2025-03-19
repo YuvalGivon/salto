@@ -23,7 +23,7 @@ import {
   ReferenceContextStrategyName,
   FieldReferenceDefinition,
   getLookUpName,
-  getDefsFromFetchProfile,
+  getDefsFromContext,
 } from '../transformers/reference_mapping'
 import {
   WORKFLOW_ACTION_ALERT_METADATA_TYPE,
@@ -42,7 +42,7 @@ import {
   MUTING_PERMISSION_SET_METADATA_TYPE,
 } from '../constants'
 import { buildElementsSourceForFetch, extractFlatCustomObjectFields, hasApiName, isInstanceOfTypeSync } from './utils'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const { awu } = collections.asynciterable
 const log = logger(module)
@@ -80,9 +80,9 @@ const shareToMapper: referenceUtils.ContextValueMapperFunc = (val: string) => {
 }
 
 export const createContextStrategyLookups = (
-  fetchProfile: FetchProfile,
+  context: Context,
 ): Record<ReferenceContextStrategyName, referenceUtils.ContextFunc> => {
-  const getLookupNameFunc = getLookUpName(fetchProfile)
+  const getLookupNameFunc = getLookUpName(context)
   const neighborContextFunc = (args: {
     contextFieldName: string
     levelsUp?: number | 'top'
@@ -205,15 +205,15 @@ export const addReferences = async (
 const filter: FilterCreator = ({ config }) => ({
   name: 'fieldReferencesFilter',
   onFetch: async elements => {
-    const typesToIgnore = config.fetchProfile.isCustomReferencesHandlerEnabled('profilesAndPermissionSets')
+    const typesToIgnore = config.context.isCustomReferencesHandlerEnabled('profilesAndPermissionSets')
       ? [PROFILE_METADATA_TYPE, PERMISSION_SET_METADATA_TYPE, MUTING_PERMISSION_SET_METADATA_TYPE]
       : []
     await addReferences(
       elements,
       buildElementsSourceForFetch(elements, config),
-      getDefsFromFetchProfile(config.fetchProfile),
+      getDefsFromContext(config.context),
       typesToIgnore,
-      createContextStrategyLookups(config.fetchProfile),
+      createContextStrategyLookups(config.context),
     )
   },
 })

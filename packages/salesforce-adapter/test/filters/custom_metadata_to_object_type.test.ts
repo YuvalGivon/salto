@@ -39,7 +39,7 @@ import { mockTypes } from '../mock_elements'
 import { apiName, Types } from '../../src/transformers/transformer'
 import { apiNameSync, isInstanceOfTypeChangeSync } from '../../src/filters/utils'
 import { FilterWith } from './mocks'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 const { awu } = collections.asynciterable
 
@@ -149,7 +149,7 @@ describe('customMetadataToObjectTypeFilter', () => {
           config: {
             ...defaultFilterContext,
             elementsSource: buildElementsSourceFromElements([mockTypes.CustomMetadata]),
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 target: ['CustomObject'],
               },

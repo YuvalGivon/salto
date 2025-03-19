@@ -15,7 +15,7 @@ import { objects, promises, values } from '@salto-io/lowerdash'
 import { allFilters, NESTED_METADATA_TYPES } from '../adapter'
 import { SYSTEM_FIELDS, UNSUPPORTED_SYSTEM_FIELDS } from '../constants'
 import { getLookUpName, resolveSalesforceChanges } from '../transformers/reference_mapping'
-import { buildFetchProfile } from '../config/fetch_profile/fetch_profile'
+import { buildContext } from '../config/context/context'
 import { createDeployPackage, DeployPackage, PACKAGE } from '../transformers/xml_transformer'
 import { addChangeToPackage, validateChanges } from '../metadata_deploy'
 import {
@@ -137,12 +137,12 @@ export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, 
   const [supportedMetadataChanges, unsupportedMetadataChanges] = _.partition(metadataChanges, isSupportedMetadataChange)
   const unappliedChanges = typeChanges.concat(customObjectInstanceChanges).concat(unsupportedMetadataChanges)
 
-  const fetchProfile = buildFetchProfile({
+  const context = buildContext({
     fetchParams: {},
   })
 
   log.debug('Resolving %d changes for SFDX dump', supportedMetadataChanges.length)
-  const resolvedChanges = await resolveSalesforceChanges(supportedMetadataChanges, getLookUpName(fetchProfile))
+  const resolvedChanges = await resolveSalesforceChanges(supportedMetadataChanges, getLookUpName(context))
 
   log.debug('Running pre-deploy filters on %d changes for SFDX dump', resolvedChanges.length)
   const filterRunner = filter.filtersRunner(
@@ -150,7 +150,7 @@ export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, 
       config: {
         unsupportedSystemFields: UNSUPPORTED_SYSTEM_FIELDS,
         systemFields: SYSTEM_FIELDS,
-        fetchProfile,
+        context,
         elementsSource,
         flsProfiles: [],
       },

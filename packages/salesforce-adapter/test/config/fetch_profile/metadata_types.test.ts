@@ -14,7 +14,7 @@ import {
   WORKFLOW_FIELDS,
   SALESFORCE_METADATA_TYPES,
   MetadataTypeWithoutDependencies,
-} from '../../../src/config/fetch_profile/metadata_types'
+} from '../../../src/config/context/metadata_types'
 import { PROFILE_RELATED_METADATA_TYPES, SETTINGS_METADATA_TYPE } from '../../../src/constants'
 
 describe('Salesforce MetadataTypes', () => {

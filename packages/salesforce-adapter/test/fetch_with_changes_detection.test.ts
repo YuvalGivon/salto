@@ -14,7 +14,7 @@ import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import Connection from '../src/client/jsforce'
 import SalesforceAdapter from '../index'
 import mockAdapter from './adapter'
-import { CUSTOM_OBJECT_FIELDS } from '../src/config/fetch_profile/metadata_types'
+import { CUSTOM_OBJECT_FIELDS } from '../src/config/context/metadata_types'
 import {
   APEX_CLASS_METADATA_TYPE,
   API_NAME,

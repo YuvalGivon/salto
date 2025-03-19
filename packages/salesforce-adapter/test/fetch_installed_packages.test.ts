@@ -10,7 +10,7 @@ import { collections } from '@salto-io/lowerdash'
 import { INSTALLED_PACKAGE_METADATA, INSTANCE_FULL_NAME_FIELD } from '../src/constants'
 import mockClient from './client'
 import { fetchMetadataInstances } from '../src/fetch'
-import { buildMetadataQuery } from '../src/config/fetch_profile/metadata_query'
+import { buildMetadataQuery } from '../src/config/context/metadata_query'
 import { mockFileProperties, MockFilePropertiesInput } from './connection'
 import { mockTypes } from './mock_elements'
 

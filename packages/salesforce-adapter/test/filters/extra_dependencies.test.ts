@@ -34,7 +34,7 @@ import {
 } from '../../src/constants'
 import { SalesforceRecord } from '../../src/client/types'
 import { Types } from '../../src/transformers/transformer'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { FilterWith } from './mocks'
 
 const getGeneratedDeps = (elem: Element): ReferenceExpression[] =>
@@ -231,7 +231,7 @@ describe('extra dependencies filter', () => {
       client,
       config: {
         ...defaultFilterContext,
-        fetchProfile: buildFetchProfile({
+        context: buildContext({
           fetchParams: {
             target: ['meta'],
           },
@@ -325,7 +325,7 @@ describe('extra dependencies filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 target: ['meta'],
                 limits: { maxExtraDependenciesResponseSize: 10 },
@@ -370,7 +370,7 @@ describe('extra dependencies filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 target: ['meta'],
                 limits: { maxExtraDependenciesQuerySize: 1, maxExtraDependenciesResponseSize: 5 },

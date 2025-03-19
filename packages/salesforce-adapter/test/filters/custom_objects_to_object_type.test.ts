@@ -77,7 +77,7 @@ import {
   createMetadataObjectType,
 } from '../../src/transformers/transformer'
 import { DEPLOY_WRAPPER_INSTANCE_MARKER } from '../../src/metadata_deploy'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { FilterWith } from './mocks'
 import { CustomField } from '../../src/client/types'
 import mockClient from '../client'
@@ -158,7 +158,7 @@ describe('Custom Objects to Object Type filter', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { optionalFeatures: { metaTypes: true } },
           }),
           unsupportedSystemFields: ['UnsupportedField'],
@@ -935,7 +935,7 @@ describe('Custom Objects to Object Type filter', () => {
           filter = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: { target: ['SharingRules'] },
               }),
               elementsSource,

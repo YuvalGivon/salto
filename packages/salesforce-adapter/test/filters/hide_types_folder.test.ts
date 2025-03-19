@@ -7,7 +7,7 @@
  */
 
 import { CORE_ANNOTATIONS, ElemID, Field, ObjectType } from '@salto-io/adapter-api'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { defaultFilterContext } from '../utils'
 import { SALESFORCE, TYPES_PATH } from '../../src/constants'
 import filterCreator from '../../src/filters/hide_types_folder'
@@ -42,7 +42,7 @@ describe('hideTypesFolder filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { optionalFeatures: { hideTypesFolder: true } },
             }),
           },
@@ -79,7 +79,7 @@ describe('hideTypesFolder filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { optionalFeatures: { hideTypesFolder: false } },
             }),
           },

@@ -62,7 +62,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
    * @param elements
    */
   onFetch: async (elements: Element[]): Promise<FilterResult> => {
-    if (config.fetchProfile.isFeatureEnabled('retrieveSettings') || client === undefined) {
+    if (config.context.isFeatureEnabled('retrieveSettings') || client === undefined) {
       return {}
     }
 
@@ -74,7 +74,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
     )
 
     const settingsTypeInfos = settingsList.filter(info =>
-      config.fetchProfile.metadataQuery.isTypeMatch(getSettingsTypeName(info.fullName)),
+      config.context.metadataQuery.isTypeMatch(getSettingsTypeName(info.fullName)),
     )
 
     // Create settings types
@@ -82,7 +82,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
     const objectTypes = elements.filter(isObjectType)
     await awu(objectTypes).forEach(async e => knownTypes.set(await apiName(e), e))
 
-    const metaType = config.fetchProfile.isFeatureEnabled('metaTypes') ? StandardSettingsMetaType : undefined
+    const metaType = config.context.isFeatureEnabled('metaTypes') ? StandardSettingsMetaType : undefined
     const settingsTypes = (
       await Promise.all(
         settingsTypeInfos
@@ -106,8 +106,8 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
             client,
             metadataType: type,
             fileProps: [info],
-            metadataQuery: config.fetchProfile.metadataQuery,
-            maxInstancesPerType: config.fetchProfile.maxInstancesPerType,
+            metadataQuery: config.context.metadataQuery,
+            maxInstancesPerType: config.context.maxInstancesPerType,
           }),
         ),
     )

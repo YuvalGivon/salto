@@ -40,7 +40,7 @@ const getSettingsTypeName = (settings: InstanceElement): string | undefined => {
 const filterCreator: FilterCreator = ({ config }) => ({
   name: 'settingsFilterV2',
   onFetch: async (elements: Element[]): Promise<void> => {
-    if (!config.fetchProfile.isFeatureEnabled('retrieveSettings')) {
+    if (!config.context.isFeatureEnabled('retrieveSettings')) {
       return
     }
 

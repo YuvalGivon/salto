@@ -11,7 +11,7 @@ import { logger } from '@salto-io/logging'
 import { collections, values } from '@salto-io/lowerdash'
 import _ from 'lodash'
 import { ConfigValidationError, validateRegularExpressions } from './config_validation'
-import { validateDataManagementConfig } from './fetch_profile/data_management'
+import { validateDataManagementConfig } from './context/data_management'
 import { INSTANCE_SUFFIXES } from '../types'
 import {
   DataManagementConfig,

@@ -33,7 +33,7 @@ import {
 import { fetchMetadataInstances } from '../fetch'
 import { createInstanceElement } from '../transformers/transformer'
 import SalesforceClient from '../client/client'
-import { FetchElements, FetchProfile } from '../config/types'
+import { FetchElements, Context } from '../config/types'
 import {
   apiNameSync,
   findObjectType,
@@ -149,19 +149,19 @@ const createSelectedVersionFileProperties = async ({
   flowsFileProps,
   flowDefinitions,
   client,
-  fetchProfile,
+  context,
 }: {
   flowsFileProps: FileProperties[]
   flowDefinitions: InstanceElement[]
   client: SalesforceClient
-  fetchProfile: FetchProfile
+  context: Context
 }): Promise<FileProperties[]> => {
   const flowVersionsByApiName = await getFlowVersionsByApiName({
     client,
     flowDefinitions,
-    chunkSize: fetchProfile.limits?.flowDefinitionsQueryChunkSize ?? DEFAULT_CHUNK_SIZE,
+    chunkSize: context.limits?.flowDefinitionsQueryChunkSize ?? DEFAULT_CHUNK_SIZE,
   })
-  const versionSelector = fetchProfile.preferActiveFlowVersions ? selectActiveVersion : selectLatestVersion
+  const versionSelector = context.preferActiveFlowVersions ? selectActiveVersion : selectLatestVersion
   const selectedVersions = new Map<string, FlowVersionProperties | undefined>()
   flowVersionsByApiName.forEach((versions, apiName) => {
     selectedVersions.set(apiName, versionSelector(versions))
@@ -210,7 +210,7 @@ const createDeactivatedFlowDefinitionChange = (
 
 const getFlowInstances = async (
   client: SalesforceClient,
-  fetchProfile: FetchProfile,
+  context: Context,
   flowType: ObjectType,
   flowDefinitions: InstanceElement[],
 ): Promise<FetchElements<InstanceElement[]>> => {
@@ -220,14 +220,14 @@ const getFlowInstances = async (
     flowsFileProps,
     flowDefinitions,
     client,
-    fetchProfile,
+    context,
   })
   const instances = await fetchMetadataInstances({
     client,
     fileProps: flowsVersionProps,
     metadataType: flowType,
-    metadataQuery: fetchProfile.metadataQuery,
-    maxInstancesPerType: fetchProfile.maxInstancesPerType,
+    metadataQuery: context.metadataQuery,
+    maxInstancesPerType: context.maxInstancesPerType,
   })
   return {
     configChanges: instances.configChanges.concat(configChanges),
@@ -247,10 +247,10 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
     })
 
     const flowType = findObjectType(elements, FLOW_METADATA_TYPE)
-    if (!config.fetchProfile.metadataQuery.isTypeMatch(FLOW_METADATA_TYPE) || flowType === undefined) {
+    if (!config.context.metadataQuery.isTypeMatch(FLOW_METADATA_TYPE) || flowType === undefined) {
       return {}
     }
-    const instances = await getFlowInstances(client, config.fetchProfile, flowType, flowDefinitions)
+    const instances = await getFlowInstances(client, config.context, flowType, flowDefinitions)
     instances.elements.forEach(e => elements.push(e))
     return {
       configSuggestions: [...instances.configChanges],

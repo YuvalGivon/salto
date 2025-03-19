@@ -75,7 +75,7 @@ const filterCreator: FilterCreator = ({ config }) => ({
       ])
       .filter((fieldReference): fieldReference is [Field, ReferenceExpression] => fieldReference[1] !== undefined)
 
-    if (!config.fetchProfile.isCustomReferencesHandlerEnabled('managedElements')) {
+    if (!config.context.isCustomReferencesHandlerEnabled('managedElements')) {
       topLevelElementsReferences
         .concat(fieldsReferences)
         .map(([element, reference]) => extendGeneratedDependencies(element, [{ reference }]))

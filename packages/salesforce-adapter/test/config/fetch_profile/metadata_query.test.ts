@@ -14,7 +14,7 @@ import {
   buildMetadataQuery,
   buildMetadataQueryForFetchWithChangesDetection,
   validateMetadataParams,
-} from '../../../src/config/fetch_profile/metadata_query'
+} from '../../../src/config/context/metadata_query'
 import {
   CUSTOM_METADATA,
   CUSTOM_OBJECT,

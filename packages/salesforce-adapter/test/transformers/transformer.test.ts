@@ -82,7 +82,7 @@ const { awu } = collections.asynciterable
 describe('transformer', () => {
   let getLookupNameFunc: GetLookupNameFunc
   beforeEach(() => {
-    getLookupNameFunc = getLookUpName(defaultFilterContext.fetchProfile)
+    getLookupNameFunc = getLookUpName(defaultFilterContext.context)
   })
   describe('getAuthorAnnotations', () => {
     const newChangeDateFileProperties = mockFileProperties({
@@ -199,7 +199,7 @@ describe('transformer', () => {
           salesforceReferenceField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         await assertReferenceFieldTransformation(fieldElement, ['Group', 'User'], Types.primitiveDataTypes.Lookup)
       })
@@ -211,7 +211,7 @@ describe('transformer', () => {
           salesforceReferenceField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         await assertReferenceFieldTransformation(fieldElement, ['Group', 'User'], Types.primitiveDataTypes.Lookup)
       })
@@ -223,7 +223,7 @@ describe('transformer', () => {
           salesforceReferenceField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         await assertReferenceFieldTransformation(fieldElement, ['Group', 'User'], Types.primitiveDataTypes.Lookup)
       })
@@ -237,7 +237,7 @@ describe('transformer', () => {
           salesforceReferenceField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         await assertReferenceFieldTransformation(fieldElement, ['Group', 'User'], Types.primitiveDataTypes.MasterDetail)
         expect(fieldElement.annotations[FIELD_ANNOTATIONS.REPARENTABLE_MASTER_DETAIL]).toBe(true)
@@ -253,7 +253,7 @@ describe('transformer', () => {
           salesforceReferenceField,
           {},
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         await assertReferenceFieldTransformation(fieldElement, ['Group', 'User'], Types.primitiveDataTypes.MasterDetail)
         expect(fieldElement.annotations[CORE_ANNOTATIONS.REQUIRED]).toBeFalsy()
@@ -313,7 +313,7 @@ describe('transformer', () => {
           salesforceRollupSummaryField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(await fieldElement.getType()).toEqual(Types.primitiveDataTypes.Summary)
       })
@@ -325,7 +325,7 @@ describe('transformer', () => {
           salesforceRollupSummaryField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(await fieldElement.getType()).not.toEqual(Types.primitiveDataTypes.Summary)
       })
@@ -385,7 +385,7 @@ describe('transformer', () => {
           salesforceNumberField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(fieldElement.annotations[FIELD_ANNOTATIONS.PRECISION]).toEqual(precision)
         expect(fieldElement.annotations[FIELD_ANNOTATIONS.SCALE]).toEqual(scale)
@@ -401,7 +401,7 @@ describe('transformer', () => {
           salesforceNumberField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(fieldElement.annotations[FIELD_ANNOTATIONS.PRECISION]).toEqual(precision)
         expect(await fieldElement.getType()).toEqual(Types.primitiveDataTypes.Number)
@@ -425,7 +425,7 @@ describe('transformer', () => {
           restrictedPicklist: true,
           precision: 3,
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.context)
       })
       it('should add value set annotation', () => {
         expect(field.annotations).toHaveProperty(FIELD_ANNOTATIONS.VALUE_SET, [
@@ -451,7 +451,7 @@ describe('transformer', () => {
           extraTypeInfo: 'plaintextarea',
           length: 5000,
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.context)
       })
       it('should get long text area field type', () => {
         expect(field.refType.type).toBe(Types.primitiveDataTypes.LongTextArea)
@@ -467,7 +467,7 @@ describe('transformer', () => {
           extraTypeInfo: 'richtextarea',
           length: 5000,
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.context)
       })
       it('should get html field type', () => {
         expect(field.refType.type).toBe(Types.primitiveDataTypes.Html)
@@ -481,7 +481,7 @@ describe('transformer', () => {
           soapType: 'xsd:string',
           type: 'encryptedstring',
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, {}, {}, defaultFilterContext.context)
       })
       it('should get html field type', () => {
         expect(field.refType.type).toBe(Types.primitiveDataTypes.EncryptedText)
@@ -538,7 +538,7 @@ describe('transformer', () => {
           salesforceAddressField,
           serviceIds,
           { OtherAddress: 'OtherAddress' },
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(await fieldElement.getType()).toEqual(Types.compoundDataTypes.Address)
       })
@@ -591,7 +591,7 @@ describe('transformer', () => {
           salesforceIdField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(isServiceId(await fieldElement.getType())).toEqual(true)
       })
@@ -647,7 +647,7 @@ describe('transformer', () => {
             salesforceAutoNumberField,
             serviceIds,
             {},
-            defaultFilterContext.fetchProfile,
+            defaultFilterContext.context,
           )
           expect(await fieldElement.getType()).toEqual(Types.primitiveDataTypes.AutoNumber)
           expect(fieldElement.annotations[CORE_ANNOTATIONS.HIDDEN_VALUE]).toBeTruthy()
@@ -663,7 +663,7 @@ describe('transformer', () => {
             salesforceAutoNumberField,
             serviceIds,
             {},
-            defaultFilterContext.fetchProfile,
+            defaultFilterContext.context,
           )
           expect(await fieldElement.getType()).toEqual(Types.primitiveDataTypes.AutoNumber)
           expect(fieldElement.annotations[CORE_ANNOTATIONS.HIDDEN_VALUE]).toBeTruthy()
@@ -723,7 +723,7 @@ describe('transformer', () => {
           salesforceNameField,
           serviceIds,
           { Name: 'Name' },
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(await fieldElement.getType()).toEqual(Types.compoundDataTypes.Name)
       })
@@ -734,7 +734,7 @@ describe('transformer', () => {
           salesforceNameField,
           serviceIds,
           {},
-          defaultFilterContext.fetchProfile,
+          defaultFilterContext.context,
         )
         expect(await fieldElement.getType()).toEqual(Types.primitiveDataTypes.Text)
       })
@@ -779,7 +779,7 @@ describe('transformer', () => {
           unique: false,
           updateable: true,
         }
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.context)
       })
       it('should create a field with a valid name', () => {
         expect(field.name).not.toInclude('%')
@@ -798,7 +798,7 @@ describe('transformer', () => {
           soapType: 'xsd:string',
           type: 'string',
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.context)
       })
       it('should have a type of formula', () => {
         expect(field.refType.type?.elemID.name).toEqual('FormulaText')
@@ -825,7 +825,7 @@ describe('transformer', () => {
           soapType: 'xsd:boolean',
           type: 'boolean',
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.context)
       })
       it('should set the _default annotation on the field', () => {
         expect(field.annotations[FIELD_ANNOTATIONS.DEFAULT_VALUE]).toEqual(true)
@@ -846,7 +846,7 @@ describe('transformer', () => {
           type: 'boolean',
           updateable: true,
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.fetchProfile)
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.context)
       })
       it('should set the _default annotation on the field', () => {
         expect(field.annotations[FIELD_ANNOTATIONS.DEFAULT_VALUE]).toEqual(false)
@@ -860,7 +860,7 @@ describe('transformer', () => {
           name: 'LastModifiedDate',
           type: 'datetime',
         })
-        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.fetchProfile, [
+        field = getSObjectFieldElement(dummyElem, fieldDefinition, serviceIds, {}, defaultFilterContext.context, [
           'LastModifiedDate',
         ])
       })
@@ -888,7 +888,7 @@ describe('transformer', () => {
             serviceIds,
             {},
             {
-              ...defaultFilterContext.fetchProfile,
+              ...defaultFilterContext.context,
               isFeatureEnabled: _feature => true,
             },
           )
@@ -903,7 +903,7 @@ describe('transformer', () => {
             serviceIds,
             {},
             {
-              ...defaultFilterContext.fetchProfile,
+              ...defaultFilterContext.context,
               isFeatureEnabled: _feature => false,
             },
           )

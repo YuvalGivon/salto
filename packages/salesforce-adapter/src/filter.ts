@@ -10,12 +10,12 @@ import { filterUtils } from '@salto-io/adapter-components'
 import { filter } from '@salto-io/adapter-utils'
 import SalesforceClient from './client/client'
 import { LastChangeDateOfTypesWithNestedInstances } from './types'
-import { ConfigChangeSuggestion, FetchProfile } from './config/types'
+import { ConfigChangeSuggestion, Context } from './config/types'
 
 export type FilterContext = {
   unsupportedSystemFields?: string[]
   systemFields?: string[]
-  fetchProfile: FetchProfile
+  context: Context
   elementsSource: ReadOnlyElementsSource
   separateFieldToFiles?: string[]
   flsProfiles: string[]

@@ -112,7 +112,7 @@ import {
 import SalesforceClient from '../client/client'
 import { allMissingSubTypes } from './salesforce_types'
 import { defaultMissingFields } from './missing_fields'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const log = logger(module)
 const { mapValuesAsync } = promises.object
@@ -1267,7 +1267,7 @@ export const getSObjectFieldElement = (
   field: SalesforceField,
   parentServiceIds: ServiceIds,
   objCompoundFieldNames: Record<string, string> = {},
-  fetchProfile: FetchProfile,
+  context: Context,
   systemFields: string[] = [],
 ): Field => {
   const fieldApiName = [parentServiceIds[API_NAME], field.name].join(API_NAME_SEPARATOR)
@@ -1282,7 +1282,7 @@ export const getSObjectFieldElement = (
     [API_NAME]: fieldApiName,
     [LABEL]: field.label,
   }
-  if (fetchProfile.isFeatureEnabled('extendedCustomFieldInformation')) {
+  if (context.isFeatureEnabled('extendedCustomFieldInformation')) {
     EXTRA_INFORMATION_FIELD_ANNOTATIONS.forEach(annotation => {
       annotations[annotation] = field[annotation]
     })

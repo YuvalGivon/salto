@@ -30,7 +30,7 @@ import * as constants from '../src/constants'
 import { FIELD_ANNOTATIONS, SYSTEM_FIELDS } from '../src/constants'
 import { annotationsFileName, customFieldsFileName, standardFieldsFileName } from '../src/filters/custom_type_split'
 import { FilterContext } from '../src/filter'
-import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../src/config/context/context'
 import { createDeployProgressReporter, DeployProgressReporter } from '../src/adapter_creator'
 import { SalesforceClient } from '../index'
 import { LastChangeDateOfTypesWithNestedInstances } from '../src/types'
@@ -393,7 +393,7 @@ export const buildFilterContext = ({
   customReferencesSettings?: CustomReferencesSettings
 }): FilterContext => ({
   systemFields: SYSTEM_FIELDS,
-  fetchProfile: buildFetchProfile({
+  context: buildContext({
     fetchParams: { optionalFeatures },
     customReferencesSettings,
   }),

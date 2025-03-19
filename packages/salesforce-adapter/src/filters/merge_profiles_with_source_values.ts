@@ -27,7 +27,7 @@ const filterCreator: FilterCreator = ({ config }) => ({
   name: 'mergeProfilesWithSourceValues',
   onFetch: async elements => {
     const profileInstances = elements.filter(isInstanceOfTypeSync(PROFILE_METADATA_TYPE))
-    if (!config.fetchProfile.metadataQuery.isFetchWithChangesDetection()) {
+    if (!config.context.metadataQuery.isFetchWithChangesDetection()) {
       return
     }
     log.debug(

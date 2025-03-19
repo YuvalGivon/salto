@@ -218,8 +218,8 @@ export const makeFilter =
             client,
             fileProps: [...standardValueSetNames].map(emptyFileProperties),
             metadataType: svsMetadataType,
-            metadataQuery: config.fetchProfile.metadataQuery,
-            maxInstancesPerType: config.fetchProfile.maxInstancesPerType,
+            metadataQuery: config.context.metadataQuery,
+            maxInstancesPerType: config.context.maxInstancesPerType,
           })
           elements.push(...svsInstances.elements)
 
@@ -230,7 +230,7 @@ export const makeFilter =
         const customObjectTypeElements = await awu(elements).filter(isObjectType).filter(isCustomObject).toArray()
 
         if (customObjectTypeElements.length > 0) {
-          const svsInstances = !config.fetchProfile.metadataQuery.isPartialFetch()
+          const svsInstances = !config.context.metadataQuery.isPartialFetch()
             ? fetchedSVSInstances
             : await awu(await buildElementsSourceFromElements(elements, [config.elementsSource]).getAll())
                 .filter(isInstanceOfTypeSync(STANDARD_VALUE_SET))

@@ -12,7 +12,7 @@ import { FilterCreator } from '../filter'
 const filterCreator: FilterCreator = ({ config }) => ({
   name: 'salesforceImportantValuesFilter',
   onFetch: async elements => {
-    const { importantValues } = config.fetchProfile
+    const { importantValues } = config.context
     const addImportantValues = (type: MetadataObjectType): void => {
       const typeFields = new Set(Object.keys(type.fields))
       const typeImportantValues = importantValues.filter(importantValue => typeFields.has(importantValue.value))

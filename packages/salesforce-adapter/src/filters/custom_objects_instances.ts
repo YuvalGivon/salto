@@ -471,7 +471,7 @@ export const getAllInstances = async (
   const elementsSource = buildElementsSourceForFetch([], config)
   let elementSourceRecordsByTypeAndId: SalesforceRecordsByTypeAndId = {}
 
-  if (config.fetchProfile.metadataQuery.isFetchWithChangesDetection()) {
+  if (config.context.metadataQuery.isFetchWithChangesDetection()) {
     const fetchedRecordIds = new Set(
       Object.values(fetchedBaseRecordsByType)
         .flat()
@@ -493,7 +493,7 @@ export const getAllInstances = async (
     client,
     customObjectFetchSetting,
     fetchedBaseRecordByTypeAndId,
-    config.fetchProfile.metadataQuery.isFetchWithChangesDetection() ? elementsSource : undefined,
+    config.context.metadataQuery.isFetchWithChangesDetection() ? elementsSource : undefined,
   )
 
   const referencedRecordsByTypeAndIdFromElementSourceRecords = await getReferencedRecords(
@@ -765,7 +765,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
       }
     }
 
-    const { dataManagement } = config.fetchProfile
+    const { dataManagement } = config.context
     if (dataManagement === undefined) {
       return {}
     }
@@ -800,7 +800,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
 
     const { filteredChangesFetchSettings, heavyTypesSuggestions } = await filterTypesWithManyInstances({
       validChangesFetchSettings,
-      maxInstancesPerType: config.fetchProfile.maxInstancesPerType,
+      maxInstancesPerType: config.context.maxInstancesPerType,
       client,
     })
 
@@ -828,7 +828,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
 
     let invalidPermissionsWarnings: SaltoError[] = []
 
-    if (config.fetchProfile.isWarningEnabled('nonQueryableFields') ?? false) {
+    if (config.context.isWarningEnabled('nonQueryableFields') ?? false) {
       invalidPermissionsWarnings = customObjectFetchSetting
         .map(fetchSettings => fetchSettings.objectType)
         .filter(isCustomObjectSync)

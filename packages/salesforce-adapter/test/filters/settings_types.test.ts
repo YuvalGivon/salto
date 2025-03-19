@@ -8,7 +8,7 @@
 import { InstanceElement, isInstanceElement, ObjectType, Element } from '@salto-io/adapter-api'
 import filterCreator from '../../src/filters/settings_types'
 import { INSTANCE_FULL_NAME_FIELD, RECORDS_PATH, SALESFORCE, SETTINGS_DIR_NAME } from '../../src/constants'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { createMetadataTypeElement, defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
 import { mockTypes } from '../mock_elements'
@@ -39,7 +39,7 @@ describe('Test Settings Types', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: {
               optionalFeatures: {
                 retrieveSettings: true,
@@ -85,7 +85,7 @@ describe('Test Settings Types', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 optionalFeatures: {
                   retrieveSettings: false,

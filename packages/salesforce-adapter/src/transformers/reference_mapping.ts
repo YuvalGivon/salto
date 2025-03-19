@@ -31,7 +31,7 @@ import {
   TEST_OBJECT_TO_API_MAPPING,
 } from '../constants'
 import { instanceInternalId, isOrderedMapTypeOrRefType } from '../filters/utils'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const log = logger(module)
 const { awu } = collections.asynciterable
@@ -1821,9 +1821,9 @@ const getLookUpNameImpl = ({
   }
 }
 
-export const getDefsFromFetchProfile = (fetchProfile: FetchProfile): FieldReferenceDefinition[] => {
-  const { disabledReferences } = fetchProfile
-  if (!fetchProfile.disabledReferences) {
+export const getDefsFromContext = (context: Context): FieldReferenceDefinition[] => {
+  const { disabledReferences } = context
+  if (!context.disabledReferences) {
     return Object.values(referenceMappingDefs)
   }
   const [validDisables, invalidDisables] = _.partition(
@@ -1880,16 +1880,16 @@ export const resolveSalesforceChanges = (
 ): Promise<Change[]> =>
   Promise.all(changes.map(change => resolveChangeElement(change, getLookupNameFunc, salesforceAdapterResolveValues)))
 
-export const getLookUpName = (fetchProfile: FetchProfile): GetLookupNameFunc =>
+export const getLookUpName = (context: Context): GetLookupNameFunc =>
   getLookUpNameImpl({
-    defs: getDefsFromFetchProfile(fetchProfile),
+    defs: getDefsFromContext(context),
     resolveToElementFallback: false,
     defaultStrategyName: 'absoluteApiName',
   })
 
-export const getLookupNameForDataInstances = (fetchProfile: FetchProfile): GetLookupNameFunc =>
+export const getLookupNameForDataInstances = (context: Context): GetLookupNameFunc =>
   getLookUpNameImpl({
-    defs: getDefsFromFetchProfile(fetchProfile),
+    defs: getDefsFromContext(context),
     resolveToElementFallback: true,
     defaultStrategyName: 'fromDataInstance',
   })

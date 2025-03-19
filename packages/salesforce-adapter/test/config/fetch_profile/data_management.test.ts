@@ -6,7 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { buildDataManagement } from '../../../src/config/fetch_profile/data_management'
+import { buildDataManagement } from '../../../src/config/context/data_management'
 import { API_NAME, DETECTS_PARENTS_INDICATOR } from '../../../src/constants'
 import { createCustomObjectType } from '../../utils'
 import { Types } from '../../../src/transformers/transformer'

@@ -37,7 +37,7 @@ import {
   getProfilesAndPermissionSetsBrokenPaths,
   isInstanceOfTypeSync,
 } from '../filters/utils'
-import { buildMetadataQuery } from '../config/fetch_profile/metadata_query'
+import { buildMetadataQuery } from '../config/context/metadata_query'
 
 const { makeArray } = collections.array
 const { awu } = collections.asynciterable

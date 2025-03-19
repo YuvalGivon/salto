@@ -14,7 +14,7 @@ import { createInstanceElement } from '../../src/transformers/transformer'
 import { OPPORTUNITY_METADATA_TYPE } from '../../src/constants'
 import { FilterWith } from './mocks'
 import filterCreator from '../../src/filters/add_parent_to_record_triggered_flows'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 describe('addParentToRecordTriggeredFlows', () => {
   describe('onFetch', () => {
@@ -47,7 +47,7 @@ describe('addParentToRecordTriggeredFlows', () => {
           filter = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: { target: [] },
               }),
               elementsSource: buildElementsSourceFromElements(elementsSource),
@@ -83,7 +83,7 @@ describe('addParentToRecordTriggeredFlows', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { target: [] },
             }),
             elementsSource: buildElementsSourceFromElements(elementsSource),

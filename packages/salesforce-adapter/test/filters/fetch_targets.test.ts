@@ -9,7 +9,7 @@ import { Element, InstanceElement, isInstanceElement } from '@salto-io/adapter-a
 import filterCreator from '../../src/filters/fetch_targets'
 import { FilterWith } from './mocks'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { createMetadataObjectType, Types } from '../../src/transformers/transformer'
 import {
   APEX_CLASS_METADATA_TYPE,
@@ -66,7 +66,7 @@ describe('fetch targets filter', () => {
           filter = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({ fetchParams: { optionalFeatures: { extendFetchTargets: true } } }),
+              context: buildContext({ fetchParams: { optionalFeatures: { extendFetchTargets: true } } }),
             },
           }) as typeof filter
         })
@@ -92,7 +92,7 @@ describe('fetch targets filter', () => {
           filter = filterCreator({
             config: {
               ...defaultFilterContext,
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: { target: [], optionalFeatures: { extendFetchTargets: true } },
               }),
             },
@@ -113,7 +113,7 @@ describe('fetch targets filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({ fetchParams: { optionalFeatures: { extendFetchTargets: false } } }),
+            context: buildContext({ fetchParams: { optionalFeatures: { extendFetchTargets: false } } }),
           },
         }) as typeof filter
       })

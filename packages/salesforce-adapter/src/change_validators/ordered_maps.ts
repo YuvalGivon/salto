@@ -25,7 +25,7 @@ import {
   getElementValueOrAnnotations,
   getChangesWithFieldType,
 } from '../filters/convert_maps'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const getOrderedMapErrors = (element: Element, fieldName: string): ChangeError[] => {
   const elementValues = getElementValueOrAnnotations(element)
@@ -84,9 +84,9 @@ const getOrderedMapErrors = (element: Element, fieldName: string): ChangeError[]
   return errors
 }
 
-const changeValidator: (fetchProfile: FetchProfile) => ChangeValidator = fetchProfile => {
-  const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(fetchProfile)
-  const annotationDefsByType = getAnnotationDefsByType(fetchProfile)
+const changeValidator: (context: Context) => ChangeValidator = context => {
+  const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(context)
+  const annotationDefsByType = getAnnotationDefsByType(context)
 
   return async changes => {
     const instanceErrors: ChangeError[] = Object.keys(metadataTypeToFieldToMapDef).flatMap(targetMetadataType => {

@@ -333,7 +333,7 @@ const filter: FilterCreator = ({ client, config }) => ({
     if (client === undefined) {
       return {}
     }
-    const { dataManagement } = config.fetchProfile
+    const { dataManagement } = config.context
     if (dataManagement === undefined) {
       return {}
     }

@@ -39,7 +39,7 @@ import {
   profilesAndPermissionSetsHandler,
 } from '../../src/custom_references/profiles_and_permission_sets'
 import { MetadataQuery } from '../../src/config/types'
-import { buildMetadataQuery } from '../../src/config/fetch_profile/metadata_query'
+import { buildMetadataQuery } from '../../src/config/context/metadata_query'
 
 const HANDLED_TYPES = [
   PROFILE_METADATA_TYPE,

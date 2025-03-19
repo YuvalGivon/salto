@@ -28,7 +28,7 @@ import {
   isDeactivatedFlowChangeOnly,
   isInstanceOfTypeChangeSync,
 } from '../filters/utils'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 import SalesforceClient from '../client/client'
 import { FLOW_URL_SUFFIX } from '../elements_url_retriever/lightning_url_resolvers'
 
@@ -218,9 +218,9 @@ const activateInvalidFlowError = (flowInstance: InstanceElement): ChangeError =>
  * Handling all changes regarding active flows
  */
 const activeFlowValidator =
-  (fetchProfile: FetchProfile, isSandbox: boolean, client: SalesforceClient): ChangeValidator =>
+  (context: Context, isSandbox: boolean, client: SalesforceClient): ChangeValidator =>
   async (changes, elementsSource) => {
-    const isPreferActiveVersion = fetchProfile.preferActiveFlowVersions
+    const isPreferActiveVersion = context.preferActiveFlowVersions
     const isEnableFlowDeployAsActiveEnabled = await getDeployAsActiveFlag(
       elementsSource,
       ENABLE_FLOW_DEPLOY_AS_ACTIVE_ENABLED_DEFAULT,

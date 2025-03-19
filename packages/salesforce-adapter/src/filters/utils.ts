@@ -114,7 +114,7 @@ import {
 } from '../transformers/transformer'
 import { Filter, FilterContext } from '../filter'
 import { createListMetadataObjectsConfigChange } from '../config/config_change'
-import { getFetchTargetsWithDependencies, SUPPORTED_METADATA_TYPES } from '../config/fetch_profile/metadata_types'
+import { getFetchTargetsWithDependencies, SUPPORTED_METADATA_TYPES } from '../config/context/metadata_types'
 import { SalesforceFetchTargets } from './fetch_targets'
 
 const { toArrayAsync, awu } = collections.asynciterable
@@ -662,11 +662,11 @@ export const buildDataRecordsSoqlQueries = async (
 
 export const buildElementsSourceForFetch = (
   elements: ReadonlyArray<Element>,
-  config: Pick<FilterContext, 'fetchProfile' | 'elementsSource'>,
+  config: Pick<FilterContext, 'context' | 'elementsSource'>,
 ): ReadOnlyElementsSource =>
   buildElementsSourceFromElements(
     elements,
-    config.fetchProfile.metadataQuery.isPartialFetch() ? [config.elementsSource] : [],
+    config.context.metadataQuery.isPartialFetch() ? [config.elementsSource] : [],
   )
 
 export const getDataFromChanges = <T extends Change<unknown>>(
@@ -690,7 +690,7 @@ export const ensureSafeFilterFetch =
     filterName?: keyof OptionalFeatures
   }): Required<Filter>['onFetch'] =>
   async elements => {
-    if (filterName !== undefined && !config.fetchProfile.isFeatureEnabled(filterName)) {
+    if (filterName !== undefined && !config.context.isFeatureEnabled(filterName)) {
       log.debug('skipping %s filter due to configuration', filterName)
       return undefined
     }

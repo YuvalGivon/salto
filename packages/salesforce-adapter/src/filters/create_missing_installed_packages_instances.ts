@@ -48,7 +48,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
       .map(instance => apiName(instance))
       .toArray()
     listResult
-      .filter(file => notInSkipList(config.fetchProfile.metadataQuery, file, false))
+      .filter(file => notInSkipList(config.context.metadataQuery, file, false))
       .filter(file => !existingInstalledPackageNamespaces.includes(file.fullName))
       .map(file => createMissingInstalledPackageInstance(file, installedPackageType))
       .forEach(missingInstalledPackageInstance => elements.push(missingInstalledPackageInstance))

@@ -36,7 +36,7 @@ describe('referenceMapping tests', () => {
 
   describe('getLookupNameWithFallbackToElement', () => {
     beforeEach(() => {
-      getLookupNameFunc = getLookupNameForDataInstances(defaultFilterContext.fetchProfile)
+      getLookupNameFunc = getLookupNameForDataInstances(defaultFilterContext.context)
     })
     describe('when the default strategy resolves to undefined', () => {
       it('should resolve to the referenced instance', async () => {
@@ -76,7 +76,7 @@ describe('referenceMapping tests', () => {
   })
   describe('getLookupName', () => {
     beforeEach(() => {
-      getLookupNameFunc = getLookUpName(defaultFilterContext.fetchProfile)
+      getLookupNameFunc = getLookUpName(defaultFilterContext.context)
     })
     describe('when the default strategy resolves to undefined', () => {
       it('should resolve to undefined', async () => {

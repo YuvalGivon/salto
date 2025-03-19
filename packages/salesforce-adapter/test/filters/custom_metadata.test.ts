@@ -8,7 +8,7 @@
 import { Change, Element, ElemID, getChangeData, ObjectType, toChange } from '@salto-io/adapter-api'
 import { collections } from '@salto-io/lowerdash'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { mockTypes, mockInstances } from '../mock_elements'
 import { defaultFilterContext } from '../utils'
 import makeFilter, { ServiceMDTRecordValue, XSI_NIL_TRUE } from '../../src/filters/custom_metadata'
@@ -165,7 +165,7 @@ describe('CustomMetadata filter', () => {
         filter = makeFilter({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { target: [CUSTOM_METADATA] },
             }),
             elementsSource: buildElementsSourceFromElements([customMetadataRecordType]),

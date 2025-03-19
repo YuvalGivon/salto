@@ -20,7 +20,7 @@ import {
 } from '@salto-io/adapter-api'
 import { definitions } from '@salto-io/adapter-components'
 import { types } from '@salto-io/lowerdash'
-import { SUPPORTED_METADATA_TYPES } from './fetch_profile/metadata_types'
+import { SUPPORTED_METADATA_TYPES } from './context/metadata_types'
 import * as constants from '../constants'
 import { MetadataInstance } from '../types'
 
@@ -985,7 +985,7 @@ export type DataManagement = {
   regenerateSaltoIds: boolean
 }
 
-export type FetchProfile = {
+export type Context = {
   readonly metadataQuery: MetadataQuery
   readonly dataManagement?: DataManagement
   readonly isFeatureEnabled: (name: keyof OptionalFeatures) => boolean

@@ -57,7 +57,7 @@ import {
 import { metadataType } from '../transformers/transformer'
 import { GLOBAL_VALUE_SET } from './global_value_sets'
 import { STANDARD_VALUE_SET } from './standard_value_sets'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 import { apiNameSync, isOrderedMapTypeOrRefType, metadataTypeSync } from './utils'
 
 const { awu } = collections.asynciterable
@@ -182,17 +182,17 @@ const STANDARD_VALUE_SET_MAP_FIELD_DEF: Record<string, MapDef> = {
 }
 
 export const getMetadataTypeToFieldToMapDef: (
-  fetchProfile: FetchProfile,
-) => Record<string, Record<string, MapDef>> = fetchProfile => ({
+  context: Context,
+) => Record<string, Record<string, MapDef>> = context => ({
   [BUSINESS_HOURS_METADATA_TYPE]: BUSINESS_HOURS_MAP_FIELD_DEF,
   [EMAIL_TEMPLATE_METADATA_TYPE]: EMAIL_TEMPLATE_MAP_FIELD_DEF,
-  [PROFILE_METADATA_TYPE]: fetchProfile.isFeatureEnabled('supportProfileTabVisibilities')
+  [PROFILE_METADATA_TYPE]: context.isFeatureEnabled('supportProfileTabVisibilities')
     ? { ...PROFILE_MAP_FIELD_DEF, ...{ tabVisibilities: { key: 'tab' } } }
     : PROFILE_MAP_FIELD_DEF,
   [PERMISSION_SET_METADATA_TYPE]: PERMISSIONS_SET_MAP_FIELD_DEF,
   [MUTING_PERMISSION_SET_METADATA_TYPE]: PERMISSIONS_SET_MAP_FIELD_DEF,
   [SHARING_RULES_TYPE]: SHARING_RULES_MAP_FIELD_DEF,
-  ...(fetchProfile.isFeatureEnabled('picklistsAsMaps')
+  ...(context.isFeatureEnabled('picklistsAsMaps')
     ? {
         [GLOBAL_VALUE_SET]: GLOBAL_VALUE_SET_MAP_FIELD_DEF,
         [STANDARD_VALUE_SET]: STANDARD_VALUE_SET_MAP_FIELD_DEF,
@@ -200,10 +200,8 @@ export const getMetadataTypeToFieldToMapDef: (
     : {}),
 })
 
-export const getAnnotationDefsByType: (
-  fetchProfile: FetchProfile,
-) => Record<string, Record<string, MapDef>> = fetchProfile => ({
-  ...(fetchProfile.isFeatureEnabled('picklistsAsMaps')
+export const getAnnotationDefsByType: (context: Context) => Record<string, Record<string, MapDef>> = context => ({
+  ...(context.isFeatureEnabled('picklistsAsMaps')
     ? {
         Picklist: {
           valueSet: PICKLIST_MAP_FIELD_DEF,
@@ -636,8 +634,8 @@ const findTypeToConvert = (elements: Element[], targetMetadataType: string): Obj
 const filter: FilterCreator = ({ config }) => ({
   name: 'convertMapsFilter',
   onFetch: async (elements: Element[]) => {
-    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.fetchProfile)
-    const annotationDefsByType = getAnnotationDefsByType(config.fetchProfile)
+    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.context)
+    const annotationDefsByType = getAnnotationDefsByType(config.context)
 
     await awu(Object.keys(metadataTypeToFieldToMapDef))
       .flatMap<ObjectType>(async targetMetadataType => {
@@ -681,8 +679,8 @@ const filter: FilterCreator = ({ config }) => ({
   },
 
   preDeploy: async changes => {
-    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.fetchProfile)
-    const annotationDefsByType = getAnnotationDefsByType(config.fetchProfile)
+    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.context)
+    const annotationDefsByType = getAnnotationDefsByType(config.context)
 
     await awu(Object.keys(metadataTypeToFieldToMapDef)).forEach(async targetMetadataType => {
       const instanceChanges = await getInstanceChanges(changes, targetMetadataType)
@@ -710,8 +708,8 @@ const filter: FilterCreator = ({ config }) => ({
   },
 
   onDeploy: async changes => {
-    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.fetchProfile)
-    const annotationDefsByType = getAnnotationDefsByType(config.fetchProfile)
+    const metadataTypeToFieldToMapDef = getMetadataTypeToFieldToMapDef(config.context)
+    const annotationDefsByType = getAnnotationDefsByType(config.context)
 
     await awu(Object.keys(metadataTypeToFieldToMapDef)).forEach(async targetMetadataType => {
       const instanceChanges = await getInstanceChanges(changes, targetMetadataType)

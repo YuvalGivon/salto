@@ -16,7 +16,7 @@ import { MetadataInstance, ProfileSection } from './types'
 import {
   ConfigChangeSuggestion,
   FetchElements,
-  FetchProfile,
+  Context,
   isMetadataConfigSuggestions,
   MAX_INSTANCES_PER_TYPE,
   MAX_ITEMS_IN_RETRIEVE_REQUEST,
@@ -57,7 +57,7 @@ import {
   listMetadataObjects,
   metadataTypeSync,
 } from './filters/utils'
-import { buildFilePropsMetadataQuery } from './config/fetch_profile/metadata_query'
+import { buildFilePropsMetadataQuery } from './config/context/metadata_query'
 
 const { isDefined } = lowerDashValues
 const { makeArray } = collections.array
@@ -318,7 +318,7 @@ export const getTypesWithMetaFile = async (types: ReadonlyArray<MetadataObjectTy
 type RetrieveMetadataInstancesArgs = {
   client: SalesforceClient
   types: ReadonlyArray<MetadataObjectType>
-  fetchProfile: FetchProfile
+  context: Context
   // Some types are retrieved via filters and should not be fetched in the normal fetch flow. However, we need these
   // types as context for profiles - when fetching profiles using retrieve we only get information about the types that
   // are included in the same retrieve request as the profile. Thus typesToSkip - a list of types that will be retrieved
@@ -346,12 +346,12 @@ const getPartitions = (includedProps: FileProperties[]): Partitions => {
 export const retrieveMetadataInstances = async ({
   client,
   types,
-  fetchProfile,
+  context,
   typesToSkip = new Set(),
   getFilesToRetrieveFunc,
 }: RetrieveMetadataInstancesArgs): Promise<FetchElements<InstanceElement[]>> => {
   const configChanges: ConfigChangeSuggestion[] = []
-  const { metadataQuery, maxItemsInRetrieveRequest } = fetchProfile
+  const { metadataQuery, maxItemsInRetrieveRequest } = context
   const getFilesToRetrieve =
     getFilesToRetrieveFunc ?? (allProps => allProps.filter(props => notInSkipList(metadataQuery, props, false)))
 
@@ -366,7 +366,7 @@ export const retrieveMetadataInstances = async ({
       log.trace('Layout file properties are %s', inspectValue(res, { maxArrayLength: null }))
     }
     return _(res)
-      .map(file => getPropsWithFullName(file, fetchProfile.addNamespacePrefixToFullName, client.orgNamespace))
+      .map(file => getPropsWithFullName(file, context.addNamespacePrefixToFullName, client.orgNamespace))
       .uniqBy(file => file.fullName)
       .value()
   }
@@ -422,7 +422,7 @@ export const retrieveMetadataInstances = async ({
       namespace: change.value.namespace ?? '',
       changedAt: undefined,
     }
-    if (!fetchProfile.metadataQuery.isInstanceIncluded(metadataInstance)) {
+    if (!context.metadataQuery.isInstanceIncluded(metadataInstance)) {
       log.debug('Would have ignored config change %o because the instance is already excluded', change)
     }
     return false
@@ -462,12 +462,12 @@ export const retrieveMetadataInstances = async ({
     const typesToRetrieve = _.sortedUniq(filesToRetrieve.map(prop => prop.type).sort()).join(',')
     log.debug('retrieving types %s', typesToRetrieve)
     const request = toRetrieveRequest(filesToRetrieve)
-    const result = await client.retrieve(request, fetchProfile)
+    const result = await client.retrieve(request, context)
 
     log.debug('retrieve result for types %s: %o', typesToRetrieve, _.omit(result, ['zipFile', 'fileProperties']))
 
     if (result.errors !== undefined && result.errors.length > 0) {
-      if (fetchProfile?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
+      if (context?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
         log.debug('Excluding non retrievable instances using config suggestion:')
         result.errors.forEach(({ type, instance, error }) => {
           log.debug(`Type: ${type}, Instance: ${instance}`)
@@ -553,7 +553,7 @@ export const retrieveMetadataInstances = async ({
       fileProps: allFileProps,
       typesWithMetaFile,
       typesWithContent,
-      fetchProfile,
+      context,
     })
     // Exclude Profile related instances we fail to retrieve for envs that manage Profiles to improve performance
     // in subsequent fetches and avoid broken references in Profiles.
@@ -585,7 +585,7 @@ export const retrieveMetadataInstances = async ({
 
   const createGetAdditionalContextFilesToRetrieveFunc = async (): Promise<GetAdditionalContextFilesToRetrieveFunc> => {
     // When fetching Profiles the layoutAssignments of RecordTypes require the parent CustomObject to be retrieved as part of the retrieve request.
-    if (!fetchProfile.metadataQuery.isTypeMatch(PROFILE_METADATA_TYPE)) {
+    if (!context.metadataQuery.isTypeMatch(PROFILE_METADATA_TYPE)) {
       return () => []
     }
     const customObjectFilePropsByName = _.keyBy(
@@ -673,7 +673,7 @@ export const retrieveMetadataInstances = async ({
 
   const instances = await retrieveProfilesWithContextTypes(
     profileFiles,
-    fetchProfile.isFeatureEnabled('shuffleRetrieveInstances') ? _.shuffle(nonProfileFiles) : nonProfileFiles,
+    context.isFeatureEnabled('shuffleRetrieveInstances') ? _.shuffle(nonProfileFiles) : nonProfileFiles,
     await createGetAdditionalContextFilesToRetrieveFunc(),
   )
   if (missingTypes.size > 0) {
@@ -689,7 +689,7 @@ export const retrieveMetadataInstances = async ({
 }
 
 export const retrieveMetadataInstanceForFetchWithChangesDetection: typeof retrieveMetadataInstances = async params => {
-  const metadataQuery = buildFilePropsMetadataQuery(params.fetchProfile.metadataQuery)
+  const metadataQuery = buildFilePropsMetadataQuery(params.context.metadataQuery)
 
   const retrievePartialProfileInstances = retrieveMetadataInstances({
     ...params,

@@ -35,8 +35,8 @@ import { extractFullNamesFromValueList } from '../../src/filters/utils'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { mockInstances, mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
-import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/fetch_profile/metadata_query'
+import { buildContext } from '../../src/config/context/context'
+import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/context/metadata_query'
 import { LastChangeDateOfTypesWithNestedInstances } from '../../src/types'
 
 const createStandardValueSetMetadataInfo = (name: string, values: string[]): MetadataInfo =>
@@ -128,11 +128,11 @@ describe('Standard Value Sets filter', () => {
           lastChangeDateOfTypesWithNestedInstances: {} as unknown as LastChangeDateOfTypesWithNestedInstances,
           customObjectsWithDeletedFields: new Set(),
         })
-      : defaultFilterContext.fetchProfile.metadataQuery
-    const fetchProfile = buildFetchProfile({ fetchParams: {}, metadataQuery })
+      : defaultFilterContext.context.metadataQuery
+    const context = buildContext({ fetchParams: {}, metadataQuery })
     return makeFilter(new Set<string>(['Simpsons', 'Numbers']))({
       client: sfClient,
-      config: { ...defaultFilterContext, fetchProfile, elementsSource },
+      config: { ...defaultFilterContext, context, elementsSource },
     }) as FilterType
   }
 

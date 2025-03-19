@@ -8,7 +8,7 @@
 import _ from 'lodash'
 import {
   DATA_CONFIGURATION,
-  FetchProfile,
+  Context,
   FetchParameters,
   METADATA_CONFIG,
   MetadataQuery,
@@ -23,19 +23,19 @@ import { isFeatureEnabled } from './optional_features'
 
 const PREFER_ACTIVE_FLOW_VERSIONS_DEFAULT = false
 
-type BuildFetchProfileParams = {
+type BuildContextParams = {
   fetchParams: FetchParameters
   customReferencesSettings?: CustomReferencesSettings
   metadataQuery?: MetadataQuery
   maxItemsInRetrieveRequest?: number
 }
 
-export const buildFetchProfile = ({
+export const buildContext = ({
   fetchParams,
   customReferencesSettings,
   metadataQuery = buildMetadataQuery({ fetchParams }),
   maxItemsInRetrieveRequest = DEFAULT_MAX_ITEMS_IN_RETRIEVE_REQUEST,
-}: BuildFetchProfileParams): FetchProfile => {
+}: BuildContextParams): Context => {
   const {
     data,
     fetchAllCustomSettings,

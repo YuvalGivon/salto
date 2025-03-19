@@ -7,7 +7,7 @@
  */
 import { ElemID, ObjectType, ReferenceExpression } from '@salto-io/adapter-api'
 import { SALESFORCE } from '../../src/constants'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import filterCreator from '../../src/filters/omit_standard_fields_non_deployable_values'
 import { STANDARD_VALUE_SET } from '../../src/filters/standard_value_sets'
 import { Types } from '../../src/transformers/transformer'
@@ -20,7 +20,7 @@ describe('omitStandardFieldsNonDeployableValues filter', () => {
     filter = filterCreator({
       config: {
         ...defaultFilterContext,
-        fetchProfile: buildFetchProfile({
+        context: buildContext({
           fetchParams: {
             optionalFeatures: { omitStandardFieldsNonDeployableValues: true },
           },
@@ -92,7 +92,7 @@ describe('omitStandardFieldsNonDeployableValues filter', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: {
               optionalFeatures: {
                 omitStandardFieldsNonDeployableValues: false,

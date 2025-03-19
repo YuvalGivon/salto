@@ -134,7 +134,7 @@ import { DEPLOY_WRAPPER_INSTANCE_MARKER } from '../metadata_deploy'
 import { CustomObject } from '../client/types'
 import { WORKFLOW_FIELD_TO_TYPE, WORKFLOW_TYPE_TO_FIELD, WORKFLOW_DIR_NAME } from './workflow'
 import { INSTANCE_SUFFIXES } from '../types'
-import { CustomObjectField } from '../config/fetch_profile/metadata_types'
+import { CustomObjectField } from '../config/context/metadata_types'
 
 const log = logger(module)
 const { makeArray } = collections.array
@@ -934,9 +934,7 @@ const filterCreator: FilterCreator = ({ config, client }) => {
     onFetch: async (elements: Element[]): Promise<void> => {
       log.debug('Replacing custom object instances with object types')
       const typesFromInstance = await typesToMergeFromInstance(elements)
-      const metaTypes = config.fetchProfile.isFeatureEnabled('metaTypes')
-        ? metaTypesFromTypes(typesFromInstance)
-        : undefined
+      const metaTypes = config.context.isFeatureEnabled('metaTypes') ? metaTypesFromTypes(typesFromInstance) : undefined
       if (metaTypes !== undefined) {
         elements.push(...Object.values(metaTypes))
       }

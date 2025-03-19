@@ -16,7 +16,7 @@ import { getSObjectFieldElement, apiName, isSubfieldOfCompound } from '../transf
 import { isInstanceOfType, ensureSafeFilterFetch, toCustomField } from './utils'
 import { CustomField } from '../client/types'
 import { createSkippedListConfigChangeFromError } from '../config/config_change'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const log = logger(module)
 const { awu, keyByAsync } = collections.asynciterable
@@ -26,7 +26,7 @@ const createFieldValue = async (
   field: SObjField,
   objectName: string,
   objCompoundFieldNames: Record<string, string>,
-  fetchProfile: FetchProfile,
+  context: Context,
   systemFields?: string[],
 ): Promise<CustomField> => {
   // temporary hack to maintain the current implementation of the code in transformer.ts
@@ -40,7 +40,7 @@ const createFieldValue = async (
     field,
     { apiName: objectName },
     objCompoundFieldNames,
-    fetchProfile,
+    context,
     systemFields,
   )
   const customField = await toCustomField(dummyField, false)
@@ -61,7 +61,7 @@ const createFieldValue = async (
 const addSObjectInformationToInstance = async (
   instance: InstanceElement,
   sobject: DescribeSObjectResult,
-  fetchProfile: FetchProfile,
+  context: Context,
   systemFields?: string[],
 ): Promise<void> => {
   // Add information to the object type
@@ -94,7 +94,7 @@ const addSObjectInformationToInstance = async (
   const sobjectFields = await Promise.all(
     sobject.fields
       .filter(field => !isSubfieldOfCompound(field)) // Filter out nested fields of compound fields
-      .map(field => createFieldValue(field, sobject.name, objCompoundFieldNames, fetchProfile, systemFields)),
+      .map(field => createFieldValue(field, sobject.name, objCompoundFieldNames, context, systemFields)),
   )
 
   const addedFieldNames: string[] = []
@@ -161,7 +161,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
           addSObjectInformationToInstance(
             customObjectInstances[description.name],
             description,
-            config.fetchProfile,
+            config.context,
             config.systemFields,
           ),
         ),

@@ -26,7 +26,7 @@ import {
   PROFILE_METADATA_TYPE,
 } from '../constants'
 import { apiNameSync, isInstanceOfTypeSync } from '../filters/utils'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const metadataTypesToValidate = [
   PROFILE_METADATA_TYPE,
@@ -36,11 +36,11 @@ const metadataTypesToValidate = [
 
 const isNum = (str: string | undefined): boolean => !_.isEmpty(str) && !Number.isNaN(_.toNumber(str))
 
-const getMapKeyErrors = (after: InstanceElement, fetchProfile: FetchProfile): ChangeError[] => {
+const getMapKeyErrors = (after: InstanceElement, context: Context): ChangeError[] => {
   const errors: ChangeError[] = []
   const type = after.getTypeSync()
   const typeName = apiNameSync(type) ?? ''
-  const mapper = getMetadataTypeToFieldToMapDef(fetchProfile)[typeName]
+  const mapper = getMetadataTypeToFieldToMapDef(context)[typeName]
   Object.entries(after.value)
     .filter(([fieldName]) => isMapType(type.fields[fieldName]?.getTypeSync()) && mapper[fieldName] !== undefined)
     .forEach(([fieldName, fieldValues]) => {
@@ -93,7 +93,7 @@ const getMapKeyErrors = (after: InstanceElement, fetchProfile: FetchProfile): Ch
 }
 
 const changeValidator =
-  (getLookupNameFunc: GetLookupNameFunc, fetchProfile: FetchProfile): ChangeValidator =>
+  (getLookupNameFunc: GetLookupNameFunc, context: Context): ChangeValidator =>
   async changes =>
     (
       await Promise.all(
@@ -103,6 +103,6 @@ const changeValidator =
           .filter(isInstanceOfTypeSync(...metadataTypesToValidate))
           .map(instance => resolveValues(instance, getLookupNameFunc)),
       )
-    ).flatMap(instance => getMapKeyErrors(instance, fetchProfile))
+    ).flatMap(instance => getMapKeyErrors(instance, context))
 
 export default changeValidator

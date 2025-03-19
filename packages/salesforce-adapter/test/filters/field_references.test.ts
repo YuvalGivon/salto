@@ -76,7 +76,7 @@ import { CUSTOM_OBJECT_TYPE_ID } from '../../src/filters/custom_objects_to_objec
 import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 const { awu } = collections.asynciterable
 const { isDefined } = values
@@ -551,7 +551,7 @@ describe('FieldReferences filter', () => {
         buildElementsSourceFromElements(elements),
         modifiedDefs,
         [],
-        createContextStrategyLookups(defaultFilterContext.fetchProfile),
+        createContextStrategyLookups(defaultFilterContext.context),
       )
     })
     afterAll(() => {
@@ -869,7 +869,7 @@ describe('Serialization Strategies', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { target: [] },
           }),
         },
@@ -1021,7 +1021,7 @@ describe('Serialization Strategies', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { target: [] },
           }),
         },
@@ -1032,7 +1032,7 @@ describe('Serialization Strategies', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { target: [] },
             }),
           },
@@ -1078,7 +1078,7 @@ describe('Serialization Strategies', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 target: [],
                 disabledReferences: ['UiFormulaCriterion.leftValue:CustomField.instanceParent'],

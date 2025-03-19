@@ -49,7 +49,7 @@ import {
   toDeployableInstance,
   assertMetadataObjectType,
 } from './transformer'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const { isDefined } = lowerDashValues
 const { isPlainObject } = lowerDashValues
@@ -420,7 +420,7 @@ type FromRetrieveResultArgs = {
   fileProps: ReadonlyArray<FileProperties>
   typesWithMetaFile: Set<string>
   typesWithContent: Set<string>
-  fetchProfile: FetchProfile
+  context: Context
   packagePath?: string
 }
 

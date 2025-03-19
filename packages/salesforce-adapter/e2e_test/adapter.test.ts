@@ -54,7 +54,7 @@ import {
   ProfileInfo,
   TopicsForObjectsInfo,
 } from '../src/client/types'
-import { FetchProfile, UsernamePasswordCredentials } from '../src/config/types'
+import { Context, UsernamePasswordCredentials } from '../src/config/types'
 import {
   Types,
   metadataType,
@@ -104,7 +104,7 @@ import {
   verifyElementsExist,
 } from './setup'
 import { testHelpers } from './jest_environment'
-import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../src/config/context/context'
 import { ORDERED_MAP_VALUES_FIELD } from '../src/filters/convert_maps'
 
 const { awu } = collections.asynciterable
@@ -118,7 +118,7 @@ describe('Salesforce adapter E2E with real account', () => {
   let client: SalesforceClient
   let adapter: SalesforceAdapter
   let credLease: CredsLease<UsernamePasswordCredentials>
-  let fetchProfile: FetchProfile
+  let context: Context
   beforeAll(async () => {
     log.resetLogCount()
     credLease = await testHelpers().credentials()
@@ -143,7 +143,7 @@ describe('Salesforce adapter E2E with real account', () => {
   const apiNameAnno = (object: string, field: string): string => [object, field].join(constants.API_NAME_SEPARATOR)
 
   beforeAll(async () => {
-    fetchProfile = buildFetchProfile({ fetchParams: {} })
+    context = buildContext({ fetchParams: {} })
     const mockReportProgress = mockFunction<ProgressReporter['reportProgress']>()
     const mockFetchOpts: MockInterface<FetchOptions> = {
       progressReporter: { reportProgress: mockReportProgress },
@@ -2677,7 +2677,7 @@ describe('Salesforce adapter E2E with real account', () => {
             fileProps,
             typesWithMetaFile: new Set((await instance.getType()).annotations.hasMetaFile ? [type] : []),
             typesWithContent: new Set(constants.METADATA_CONTENT_FIELD in instance.value ? [type] : []),
-            fetchProfile,
+            context,
           })
           return awu(instances)
             .filter(async ({ file }) => file.fullName === (await apiName(instance)))

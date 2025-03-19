@@ -99,7 +99,7 @@ import { createFlowChange, mockInstances, mockTypes } from '../mock_elements'
 import { createCustomObjectType, createField, createValueSetEntry } from '../utils'
 import { INSTANCE_SUFFIXES } from '../../src/types'
 import { mockFileProperties } from '../connection'
-import { SUPPORTED_METADATA_TYPES } from '../../src/config/fetch_profile/metadata_types'
+import { SUPPORTED_METADATA_TYPES } from '../../src/config/context/metadata_types'
 
 const { makeArray } = collections.array
 

@@ -22,12 +22,12 @@ import { createOrderedMapType } from '../src/filters/convert_maps'
 import { mockTypes } from './mock_elements'
 
 import { getLookUpName, salesforceAdapterResolveValues } from '../src/transformers/reference_mapping'
-import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../src/config/context/context'
 
 describe('Resolve Salesforce Changes', () => {
   let getLookupNameFunc: GetLookupNameFunc
   beforeEach(() => {
-    getLookupNameFunc = getLookUpName(buildFetchProfile({ fetchParams: {} }))
+    getLookupNameFunc = getLookUpName(buildContext({ fetchParams: {} }))
   })
   describe('Elements with OrderedMaps', () => {
     const ORDERED_MAP_FIELD_NAME = 'orderedMapField'

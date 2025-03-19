@@ -89,7 +89,7 @@ import {
 } from './filters/utils'
 import { isListCustomSettingsObject } from './filters/custom_settings_filter'
 import { SalesforceRecord } from './client/types'
-import { buildDataManagement } from './config/fetch_profile/data_management'
+import { buildDataManagement } from './config/context/data_management'
 import { DataManagement } from './config/types'
 import { isConditionOfRuleFunc } from './filters/cpq/rules_and_conditions_refs'
 

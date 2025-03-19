@@ -8,7 +8,7 @@
 
 import { BuiltinTypes, CORE_ANNOTATIONS, ElemID, ObjectType } from '@salto-io/adapter-api'
 import { ImportantValues } from '@salto-io/adapter-utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { METADATA_TYPE } from '../../src/constants'
 import { mockTypes } from '../mock_elements'
 import filterCreator from '../../src/filters/important_values_filter'
@@ -70,7 +70,7 @@ describe('important values filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 additionalImportantValues: [
                   { value: 'fullName', indexed: false, highlighted: false },
@@ -96,7 +96,7 @@ describe('important values filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 additionalImportantValues: [
                   { value: 'someField', indexed: false, highlighted: false },

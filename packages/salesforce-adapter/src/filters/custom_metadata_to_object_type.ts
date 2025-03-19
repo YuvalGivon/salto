@@ -85,7 +85,7 @@ const filterCreator: FilterCreator = ({ config }) => {
         .filter(isInstanceElement)
         .filter(e => e.elemID.name.endsWith(CUSTOM_METADATA_SUFFIX))
 
-      const customMetadataMetaType = config.fetchProfile.isFeatureEnabled('metaTypes')
+      const customMetadataMetaType = config.context.isFeatureEnabled('metaTypes')
         ? createMetaType(CUSTOM_METADATA_META_TYPE, undefined, 'Custom Metadata')
         : undefined
       const customMetadataRecordTypes = await awu(customMetadataInstances)

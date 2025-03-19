@@ -271,8 +271,8 @@ const creator: FilterCreator = ({ client, config }) => ({
       const groupedDeps = await getDependencies({
         client,
         elements,
-        initialChunkSize: config.fetchProfile.limits?.maxExtraDependenciesQuerySize ?? INITIAL_QUERY_CHUNK_SIZE,
-        maxResponseSize: config.fetchProfile.limits?.maxExtraDependenciesResponseSize ?? TOOLING_QUERY_MAX_RECORDS,
+        initialChunkSize: config.context.limits?.maxExtraDependenciesQuerySize ?? INITIAL_QUERY_CHUNK_SIZE,
+        maxResponseSize: config.context.limits?.maxExtraDependenciesResponseSize ?? TOOLING_QUERY_MAX_RECORDS,
       })
       const fetchedElements = buildElementsSourceFromElements(elements)
       const allElements = buildElementsSourceForFetch(elements, config)

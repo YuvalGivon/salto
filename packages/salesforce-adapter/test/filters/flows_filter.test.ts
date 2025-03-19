@@ -37,12 +37,12 @@ import { createInstanceElement } from '../../src/transformers/transformer'
 import { createFlowChange, mockTypes } from '../mock_elements'
 import * as fetchModule from '../../src/fetch'
 import * as filterUtils from '../../src/filters/utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { FilterWith } from './mocks'
 import { SalesforceClient } from '../../index'
 import { apiNameSync, getMetadataIncludeFromFetchTargets, isInstanceOfTypeSync } from '../../src/filters/utils'
 import Connection from '../../src/client/jsforce'
-import { buildMetadataQuery } from '../../src/config/fetch_profile/metadata_query'
+import { buildMetadataQuery } from '../../src/config/context/metadata_query'
 import { SalesforceRecord } from '../../src/client/types'
 
 describe('flows filter', () => {
@@ -246,7 +246,7 @@ describe('flows filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               metadataQuery: buildMetadataQuery({
                 fetchParams: {},
                 targetedFetchInclude: await getMetadataIncludeFromFetchTargets(
@@ -276,7 +276,7 @@ describe('flows filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               metadataQuery: buildMetadataQuery({
                 fetchParams: {},
                 targetedFetchInclude: await getMetadataIncludeFromFetchTargets(
@@ -305,7 +305,7 @@ describe('flows filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { preferActiveFlowVersions: true },
             }),
           },
@@ -429,7 +429,7 @@ describe('flows filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { limits: { flowDefinitionsQueryChunkSize: 1 } },
             }),
           },
@@ -489,7 +489,7 @@ describe('flows filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 metadata: { exclude: [{ metadataType: FLOW_METADATA_TYPE }] },
               },

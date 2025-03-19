@@ -14,7 +14,7 @@ import { ensureSafeFilterFetch, queryClient, safeApiName } from './utils'
 import { getSObjectFieldElement } from '../transformers/transformer'
 import { API_NAME, getTypePath, ORGANIZATION_SETTINGS, RECORDS_PATH, SALESFORCE, SETTINGS_PATH } from '../constants'
 import SalesforceClient from '../client/client'
-import { FetchProfile } from '../config/types'
+import { Context } from '../config/types'
 
 const log = logger(module)
 
@@ -50,7 +50,7 @@ const enrichTypeWithFields = async (
   client: SalesforceClient,
   type: ObjectType,
   fieldsToIgnore: Set<string>,
-  fetchProfile: FetchProfile,
+  context: Context,
 ): Promise<void> => {
   const typeApiName = await safeApiName(type)
   if (typeApiName === undefined) {
@@ -78,7 +78,7 @@ const enrichTypeWithFields = async (
   )
 
   const fields = topLevelFields.map(field =>
-    getSObjectFieldElement(type, field, { [API_NAME]: typeApiName }, objCompoundFieldNames, fetchProfile),
+    getSObjectFieldElement(type, field, { [API_NAME]: typeApiName }, objCompoundFieldNames, context),
   )
 
   type.fields = {
@@ -162,12 +162,10 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
       const objectType = createOrganizationType()
       const fieldsToIgnore = new Set(
         FIELDS_TO_IGNORE.concat(config.systemFields ?? []).concat(
-          config.fetchProfile.isFeatureEnabled('omitTotalTrustedRequestsUsageField')
-            ? ['TotalTrustedRequestsUsage']
-            : [],
+          config.context.isFeatureEnabled('omitTotalTrustedRequestsUsageField') ? ['TotalTrustedRequestsUsage'] : [],
         ),
       )
-      await enrichTypeWithFields(client, objectType, fieldsToIgnore, config.fetchProfile)
+      await enrichTypeWithFields(client, objectType, fieldsToIgnore, config.context)
 
       const queryResult = await queryClient(client, ['SELECT FIELDS(ALL) FROM Organization LIMIT 200'])
       if (queryResult.length !== 1) {

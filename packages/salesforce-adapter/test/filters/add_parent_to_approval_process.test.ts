@@ -13,7 +13,7 @@ import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { FilterWith } from './mocks'
 import { createInstanceElement } from '../../src/transformers/transformer'
 import filterCreator from '../../src/filters/add_parent_to_approval_process'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 
 describe('addParentToApprovalProcess', () => {
   describe('onFetch', () => {
@@ -43,7 +43,7 @@ describe('addParentToApprovalProcess', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { target: [] },
             }),
             elementsSource: buildElementsSourceFromElements(elementsSource),
@@ -78,7 +78,7 @@ describe('addParentToApprovalProcess', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { target: [] },
             }),
             elementsSource: buildElementsSourceFromElements(elementsSource),

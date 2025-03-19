@@ -25,8 +25,8 @@ import filterCreator from '../../src/filters/topics_for_objects'
 import { defaultFilterContext, emptyLastChangeDateOfTypesWithNestedInstances } from '../utils'
 import { FilterWith } from './mocks'
 import { isInstanceOfTypeChangeSync, isInstanceOfTypeSync } from '../../src/filters/utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
-import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/fetch_profile/metadata_query'
+import { buildContext } from '../../src/config/context/context'
+import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/context/metadata_query'
 import { mockInstances } from '../mock_elements'
 
 const { TOPICS_FOR_OBJECTS_ANNOTATION, TOPICS_FOR_OBJECTS_FIELDS, TOPICS_FOR_OBJECTS_METADATA_TYPE } = constants
@@ -108,7 +108,7 @@ describe('Topics for objects filter', () => {
         filter = filterCreator({
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {},
               metadataQuery: await buildMetadataQueryForFetchWithChangesDetection({
                 fetchParams: {},

@@ -223,7 +223,7 @@ const filter: FilterCreator = ({ config }) => ({
   name: 'enumFieldPermissionsFilter',
   onFetch: async elements => {
     const relevantInstances = elements.filter(isInstanceOfTypeSync(...PERMISSIONS_TYPES))
-    if (!config.fetchProfile.isFeatureEnabled('disablePermissionsOmissions')) {
+    if (!config.context.isFeatureEnabled('disablePermissionsOmissions')) {
       const customObjects = await awu(await buildElementsSourceForFetch(elements, config).getAll())
         .filter(isCustomObjectSync)
         .map(element => apiNameSync(element))

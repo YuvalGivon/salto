@@ -6,8 +6,8 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { validateFetchParameters, buildFetchProfile } from '../../../src/config/fetch_profile/fetch_profile'
-import { mergeWithDefaultImportantValues } from '../../../src/config/fetch_profile/important_values'
+import { validateFetchParameters, buildContext } from '../../../src/config/context/context'
+import { mergeWithDefaultImportantValues } from '../../../src/config/context/important_values'
 import { FetchParameters } from '../../../src/config/types'
 
 describe('Fetch Profile', () => {
@@ -35,7 +35,7 @@ describe('Fetch Profile', () => {
       })
     })
   })
-  describe('buildFetchProfile', () => {
+  describe('buildContext', () => {
     it('should build a fetch profile with the correct values', () => {
       const fetchParams: FetchParameters = {
         metadata: { include: [{ metadataType: 'CustomObject' }], exclude: [] },
@@ -46,16 +46,14 @@ describe('Fetch Profile', () => {
         limits: { maxExtraDependenciesQuerySize: 10, maxExtraDependenciesResponseSize: 10 },
       }
       const maxItemsInRetrieveRequest = 10
-      const fetchProfile = buildFetchProfile({
+      const context = buildContext({
         fetchParams,
         maxItemsInRetrieveRequest,
       })
-      expect(fetchProfile.maxItemsInRetrieveRequest).toEqual(maxItemsInRetrieveRequest)
-      expect(fetchProfile.importantValues).toEqual(
-        mergeWithDefaultImportantValues(fetchParams.additionalImportantValues),
-      )
-      expect(fetchProfile.preferActiveFlowVersions).toEqual(false)
-      expect(fetchProfile.limits).toEqual(fetchParams.limits)
+      expect(context.maxItemsInRetrieveRequest).toEqual(maxItemsInRetrieveRequest)
+      expect(context.importantValues).toEqual(mergeWithDefaultImportantValues(fetchParams.additionalImportantValues))
+      expect(context.preferActiveFlowVersions).toEqual(false)
+      expect(context.limits).toEqual(fetchParams.limits)
     })
   })
 })

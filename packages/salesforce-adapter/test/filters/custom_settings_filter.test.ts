@@ -20,7 +20,7 @@ import {
   CUSTOM_SETTINGS_TYPE,
   LIST_CUSTOM_SETTINGS_TYPE,
 } from '../../src/constants'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import { FilterWith } from './mocks'
 
 const { awu } = collections.asynciterable
@@ -123,7 +123,7 @@ describe('Custom settings filter', () => {
         client,
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { fetchAllCustomSettings: false },
           }),
         },
@@ -139,7 +139,7 @@ describe('Custom settings filter', () => {
         client,
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { fetchAllCustomSettings: true },
           }),
         },

@@ -21,7 +21,7 @@ import {
   isReferenceExpression,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
-import { buildFetchProfile } from '../../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../../src/config/context/context'
 import SalesforceClient from '../../src/client/client'
 import filterCreator from '../../src/filters/custom_object_instances_references'
 import mockClient from '../client'
@@ -45,8 +45,8 @@ import {
 } from '../utils'
 import { mockInstances, mockTypes } from '../mock_elements'
 import { FilterWith } from './mocks'
-import { FetchProfile, OutgoingReferenceBehavior } from '../../src/config/types'
-import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/fetch_profile/metadata_query'
+import { Context, OutgoingReferenceBehavior } from '../../src/config/types'
+import { buildMetadataQueryForFetchWithChangesDetection } from '../../src/config/context/metadata_query'
 import { apiNameSync, isInstanceOfCustomObjectSync } from '../../src/filters/utils'
 
 const { MISSING_REF_PREFIX } = references
@@ -271,7 +271,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 data: {
                   brokenOutgoingReferencesSettings: {
@@ -417,7 +417,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: {
                 data: {
                   includeObjects: ['*'],
@@ -463,11 +463,11 @@ describe('Custom Object Instances References filter', () => {
   })
   describe('Broken refs behavior', () => {
     const testElements = [...objects, ...legalInstances, refFromEmptyRefsInstance]
-    const buildTestFetchProfile = (
+    const buildTestContext = (
       defaultBehavior: OutgoingReferenceBehavior,
       overrides: Record<string, OutgoingReferenceBehavior>,
-    ): FetchProfile =>
-      buildFetchProfile({
+    ): Context =>
+      buildContext({
         fetchParams: {
           data: {
             includeObjects: ['*'],
@@ -486,7 +486,7 @@ describe('Custom Object Instances References filter', () => {
         client,
         config: {
           ...defaultFilterContext,
-          fetchProfile: buildTestFetchProfile('BrokenReference', {
+          context: buildTestContext('BrokenReference', {
             User: 'InternalId',
           }),
         },
@@ -499,7 +499,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('BrokenReference', {
+            context: buildTestContext('BrokenReference', {
               User: 'InternalId',
             }),
           },
@@ -562,7 +562,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('BrokenReference', {
+            context: buildTestContext('BrokenReference', {
               User: 'ExcludeInstance',
             }),
           },
@@ -598,7 +598,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('ExcludeInstance', {
+            context: buildTestContext('ExcludeInstance', {
               User: 'BrokenReference',
             }),
           },
@@ -630,7 +630,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('ExcludeInstance', {
+            context: buildTestContext('ExcludeInstance', {
               User: 'InternalId',
             }),
           },
@@ -659,7 +659,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('InternalId', {
+            context: buildTestContext('InternalId', {
               User: 'ExcludeInstance',
             }),
           },
@@ -689,7 +689,7 @@ describe('Custom Object Instances References filter', () => {
           client,
           config: {
             ...defaultFilterContext,
-            fetchProfile: buildTestFetchProfile('InternalId', {
+            context: buildTestContext('InternalId', {
               User: 'BrokenReference',
             }),
           },

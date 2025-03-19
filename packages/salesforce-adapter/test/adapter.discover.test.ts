@@ -47,7 +47,7 @@ import {
   mockRetrieveLocator,
   mockRetrieveResult,
 } from './connection'
-import { ConfigChangeSuggestion, FetchElements, FetchProfile, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/config/types'
+import { ConfigChangeSuggestion, FetchElements, Context, MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../src/config/types'
 import * as fetchModule from '../src/fetch'
 import { fetchMetadataInstances, retrieveMetadataInstances } from '../src/fetch'
 import * as xmlTransformerModule from '../src/transformers/xml_transformer'
@@ -72,7 +72,7 @@ import { NON_TRANSIENT_SALESFORCE_ERRORS } from '../src/config/config_change'
 import SalesforceClient from '../src/client/client'
 import createMockClient from './client'
 import { mockInstances, mockTypes } from './mock_elements'
-import { buildFetchProfile } from '../src/config/fetch_profile/fetch_profile'
+import { buildContext } from '../src/config/context/context'
 import * as customListFuncsModule from '../src/client/custom_list_funcs'
 
 const { makeArray } = collections.array
@@ -2701,7 +2701,7 @@ describe('Fetch via retrieve API', () => {
         await retrieveMetadataInstances({
           client,
           types: [mockTypes.ApexClass],
-          fetchProfile: buildFetchProfile({
+          context: buildContext({
             fetchParams: { addNamespacePrefixToFullName: false },
           }),
         })
@@ -2729,7 +2729,7 @@ describe('Fetch via retrieve API', () => {
           await retrieveMetadataInstances({
             client,
             types: [mockTypes.ApexClass, mockTypes.CustomObject],
-            fetchProfile: buildFetchProfile({
+            context: buildContext({
               fetchParams: { addNamespacePrefixToFullName: false },
               maxItemsInRetrieveRequest: chunkSize,
             }),
@@ -2770,7 +2770,7 @@ describe('Fetch via retrieve API', () => {
 
     describe('When retrieve fails', () => {
       beforeEach(async () => {
-        const fetchProfile = buildFetchProfile({
+        const context = buildContext({
           fetchParams: {
             addNamespacePrefixToFullName: false,
           },
@@ -2780,7 +2780,7 @@ describe('Fetch via retrieve API', () => {
           await retrieveMetadataInstances({
             client,
             types: [mockTypes.ApexClass],
-            fetchProfile,
+            context,
           })
         ).configChanges
       })
@@ -2798,7 +2798,7 @@ describe('Fetch via retrieve API', () => {
     })
     describe('When retrieve fails for an excluded instance', () => {
       beforeEach(async () => {
-        const fetchProfile = buildFetchProfile({
+        const context = buildContext({
           fetchParams: {
             addNamespacePrefixToFullName: false,
             metadata: {
@@ -2816,7 +2816,7 @@ describe('Fetch via retrieve API', () => {
           await retrieveMetadataInstances({
             client,
             types: [mockTypes.ApexClass],
-            fetchProfile,
+            context,
           })
         ).configChanges
       })
@@ -2850,7 +2850,7 @@ describe('Fetch via retrieve API', () => {
             await retrieveMetadataInstances({
               client,
               types: [mockTypes.Profile, mockTypes.CustomObject, mockTypes.BusinessProcess],
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: {},
               }),
             })
@@ -2873,7 +2873,7 @@ describe('Fetch via retrieve API', () => {
             await retrieveMetadataInstances({
               client,
               types: [mockTypes.Profile, mockTypes.CustomObject, mockTypes.BusinessProcess],
-              fetchProfile: buildFetchProfile({
+              context: buildContext({
                 fetchParams: {
                   metadata: {
                     exclude: [{ metadataType: PROFILE_METADATA_TYPE }],
@@ -2893,7 +2893,7 @@ describe('Fetch via retrieve API', () => {
     let configChanges: ConfigChangeSuggestion[]
     let metadataRetrieveSpy: jest.SpyInstance
     let metadataReadSpy: jest.SpyInstance
-    let fetchProfile: FetchProfile
+    let context: Context
     const retrieveResult = {
       done: 'true',
       errorMessage: 'INSUFFICIENT_ACCESS: insufficient access rights on entity: ProblematicType',
@@ -2932,7 +2932,7 @@ describe('Fetch via retrieve API', () => {
     })
     describe('when the feature is enabled', () => {
       beforeEach(async () => {
-        fetchProfile = buildFetchProfile({
+        context = buildContext({
           fetchParams: {
             optionalFeatures: {
               handleInsufficientAccessRightsOnEntity: true,
@@ -2947,7 +2947,7 @@ describe('Fetch via retrieve API', () => {
           await retrieveMetadataInstances({
             client,
             types: [mockTypes.ApexClass, mockTypes.CustomObject],
-            fetchProfile,
+            context,
           })
         ).configChanges
       })
@@ -3019,7 +3019,7 @@ describe('Fetch via retrieve API', () => {
 
     describe('when the feature is disabled', () => {
       beforeEach(async () => {
-        fetchProfile = buildFetchProfile({
+        context = buildContext({
           fetchParams: {
             addNamespacePrefixToFullName: false,
             metadata: {
@@ -3033,7 +3033,7 @@ describe('Fetch via retrieve API', () => {
           await retrieveMetadataInstances({
             client,
             types: [mockTypes.ApexClass, mockTypes.CustomObject],
-            fetchProfile,
+            context,
           })
         } catch (error) {
           expect(metadataRetrieveSpy).toHaveBeenCalledOnce()

@@ -28,7 +28,7 @@ import {
   TypeWithNestedInstancesPerParent,
 } from './types'
 import { MetadataQuery } from './config/types'
-import { CUSTOM_OBJECT_FIELDS, WORKFLOW_FIELDS } from './config/fetch_profile/metadata_types'
+import { CUSTOM_OBJECT_FIELDS, WORKFLOW_FIELDS } from './config/context/metadata_types'
 import { getMostRecentFileProperties, listMetadataObjects } from './filters/utils'
 import { SHARING_RULES_API_NAMES } from './filters/author_information/sharing_rules'
 

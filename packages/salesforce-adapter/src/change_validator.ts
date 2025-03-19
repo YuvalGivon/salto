@@ -48,8 +48,8 @@ import cpqBillingTriggers from './change_validators/cpq_billing_triggers'
 import managedApexComponent from './change_validators/managed_apex_component'
 import orderedMaps from './change_validators/ordered_maps'
 import SalesforceClient from './client/client'
-import { ChangeValidatorName, DEPLOY_CONFIG, FetchProfile, SalesforceConfig } from './config/types'
-import { buildFetchProfile } from './config/fetch_profile/fetch_profile'
+import { ChangeValidatorName, DEPLOY_CONFIG, Context, SalesforceConfig } from './config/types'
+import { buildContext } from './config/context/context'
 import { getLookUpName } from './transformers/reference_mapping'
 import layoutDuplicateFields from './change_validators/layout_duplicate_fields'
 import customApplications from './change_validators/custom_applications'
@@ -65,7 +65,7 @@ type ChangeValidatorCreator = (params: {
   config: SalesforceConfig
   isSandbox: boolean
   client: SalesforceClient
-  fetchProfile: FetchProfile
+  context: Context
   getLookupNameFunc: GetLookupNameFunc
 }) => ChangeValidator
 
@@ -82,13 +82,13 @@ export const changeValidators: Record<ChangeValidatorName, ChangeValidatorCreato
   customObjectInstances: ({ client }) => customObjectInstancesValidator(client),
   customFieldType: () => customFieldTypeValidator,
   standardFieldLabel: () => standardFieldLabelValidator,
-  mapKeys: ({ getLookupNameFunc, fetchProfile }) => mapKeysValidator(getLookupNameFunc, fetchProfile),
+  mapKeys: ({ getLookupNameFunc, context }) => mapKeysValidator(getLookupNameFunc, context),
   defaultRules: () => defaultRulesValidator,
   packageVersion: () => packageVersionValidator,
   picklistPromote: () => picklistPromoteValidator,
   cpqValidator: () => cpqValidator,
   recordTypeDeletion: () => recordTypeDeletionValidator,
-  flowsValidator: ({ fetchProfile, isSandbox, client }) => flowsValidator(fetchProfile, isSandbox, client),
+  flowsValidator: ({ context, isSandbox, client }) => flowsValidator(context, isSandbox, client),
   fullNameChangedValidator: () => fullNameChangedValidator,
   invalidListViewFilterScope: () => invalidListViewFilterScope,
   caseAssignmentRulesValidator: () => caseAssignmentRulesValidator,
@@ -114,7 +114,7 @@ export const changeValidators: Record<ChangeValidatorName, ChangeValidatorCreato
   cpqBillingStartDate: () => cpqBillingStartDate,
   cpqBillingTriggers: () => cpqBillingTriggers,
   managedApexComponent: () => managedApexComponent,
-  orderedMaps: ({ fetchProfile }) => orderedMaps(fetchProfile),
+  orderedMaps: ({ context }) => orderedMaps(context),
   layoutDuplicateFields: () => layoutDuplicateFields,
   customApplications: () => customApplications,
   flowReferencedElements: () => flowReferencedElements,
@@ -141,11 +141,11 @@ const createSalesforceChangeValidator = ({
     ? defaultChangeValidatorsValidateConfig
     : defaultChangeValidatorsDeployConfig
 
-  const fetchProfile = buildFetchProfile({ fetchParams: config.fetch ?? {} })
-  const getLookupNameFunc: GetLookupNameFunc = getLookUpName(fetchProfile)
+  const context = buildContext({ fetchParams: config.fetch ?? {} })
+  const getLookupNameFunc: GetLookupNameFunc = getLookUpName(context)
   const changeValidator = createChangeValidator({
     validators: _.mapValues(changeValidators, validator =>
-      validator({ config, isSandbox, client, fetchProfile, getLookupNameFunc }),
+      validator({ config, isSandbox, client, context, getLookupNameFunc }),
     ),
     validatorsActivationConfig: {
       ...defaultValidatorsActivationConfig,

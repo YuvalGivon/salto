@@ -54,7 +54,7 @@ import {
   ClientRetryConfig,
   Credentials,
   CustomObjectsDeployRetryConfig,
-  FetchProfile,
+  Context,
   OauthAccessTokenCredentials,
   ReadMetadataChunkSizeConfig,
   SalesforceClientConfig,
@@ -923,10 +923,7 @@ export default class SalesforceClient implements ISalesforceClient {
   @throttle<ClientRateLimitConfig>({ bucketName: 'retrieve' })
   @logDecorator()
   @requiresLogin()
-  public async retrieve(
-    retrieveRequest: RetrieveRequest,
-    fetchProfile?: FetchProfile,
-  ): Promise<RetrieveResultWithErrors> {
+  public async retrieve(retrieveRequest: RetrieveRequest, context?: Context): Promise<RetrieveResultWithErrors> {
     const errorPattern = /INSUFFICIENT_ACCESS: insufficient access rights on entity: (\w+)/g
     const handleInsufficientAccessErrors = async (): Promise<{
       instancesErrors: ErrorInfo[]
@@ -988,7 +985,7 @@ export default class SalesforceClient implements ISalesforceClient {
         instancesErrors.forEach(({ instance, error }) => {
           log.debug(`Instance: ${instance}, Error: ${error.message}`)
         })
-        if (fetchProfile?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
+        if (context?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
           log.debug('Excluding the following instances from retrieve:')
           instancesErrors.forEach(({ type, instance }) => {
             log.debug(`Type: ${type}, Instance: ${instance}`)
