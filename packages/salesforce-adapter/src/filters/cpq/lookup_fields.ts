@@ -44,6 +44,10 @@ import {
   CPQ_CONSTRAINT_FIELD,
   CPQ_DISCOUNT_SCHEDULE,
   API_NAME_SEPARATOR,
+  CPQ_SUMMARY_VARIABLE,
+  SBQQ_AGGREGATED_FIELD,
+  CPQ_QUOTE_LINE,
+  AGGREGATED_FIELD_TO_QUOTE_LINE,
 } from '../../constants'
 import { apiNameSync } from '../utils'
 
@@ -102,6 +106,13 @@ const LOOKUP_FIELDS = {
       type: CUSTOM_FIELD,
       objectContext: CPQ_QUOTE,
       valuesMapping: SCHEDULE_CONSTRAINT_FIELD_TO_API_MAPPING,
+    },
+  },
+  [CPQ_SUMMARY_VARIABLE]: {
+    [SBQQ_AGGREGATED_FIELD]: {
+      type: CUSTOM_FIELD,
+      objectContext: CPQ_QUOTE_LINE,
+      valuesMapping: AGGREGATED_FIELD_TO_QUOTE_LINE,
     },
   },
 } as Record<string, Record<string, LookupFieldDef>>

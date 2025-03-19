@@ -626,7 +626,7 @@ export const CPQ_CUSTOM_SCRIPT = 'SBQQ__CustomScript__c'
 export const CPQ_CONFIGURATION_ATTRIBUTE = 'SBQQ__ConfigurationAttribute__c'
 export const CPQ_QUOTE = 'SBQQ__Quote__c'
 const CPQ_QUOTE_LINE_GROUP = 'SBQQ__QuoteLineGroup__c'
-const CPQ_QUOTE_LINE = 'SBQQ__QuoteLine__c'
+export const CPQ_QUOTE_LINE = 'SBQQ__QuoteLine__c'
 const CPQ_PRODUCT_OPTION = 'SBQQ__ProductOption__c'
 export const CPQ_PRICE_SCHEDULE = 'SBQQ__PriceSchedule__c'
 export const CPQ_DISCOUNT_SCHEDULE = 'SBQQ__DiscountSchedule__c'
@@ -634,6 +634,7 @@ export const CPQ_SUBSCRIPTION = 'SBQQ__Subscription__c'
 export const CPQ_TERM_CONDITION = 'SBQQ__TermCondition__c'
 export const CPQ_QUOTE_TERM = 'SBQQ__QuoteTerm__c'
 export const CPQ_TERM_CONDITON = 'SBQQ__TermCondition__c'
+export const CPQ_SUMMARY_VARIABLE = 'SBQQ__SummaryVariable__c'
 
 // CPQ Fields
 export const CPQ_LOOKUP_OBJECT_NAME = 'SBQQ__LookupObject__c'
@@ -666,6 +667,7 @@ export const CPQ_RULE_FIELD = 'SBQQ__Rule__c'
 export const CPQ_QUOTE_TERM_FIELD = 'SBQQ__QuoteTerm__c'
 export const SBAA_ADVANCED_CONDITION_FIELD = 'sbaa__AdvancedCondition__c'
 export const SBAA_INDEX_FIELD = 'sbaa__Index__c'
+export const SBQQ_AGGREGATED_FIELD = 'SBQQ__AggregateField__c'
 
 export const CPQ_QUOTE_NO_PRE = 'Quote__c'
 const CPQ_QUOTE_LINE_GROUP_NO_PRE = 'QuoteLineGroup__c'
@@ -687,6 +689,10 @@ export const TEST_OBJECT_TO_API_MAPPING = {
 export const SCHEDULE_CONSTRAINT_FIELD_TO_API_MAPPING = {
   [CPQ_ACCOUNT_NO_PRE]: CPQ_ACCOUNT,
 } as Record<string, string>
+
+export const AGGREGATED_FIELD_TO_QUOTE_LINE = {
+  Quantity: 'SBQQ__Quantity__c',
+}
 
 // sbaa Objects
 export const SBAA_APPROVAL_CONDITION = 'sbaa__ApprovalCondition__c'
