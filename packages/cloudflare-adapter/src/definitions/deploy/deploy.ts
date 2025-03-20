@@ -35,6 +35,41 @@ const createCustomizations = (): Record<string, InstanceDeployApiDefinitions> =>
         },
       },
     },
+    Rule: {
+      requestsByAction: {
+        customizations: {
+          modify: [
+            {
+              request: {
+                endpoint: {
+                  path: '/client/v4/{accountsOrZones}/{accountOrZoneId}/rulesets/{parent_id}/rules/{id}',
+                  method: 'patch',
+                },
+                transformation: {
+                  omit: ['phase', 'kind', 'accountsOrZones', 'accountOrZoneId'],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+    DnsRecord: {
+      requestsByAction: {
+        customizations: {
+          modify: [
+            {
+              request: {
+                endpoint: {
+                  path: '/client/v4/zones/{parent_id}/dns_records/{id}',
+                  method: 'patch',
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
   }
   return _.merge(standardRequestDefinitions, customDefinitions)
 }

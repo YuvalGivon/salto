@@ -45,6 +45,16 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     serializationStrategy: 'aud',
     target: { type: 'AccessApplication' },
   },
+  {
+    src: { field: 'id', parentTypes: ['Rule__action_parameters'] },
+    serializationStrategy: 'id',
+    target: { type: 'Ruleset' },
+  },
+  {
+    src: { field: 'id', parentTypes: ['Rule__action_parameters__overrides__rules'] },
+    serializationStrategy: 'id',
+    target: { type: 'Rule' },
+  },
 ]
 
 export const REFERENCES: definitions.ApiDefinitions<Options>['references'] = {

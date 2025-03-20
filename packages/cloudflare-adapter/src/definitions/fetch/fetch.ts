@@ -253,6 +253,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'Rule',
           context: {
             args: {
+              rulesetId: { root: 'id' },
               rulesetRule: { root: 'phase' },
               kind: { root: 'kind' },
             },
@@ -286,7 +287,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     requests: [
       {
         endpoint: {
-          path: '/client/v4/{accountsOrZones}/{accountOrZoneId}/rulesets/phases/{rulesetRule}/entrypoint',
+          path: '/client/v4/{accountsOrZones}/{accountOrZoneId}/rulesets/{rulesetId}',
         },
         transformation: {
           root: 'result.rules',
