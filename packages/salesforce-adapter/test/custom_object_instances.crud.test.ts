@@ -26,7 +26,7 @@ import {
   toChange,
 } from '@salto-io/adapter-api'
 import { MockInterface } from '@salto-io/test-utils'
-import { BulkLoadOperation, BulkOptions, Record as SfRecord, Batch } from '@salto-io/jsforce'
+import { BulkLoadOperation, BulkOptions, Record as SfRecord, Batch, DescribeSObjectResult } from '@salto-io/jsforce'
 import { EventEmitter } from 'events'
 import { Types } from '../src/transformers/transformer'
 import SalesforceAdapter from '../src/adapter'
@@ -60,6 +60,7 @@ import {
   CPQ_ERROR_CONDITION,
 } from '../src/constants'
 import { mockTypes } from './mock_elements'
+import { apiNameSync } from '../src/filters/utils'
 
 describe('Custom Object Instances CRUD', () => {
   let adapter: SalesforceAdapter
@@ -69,6 +70,28 @@ describe('Custom Object Instances CRUD', () => {
   const instanceName = 'Instance'
   const anotherInstanceName = 'AnotherInstance'
   const nameOfInstanceWithNonUpdateableField = 'NotUpdatable'
+  const nonCreatableFieldName = 'NotCreatable'
+  const nonUpdateableFieldName = 'NotUpdateable'
+
+  const mockDescribe = (connection: MockInterface<Connection>, ...customObjects: ObjectType[]): void => {
+    jest.spyOn(connection.soap, 'describeSObjects').mockImplementation(async input => {
+      const type = _.isArray(input) ? input[0] : input
+      const obj = customObjects.find(co => apiNameSync(co) === type)
+      return {
+        name: type,
+        createable: true,
+        updateable: true,
+        fields: !obj
+          ? []
+          : Object.keys(obj.fields).map(fieldName => ({
+              name: fieldName,
+              createable: fieldName !== nonCreatableFieldName,
+              updateable: fieldName !== nonUpdateableFieldName,
+              queryable: true,
+            })),
+      } as unknown as DescribeSObjectResult
+    })
+  }
 
   const customObject = new ObjectType({
     elemID: mockElemID,
@@ -109,22 +132,22 @@ describe('Custom Object Instances CRUD', () => {
           [constants.API_NAME]: 'NumField',
         },
       },
-      NotCreatable: {
+      [nonCreatableFieldName]: {
         refType: BuiltinTypes.STRING,
         annotations: {
           [constants.FIELD_ANNOTATIONS.CREATABLE]: false,
           [constants.FIELD_ANNOTATIONS.UPDATEABLE]: true,
           [constants.FIELD_ANNOTATIONS.QUERYABLE]: true,
-          [constants.API_NAME]: 'NotCreatable',
+          [constants.API_NAME]: nonCreatableFieldName,
         },
       },
-      NotUpdateable: {
+      [nonUpdateableFieldName]: {
         refType: BuiltinTypes.STRING,
         annotations: {
           [constants.FIELD_ANNOTATIONS.CREATABLE]: true,
           [constants.FIELD_ANNOTATIONS.UPDATEABLE]: false,
           [constants.FIELD_ANNOTATIONS.QUERYABLE]: true,
-          [constants.API_NAME]: 'NotUpdateable',
+          [constants.API_NAME]: nonUpdateableFieldName,
         },
       },
       AnotherField: {
@@ -172,7 +195,7 @@ describe('Custom Object Instances CRUD', () => {
   })
   const existingInstance = new InstanceElement(instanceName, customObject, {
     SaltoName: 'existingInstance',
-    NotCreatable: 'DoNotSendMeOnCreate',
+    [nonCreatableFieldName]: 'DoNotSendMeOnCreate',
     NumField: 1,
     Address: {
       city: 'Tel-Aviv',
@@ -203,7 +226,7 @@ describe('Custom Object Instances CRUD', () => {
   }
   const anotherExistingInstance = new InstanceElement(anotherInstanceName, customObject, {
     SaltoName: "anotherExistingInstanceWithThing'",
-    NotCreatable: 'DoNotSendMeOnCreate',
+    [nonCreatableFieldName]: 'DoNotSendMeOnCreate',
   })
   const anotherExistingInstanceRecordValues = {
     attributes: {
@@ -219,7 +242,7 @@ describe('Custom Object Instances CRUD', () => {
     customObject,
     {
       SaltoName: 'existingInstanceWithNonUpdateableField',
-      NotUpdateable: 'DoNotSendMeOnUpdate',
+      [nonUpdateableFieldName]: 'DoNotSendMeOnUpdate',
     },
   )
   const newInstanceWithRefName = 'newInstanceWithRef'
@@ -241,7 +264,7 @@ describe('Custom Object Instances CRUD', () => {
   const newInstanceWithNonCreatableField = new InstanceElement(newInstanceWithNonCreatableFieldName, customObject, {
     SaltoName: 'newInstanceWithNonCreatableField',
     NumField: 4,
-    NotCreatable: 'ShouldNotBeCreated',
+    [nonCreatableFieldName]: 'ShouldNotBeCreated',
   })
   const instanceWithMissingFields = new InstanceElement('instanceWithMissingFields', customObject, {
     SaltoName: 'instanceWithMissingFields',
@@ -318,6 +341,7 @@ describe('Custom Object Instances CRUD', () => {
       mockBulkLoad = getBulkLoadMock('success')
       partialBulkLoad = getBulkLoadMock('partial')
       connection.bulk.load = mockBulkLoad
+      mockDescribe(connection, mockTypes.ApprovalRule, mockTypes.ApprovalCondition, customObject)
     })
 
     describe('Properly handle creation of list custom settings', () => {
@@ -406,6 +430,7 @@ describe('Custom Object Instances CRUD', () => {
           done: true,
           records: [existingSettingRecord],
         }))
+        mockDescribe(connection, customSettingsObject)
         connection.query = mockQuery
         result = await adapter.deploy({
           changeGroup: {
@@ -528,8 +553,8 @@ describe('Custom Object Instances CRUD', () => {
             expect(updateCall[3][0].SaltoName).toBeDefined()
             expect(updateCall[3][0].SaltoName).toEqual('existingInstance')
             // Because it turns into an update it should send it
-            expect(updateCall[3][0].NotCreatable).toBeDefined()
-            expect(updateCall[3][0].NotCreatable).toEqual('DoNotSendMeOnCreate')
+            expect(updateCall[3][0][nonCreatableFieldName]).toBeDefined()
+            expect(updateCall[3][0][nonCreatableFieldName]).toEqual('DoNotSendMeOnCreate')
             // Should deploy fields with no values as null
             expect(updateCall[3][0].FieldWithNoValue).toBeNull()
           })
@@ -544,7 +569,7 @@ describe('Custom Object Instances CRUD', () => {
             const newInstanceWithRefRecord = insertCall[3][0]
             expect(newInstanceWithRefRecord).toHaveProperty('SaltoName', 'newInstanceWithRef')
             expect(newInstanceWithRefRecord).toHaveProperty('AnotherField', 'Type')
-            expect(newInstanceWithRefRecord).not.toHaveProperty('NotCreatable')
+            expect(newInstanceWithRefRecord).not.toHaveProperty(nonCreatableFieldName)
             expect(newInstanceWithRefRecord).not.toHaveProperty('FieldWithNoValue')
 
             const newInstanceWithNonCreatableFieldRecord = insertCall[3][1]
@@ -553,7 +578,7 @@ describe('Custom Object Instances CRUD', () => {
               'newInstanceWithNonCreatableField',
             )
             expect(newInstanceWithNonCreatableFieldRecord).toHaveProperty('NumField', 4)
-            expect(newInstanceWithNonCreatableFieldRecord).not.toHaveProperty('NotCreatable')
+            expect(newInstanceWithNonCreatableFieldRecord).not.toHaveProperty(nonCreatableFieldName)
           })
 
           it('Should have result with correct applied changes and add Id to the inserted instances', async () => {
@@ -598,7 +623,7 @@ describe('Custom Object Instances CRUD', () => {
               .map(getChangeData)
               .find(element => element.elemID.isEqual(newInstanceWithNonCreatableField.elemID)) as InstanceElement
 
-            expect(newInstanceWithNonCreatableFieldChangeData.value).not.toHaveProperty('NotCreatable')
+            expect(newInstanceWithNonCreatableFieldChangeData.value).not.toHaveProperty(nonCreatableFieldName)
           })
 
           it('Should create a warning for instance with missing fields', () => {
@@ -708,7 +733,7 @@ describe('Custom Object Instances CRUD', () => {
                 .map(getChangeData)
                 .find(element => element.elemID.isEqual(newInstanceWithNonCreatableField.elemID)) as InstanceElement
 
-              expect(newInstanceWithNonCreatableFieldChangeData.value).not.toHaveProperty('NotCreatable')
+              expect(newInstanceWithNonCreatableFieldChangeData.value).not.toHaveProperty(nonCreatableFieldName)
             })
           })
           describe('when group has circular dependencies', () => {
@@ -753,6 +778,7 @@ describe('Custom Object Instances CRUD', () => {
                   },
                 },
               })
+              mockDescribe(connection, objectType)
               firstInstance = new InstanceElement('firstInstance', objectType, {
                 Name: 'firstInstance',
                 Number__c: 1,
@@ -1029,7 +1055,7 @@ describe('Custom Object Instances CRUD', () => {
       const instanceWithNonUpdateableFieldBefore = existingInstanceWithNonUpdateableField.clone()
       instanceWithNonUpdateableFieldBefore.value.Id = 'yetAnotherModifyId'
       const instanceWithNonUpdateableFieldAfter = instanceWithNonUpdateableFieldBefore.clone()
-      instanceWithNonUpdateableFieldAfter.value.NotUpdateable = 'PleaseDoNotUpdate'
+      instanceWithNonUpdateableFieldAfter.value[nonUpdateableFieldName] = 'PleaseDoNotUpdate'
       const modifyDeployGroup = {
         groupID: 'modify__Test__c',
         changes: [
@@ -1084,7 +1110,7 @@ describe('Custom Object Instances CRUD', () => {
           const thirdChangeData = getChangeData(result.appliedChanges[2])
           expect(thirdChangeData).toBeDefined()
           expect(isInstanceElement(thirdChangeData)).toBeTruthy()
-          expect((thirdChangeData as InstanceElement).value).not.toHaveProperty('NotUpdateable')
+          expect((thirdChangeData as InstanceElement).value).not.toHaveProperty(nonUpdateableFieldName)
         })
       })
 
@@ -1596,6 +1622,7 @@ describe('Custom Object Instances CRUD', () => {
       })
       describe('when no Errors occur during the deploy', () => {
         beforeEach(async () => {
+          mockDescribe(connection, mockTypes[CPQ_PRICE_RULE], mockTypes[CPQ_PRICE_CONDITION])
           const priceRule = new InstanceElement('somePriceRule', mockTypes[CPQ_PRICE_RULE], {
             [CPQ_CONDITIONS_MET]: 'Custom',
           })
@@ -1655,6 +1682,7 @@ describe('Custom Object Instances CRUD', () => {
         let failPriceRule: InstanceElement
         let failPriceCondition: InstanceElement
         beforeEach(async () => {
+          mockDescribe(connection, mockTypes[CPQ_PRICE_RULE], mockTypes[CPQ_PRICE_CONDITION])
           priceRule = new InstanceElement('1', mockTypes[CPQ_PRICE_RULE], {
             [CPQ_CONDITIONS_MET]: 'Custom',
           })
