@@ -194,7 +194,54 @@ describe('fetch command', () => {
           ignoreStateElemIdMapping: true,
           withChangesDetection: undefined,
           ignoreStateElemIdMappingForSelectors: [createElementSelector('salto.type.instance.*')],
+          partialFetchTargetsByAccount: {},
           adapterCreators,
+        })
+      })
+    })
+
+    describe('when passing partial fetch targets', () => {
+      const workspace = mocks.mockWorkspace({})
+
+      it('should exit with user error when partial fetch targets are invalid', async () => {
+        result = await action({
+          ...cliCommandArgs,
+          input: {
+            force: false,
+            mode: 'default',
+            stateOnly: false,
+            fromState: false,
+            regenerateSaltoIds: false,
+            partialFetchTargets: ['account:group:name:extra'],
+          },
+          workspace,
+        })
+        expect(result).toBe(CliExitCode.UserInputError)
+      })
+      it('should call core fetch with partial fetch targets', async () => {
+        result = await action({
+          ...cliCommandArgs,
+          input: {
+            force: true,
+            mode: 'default',
+            stateOnly: false,
+            fromState: false,
+            regenerateSaltoIds: false,
+            partialFetchTargets: ['account:group:name'],
+          },
+          workspace,
+        })
+        expect(result).toBe(CliExitCode.Success)
+        expect(fetch).toHaveBeenCalledWith({
+          workspace,
+          progressEmitter: expect.anything(),
+          accounts: workspace.accounts(),
+          adapterCreators,
+          ignoreStateElemIdMapping: false,
+          ignoreStateElemIdMappingForSelectors: [],
+          partialFetchTargetsByAccount: {
+            account: [{ group: 'group', name: 'name' }],
+          },
         })
       })
     })
@@ -236,6 +283,7 @@ describe('fetch command', () => {
             stateOnly: false,
             regenerateSaltoIds: false,
             regenerateSaltoIdsForSelectors: [],
+            partialFetchTargetsByAccount: {},
           })
         })
         it('should start at least one step', () => {
@@ -269,6 +317,7 @@ describe('fetch command', () => {
             stateOnly: false,
             regenerateSaltoIds: false,
             regenerateSaltoIdsForSelectors: [],
+            partialFetchTargetsByAccount: {},
           })
         })
         it('should not update workspace', () => {
@@ -306,6 +355,7 @@ describe('fetch command', () => {
             stateOnly: false,
             regenerateSaltoIds: false,
             regenerateSaltoIdsForSelectors: [],
+            partialFetchTargetsByAccount: {},
           }
         })
 
@@ -348,6 +398,7 @@ describe('fetch command', () => {
               stateOnly: false,
               regenerateSaltoIds: false,
               regenerateSaltoIdsForSelectors: [],
+              partialFetchTargetsByAccount: {},
             })
             expect(result).toBe(CliExitCode.Success)
           })
@@ -376,6 +427,7 @@ describe('fetch command', () => {
               stateOnly: false,
               regenerateSaltoIds: false,
               regenerateSaltoIdsForSelectors: [],
+              partialFetchTargetsByAccount: {},
             })
             expect(result).toBe(CliExitCode.Success)
           })
@@ -404,6 +456,7 @@ describe('fetch command', () => {
               stateOnly: false,
               regenerateSaltoIds: false,
               regenerateSaltoIdsForSelectors: [],
+              partialFetchTargetsByAccount: {},
             })
             expect(result).toBe(CliExitCode.Success)
           })
@@ -432,6 +485,7 @@ describe('fetch command', () => {
               stateOnly: false,
               regenerateSaltoIds: false,
               regenerateSaltoIdsForSelectors: [],
+              partialFetchTargetsByAccount: {},
             })
             expect(result).toBe(CliExitCode.Success)
           })
@@ -460,6 +514,7 @@ describe('fetch command', () => {
                   stateOnly: true,
                   regenerateSaltoIds: false,
                   regenerateSaltoIdsForSelectors: [],
+                  partialFetchTargetsByAccount: {},
                 }),
               ).rejects.toThrow())
           })
@@ -481,6 +536,7 @@ describe('fetch command', () => {
                 stateOnly: true,
                 regenerateSaltoIds: false,
                 regenerateSaltoIdsForSelectors: [],
+                partialFetchTargetsByAccount: {},
               })
             })
             it('should return OK status when state is updated', () => {
@@ -515,6 +571,7 @@ describe('fetch command', () => {
                 stateOnly: true,
                 regenerateSaltoIds: false,
                 regenerateSaltoIdsForSelectors: [],
+                partialFetchTargetsByAccount: {},
               })
             })
             it('should return AppError status when state is updated', () => {
@@ -541,6 +598,7 @@ describe('fetch command', () => {
               stateOnly: false,
               regenerateSaltoIds: false,
               regenerateSaltoIdsForSelectors: [],
+              partialFetchTargetsByAccount: {},
             })
           })
           it('should deploy all changes', () => {
@@ -570,6 +628,7 @@ describe('fetch command', () => {
                 stateOnly: false,
                 regenerateSaltoIds: false,
                 regenerateSaltoIdsForSelectors: [],
+                partialFetchTargetsByAccount: {},
               })
               expect(workspace.updateNaclFiles).toHaveBeenCalledWith([changes[0].change], 'default')
             })
@@ -603,6 +662,7 @@ describe('fetch command', () => {
                 stateOnly: false,
                 regenerateSaltoIds: false,
                 regenerateSaltoIdsForSelectors: [],
+                partialFetchTargetsByAccount: {},
               })
               expect(workspace.updateNaclFiles).toHaveBeenCalledWith([changes[0].change], 'default')
               expect(res).toBe(CliExitCode.AppError)
@@ -635,6 +695,7 @@ describe('fetch command', () => {
                 stateOnly: false,
                 regenerateSaltoIds: false,
                 regenerateSaltoIdsForSelectors: [],
+                partialFetchTargetsByAccount: {},
               })
               expect(workspace.updateNaclFiles).toHaveBeenCalledWith([changes[0].change], 'default')
               expect(res).toBe(CliExitCode.Success)
@@ -679,6 +740,7 @@ describe('fetch command', () => {
             accounts: [],
             regenerateSaltoIds: false,
             regenerateSaltoIdsForSelectors: [],
+            partialFetchTargetsByAccount: {},
           })
         })
         it('should succeed', () => {

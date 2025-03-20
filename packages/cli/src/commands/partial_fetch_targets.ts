@@ -22,7 +22,13 @@ import { ACCOUNTS_OPTION, AccountsArg } from './common/accounts'
 
 const { awu } = collections.asynciterable
 
-const PARTIAL_FETCH_TARGET_SEPARATOR = ':'
+export const PARTIAL_FETCH_TARGET_SEPARATOR = ':'
+
+export const PARTIAL_FETCH_TARGET_FORMAT = formatAccountPartialFetchTargets(
+  'account',
+  [{ group: 'group', name: 'name' }],
+  PARTIAL_FETCH_TARGET_SEPARATOR,
+)
 
 type ListPartialFetchTargetsArgs = AccountsArg & EnvArg
 

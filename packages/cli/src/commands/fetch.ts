@@ -7,7 +7,14 @@
  */
 import { EOL } from 'os'
 import _ from 'lodash'
-import { getChangeData, isInstanceElement, AdapterOperationName, Progress, Change } from '@salto-io/adapter-api'
+import {
+  getChangeData,
+  isInstanceElement,
+  AdapterOperationName,
+  Progress,
+  Change,
+  PartialFetchTarget,
+} from '@salto-io/adapter-api'
 import { adapterCreators } from '@salto-io/adapter-creators'
 import {
   fetch as apiFetch,
@@ -44,6 +51,7 @@ import Prompts from '../prompts'
 import { ENVIRONMENT_OPTION, EnvArg, validateAndSetEnv } from './common/env'
 import { ACCOUNTS_OPTION, AccountsArg, getAndValidateActiveAccounts, getTagsForAccounts } from './common/accounts'
 import { UpdateModeArg, UPDATE_MODE_OPTION } from './common/update_mode'
+import { PARTIAL_FETCH_TARGET_FORMAT, PARTIAL_FETCH_TARGET_SEPARATOR } from './partial_fetch_targets'
 
 const log = logger(module)
 const { awu } = collections.asynciterable
@@ -67,6 +75,7 @@ export type FetchCommandArgs = {
   regenerateSaltoIds: boolean
   regenerateSaltoIdsForSelectors: ElementSelector[]
   withChangesDetection?: boolean
+  partialFetchTargetsByAccount: Record<string, PartialFetchTarget[]>
 }
 
 const createFetchFromWorkspaceCommand =
@@ -114,6 +123,7 @@ export const fetchCommand = async ({
   regenerateSaltoIds,
   regenerateSaltoIdsForSelectors,
   withChangesDetection,
+  partialFetchTargetsByAccount,
 }: FetchCommandArgs): Promise<CliExitCode> => {
   const bindedOutputline = (text: string): void => outputLine(text, output)
   const fetchProgress = new EventEmitter<FetchProgressEvents>()
@@ -184,6 +194,7 @@ export const fetchCommand = async ({
     accounts,
     ignoreStateElemIdMapping: regenerateSaltoIds,
     withChangesDetection,
+    partialFetchTargetsByAccount,
     ignoreStateElemIdMappingForSelectors: regenerateSaltoIdsForSelectors,
     adapterCreators,
   })
@@ -261,6 +272,7 @@ type FetchArgs = {
   fromEnv?: string
   fromState: boolean
   withChangesDetection?: boolean
+  partialFetchTargets?: string[]
 } & AccountsArg &
   EnvArg &
   UpdateModeArg
@@ -284,6 +296,7 @@ export const action: WorkspaceCommandAction<FetchArgs> = async ({
     fromEnv,
     fromState,
     withChangesDetection,
+    partialFetchTargets,
   } = input
 
   if ([fromEnv, fromWorkspace].some(values.isDefined) && ![fromEnv, fromWorkspace].every(values.isDefined)) {
@@ -307,6 +320,23 @@ export const action: WorkspaceCommandAction<FetchArgs> = async ({
     )
     return CliExitCode.UserInputError
   }
+
+  if (
+    partialFetchTargets?.some(
+      target =>
+        target.split(PARTIAL_FETCH_TARGET_SEPARATOR).length !==
+        PARTIAL_FETCH_TARGET_FORMAT.split(PARTIAL_FETCH_TARGET_SEPARATOR).length,
+    )
+  ) {
+    errorOutputLine(`Partial fetch targets must be in the format ${PARTIAL_FETCH_TARGET_FORMAT}`, output)
+    return CliExitCode.UserInputError
+  }
+
+  const partialFetchTargetsByAccount = _(partialFetchTargets)
+    .map(target => target.split(PARTIAL_FETCH_TARGET_SEPARATOR))
+    .groupBy(([account]) => account)
+    .mapValues(targets => targets.map(([_account, group, name]) => ({ group, name })))
+    .value()
 
   const { shouldCalcTotalSize } = config
   await validateAndSetEnv(workspace, input, output)
@@ -335,6 +365,7 @@ export const action: WorkspaceCommandAction<FetchArgs> = async ({
     withChangesDetection,
     regenerateSaltoIds,
     regenerateSaltoIdsForSelectors,
+    partialFetchTargetsByAccount,
   })
 }
 
@@ -404,6 +435,13 @@ const fetchDef = createWorkspaceCommand({
           'Improve fetch performance by relying on the service audit trail in order to fetch only elements that were modified or created since the last fetch',
         type: 'boolean',
         default: false,
+      },
+      {
+        name: 'partialFetchTargets',
+        alias: 't',
+        required: false,
+        description: `Fetch only the specified partial fetch targets. Specify the targets as a list of paths, each with the format ${PARTIAL_FETCH_TARGET_FORMAT}`,
+        type: 'stringsList',
       },
     ],
   },
