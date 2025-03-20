@@ -584,7 +584,6 @@ const DEFAULT_TYPE_CUSTOMIZATIONS: JiraApiConfig['types'] = {
   IssueTypeScheme: {
     transformation: {
       fieldTypeOverrides: [{ fieldName: 'issueTypeIds', fieldType: 'list<IssueTypeSchemeMapping>' }],
-      serviceIdField: 'issueTypeSchemeId',
       fieldsToHide: [{ fieldName: 'id' }],
       serviceUrl: '/secure/admin/ConfigureOptionSchemes!default.jspa?fieldId=&schemeId={id}',
     },

@@ -106,9 +106,12 @@ const deployIssueTypeSchema = async (
     return
   }
 
-  await defaultDeployChange({ change, client, apiDefinitions: config.apiDefinitions })
-  change.data.after.value.id = change.data.after.value.issueTypeSchemeId
-  delete change.data.after.value.issueTypeSchemeId
+  await defaultDeployChange({
+    change,
+    client,
+    apiDefinitions: config.apiDefinitions,
+    responseServiceIdField: 'issueTypeSchemeId',
+  })
 }
 
 const filter: FilterCreator = ({ config, client }) => ({

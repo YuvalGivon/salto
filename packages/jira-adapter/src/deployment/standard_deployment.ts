@@ -45,7 +45,13 @@ type DeployChangeParam = {
   additionalUrlVars?: Record<string, string>
   elementsSource?: ReadOnlyElementsSource
   allowedStatusCodesOnRemoval?: number[]
-  serviceIdSetter?: (instance: InstanceElement, serviceIdField: string, response: clientUtils.ResponseValue) => void
+  serviceIdSetter?: (
+    instance: InstanceElement,
+    serviceIdField: string,
+    response: clientUtils.ResponseValue,
+    responseServiceIdField?: string,
+  ) => void
+  responseServiceIdField?: string
   hiddenFieldsSetter?: (instance: InstanceElement, response: clientUtils.ResponseValue) => void
 }
 
@@ -62,8 +68,9 @@ export const defaultServiceIdSetter = (
   instance: InstanceElement,
   serviceIdField: string,
   response: clientUtils.ResponseValue,
+  responseServiceIdField = serviceIdField,
 ): void => {
-  instance.value[serviceIdField] = response[serviceIdField]
+  instance.value[serviceIdField] = response[responseServiceIdField]
 }
 
 export const toNumberServiceIdSetter = (
@@ -86,6 +93,7 @@ export const defaultDeployChange = async ({
   elementsSource,
   allowedStatusCodesOnRemoval,
   serviceIdSetter = defaultServiceIdSetter,
+  responseServiceIdField,
   hiddenFieldsSetter,
 }: DeployChangeParam): Promise<clientUtils.ResponseValue | clientUtils.ResponseValue[] | undefined> => {
   const resolvedChange = await resolveChangeElement(change, getLookUpName, resolveValues, elementsSource)
@@ -119,8 +127,11 @@ export const defaultDeployChange = async ({
     if (!Array.isArray(response)) {
       const serviceIdField =
         apiDefinitions.types[getChangeData(change).elemID.typeName]?.transformation?.serviceIdField ?? 'id'
-      if (response?.[serviceIdField] !== undefined) {
-        serviceIdSetter(change.data.after, serviceIdField, response)
+      const responseServiceId = responseServiceIdField ?? serviceIdField
+      if (response?.[responseServiceId] !== undefined) {
+        serviceIdSetter(change.data.after, serviceIdField, response, responseServiceId)
+      } else {
+        log.warn(`Service id field ${responseServiceId} not found in response: ${response}`)
       }
     } else {
       log.warn('Received unexpected response from deployChange: %o', response)
