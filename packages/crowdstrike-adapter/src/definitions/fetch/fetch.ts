@@ -54,6 +54,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
+          adjust: convertGroupSummaryToIdList,
         },
       },
     ],

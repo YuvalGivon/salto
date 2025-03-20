@@ -43,6 +43,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
         'SensorVisibilityExclusion',
         'FirewallPolicy',
         'SensorUpdatePolicy',
+        'PreventionPolicy',
       ],
     },
     serializationStrategy: 'id',
