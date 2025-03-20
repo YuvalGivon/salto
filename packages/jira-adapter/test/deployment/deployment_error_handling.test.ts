@@ -16,7 +16,7 @@ describe('handleDeploymentError', () => {
       data: { errorMessages: ['error1', 'error2'], errors: { some_key: 'some value' } },
     })
     const result = handleDeploymentError(error).message
-    expect(result).toEqual('error. error1, error2, {"some_key":"some value"}')
+    expect(result).toEqual('error1, error2, {"some_key":"some value"}\nerror')
   })
   it('should keep the same message', async () => {
     error = new Error('error')

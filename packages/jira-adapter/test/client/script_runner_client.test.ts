@@ -66,7 +66,7 @@ describe('scriptRunnerClient', () => {
         mockAxios.onGet(JWT_ACCESS_URL).reply(400, { response: 'asd', errorMessages: ['error message'] })
         await expect(async () => scriptRunnerClient.get({ url: '/myPath' })).rejects.toThrow(
           new Error(
-            `Login failed with error: Failed to get ${JWT_ACCESS_URL} with error: Request failed with status code 400. error message`,
+            `Login failed with error: error message\nFailed to get ${JWT_ACCESS_URL} with error: Request failed with status code 400`,
           ),
         )
       })
@@ -155,7 +155,7 @@ describe('scriptRunnerClient', () => {
           .onGet('https://my.scriptrunner.net/myPath')
           .replyOnce(400, { response: 'asd', errorMessages: ['error message'] })
         await expect(async () => scriptRunnerClient.get({ url: '/myPath' })).rejects.toThrow(
-          new Error('Failed to get /myPath with error: Request failed with status code 400. error message'),
+          new Error('error message\nFailed to get /myPath with error: Request failed with status code 400'),
         )
       })
       it('should fail without throwing when received page not found error', async () => {

@@ -19,7 +19,7 @@ export const handleDeploymentError = (err: Error): Error => {
         : []),
     ]
     if (errorMessages.length > 0) {
-      err.message = `${err.message}. ${errorMessages.join(', ')}`
+      err.message = `${errorMessages.join(', ')}\n${err.message}`
     }
   }
   return err

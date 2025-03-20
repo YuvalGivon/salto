@@ -597,7 +597,7 @@ describe('workflowScheme', () => {
       expect(result?.deployResult.appliedChanges).toHaveLength(1)
       expect(result?.deployResult.errors).toEqual([])
       expect(logErrorSpy).toHaveBeenCalledWith(
-        'failed to publish draft for workflow scheme workflowSchemeInstance, error: Failed to publish draft with error: . Issue type with name issueInstance is missing the mappings required for statuses with names statusFirstInstance,statusSecondInstance',
+        'failed to publish draft for workflow scheme workflowSchemeInstance, error: Issue type with name issueInstance is missing the mappings required for statuses with names statusFirstInstance,statusSecondInstance\nFailed to publish draft with error: ',
       )
     })
 
@@ -641,7 +641,7 @@ describe('workflowScheme', () => {
       expect(result?.deployResult.appliedChanges).toHaveLength(1)
       expect(result?.deployResult.errors).toEqual([])
       expect(logErrorSpy).toHaveBeenCalledWith(
-        'failed to publish draft for workflow scheme workflowSchemeInstance, error: Failed to publish draft with error: . <not correct message> 2 is missing the mappings required for statuses <not correct message> with 3',
+        'failed to publish draft for workflow scheme workflowSchemeInstance, error: <not correct message> 2 is missing the mappings required for statuses <not correct message> with 3\nFailed to publish draft with error: ',
       )
     })
 
@@ -678,7 +678,7 @@ describe('workflowScheme', () => {
       expect(result?.deployResult.appliedChanges).toHaveLength(1)
       expect(result?.deployResult.errors).toEqual([])
       expect(logErrorSpy).toHaveBeenCalledWith(
-        'failed to publish draft for workflow scheme workflowSchemeInstance, error: Failed to publish draft with error: . Issue type with name issueInstance is missing the mappings required for statuses with names ID 7',
+        'failed to publish draft for workflow scheme workflowSchemeInstance, error: Issue type with name issueInstance is missing the mappings required for statuses with names ID 7\nFailed to publish draft with error: ',
       )
     })
 
