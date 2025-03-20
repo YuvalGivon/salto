@@ -227,7 +227,6 @@ const DEFAULT_FILTERS = [
   automationStructureFilter,
   brokenReferences, // Should run before automationDeploymentFilter
   automationDeploymentFilter,
-  addImportantValuesFilter,
   webhookFilter,
   fieldNameFilter, // Should run before duplicateIdsFilter
   workflowFilter,
@@ -366,7 +365,8 @@ const DEFAULT_FILTERS = [
   deployAttributesFilter,
   objectSchemaDeployFilter, // Must run before deployJsmTypesFilter
   deployJsmTypesFilter,
-  projectsScopeFilter,
+  projectsScopeFilter, // should run before addImportantValuesFilter
+  addImportantValuesFilter,
   hideTypesFilter, // Must run after defaultAttributesFilter and assetsObjectTypeOrderFilter, which also create types.
   defaultInstancesDeployFilter, // Must be last
 ]
