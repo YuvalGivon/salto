@@ -26,7 +26,7 @@ import { getFilterParams } from '../../../utils'
 describe('smart_value_reference_filter', () => {
   type FilterType = filterUtils.FilterWith<'onFetch' | 'onDeploy' | 'preDeploy'>
   let filter: FilterType
-  let additionalAutomationExpressionsFilter: FilterType
+  let noAdditionalAutomationExpressionsFilter: FilterType
   let automationType: ObjectType
   let fieldType: ObjectType
   let fieldInstance: InstanceElement
@@ -40,9 +40,9 @@ describe('smart_value_reference_filter', () => {
     config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
 
     filter = filterCreator(getFilterParams({ config })) as FilterType
-    additionalAutomationExpressionsFilter = filterCreator(
+    noAdditionalAutomationExpressionsFilter = filterCreator(
       getFilterParams({
-        config: { ...config, fetch: { ...config.fetch, parseAdditionalAutomationExpressions: true } },
+        config: { ...config, fetch: { ...config.fetch, parseAdditionalAutomationExpressions: false } },
       }),
     ) as FilterType
 
@@ -196,7 +196,7 @@ describe('smart_value_reference_filter', () => {
       describe('when parseAdditionalAutomationExpressions is false', () => {
         beforeEach(async () => {
           elements = generateElements()
-          await filter.onFetch(elements)
+          await noAdditionalAutomationExpressionsFilter.onFetch(elements)
           const automationResult = elements.filter(isInstanceElement).find(i => i.elemID.name === 'complexAutom')
           expect(automationResult).toBeDefined()
           automation = automationResult as InstanceElement
@@ -218,7 +218,7 @@ describe('smart_value_reference_filter', () => {
         })
         describe('fetch', () => {
           beforeEach(async () => {
-            await additionalAutomationExpressionsFilter.onFetch(elements)
+            await filter.onFetch(elements)
             const automationResult = elements.filter(isInstanceElement).find(i => i.elemID.name === 'complexAutom')
             expect(automationResult).toBeDefined()
             automation = automationResult as InstanceElement
@@ -269,7 +269,7 @@ describe('smart_value_reference_filter', () => {
                 '}} ending',
               ],
             })
-            await additionalAutomationExpressionsFilter.preDeploy(elements.map(e => toChange({ before: e, after: e })))
+            await filter.preDeploy(elements.map(e => toChange({ before: e, after: e })))
             const automationResult = elements.filter(isInstanceElement).find(i => i.elemID.name === 'complexAutom')
             expect(automationResult).toBeDefined()
             automation = automationResult as InstanceElement
@@ -283,7 +283,7 @@ describe('smart_value_reference_filter', () => {
             )
           })
           it('should resolve templates in array on onDeploy', async () => {
-            await additionalAutomationExpressionsFilter.onDeploy(elements.map(e => toChange({ before: e, after: e })))
+            await filter.onDeploy(elements.map(e => toChange({ before: e, after: e })))
             expect(complexAutomationInstance.value.components[0].children[0].value.first).toEqual(
               new TemplateExpression({
                 parts: [
@@ -319,7 +319,7 @@ describe('smart_value_reference_filter', () => {
       })
       describe('when parseAdditionalAutomationExpressions is true', () => {
         beforeEach(async () => {
-          await additionalAutomationExpressionsFilter.onFetch(elements)
+          await filter.onFetch(elements)
           automationResult = elements.filter(isInstanceElement).find(i => i.elemID.name === 'smartQueryAutom')
         })
         it('should parse smart query', async () => {
@@ -367,7 +367,7 @@ describe('smart_value_reference_filter', () => {
       })
       describe('when parseAdditionalAutomationExpressions is false', () => {
         beforeEach(async () => {
-          await filter.onFetch(elements)
+          await noAdditionalAutomationExpressionsFilter.onFetch(elements)
           automationResult = elements.filter(isInstanceElement).find(i => i.elemID.name === 'smartQueryAutom')
         })
         it('should not parse smart query', async () => {
@@ -470,7 +470,7 @@ describe('smart_value_reference_filter', () => {
       smartQueryAutomation.value.components[2].value.customSmartValue.query.value = new TemplateExpression(
         templateExpression,
       )
-      await additionalAutomationExpressionsFilter.preDeploy([toChange({ after: smartQueryAutomation })])
+      await filter.preDeploy([toChange({ after: smartQueryAutomation })])
     })
     it('change the smart query to string', () => {
       expect(smartQueryAutomation.value.components[0].value.query.value).toEqual(

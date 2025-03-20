@@ -253,6 +253,54 @@ export const createAutomationValues = (name: string, allElements: Element[]): Va
       optimisedIds: [],
       newComponent: false,
     },
+    {
+      component: 'ACTION',
+      type: 'jira.issue.edit',
+      value: {
+        operations: [
+          {
+            fieldId: 'description',
+            fieldType: 'description',
+            type: 'SET',
+            rawValue: new TemplateExpression({
+              parts: [
+                '{{issue.',
+                createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Summary__string'), allElements),
+                '}}',
+              ],
+            }),
+          },
+        ],
+        sendNotifications: true,
+      },
+      children: [],
+      conditions: [],
+    },
+    {
+      component: 'ACTION',
+      type: 'jira.create.variable',
+      value: {
+        id: '_customsmartvalue_id_1737961759306',
+        name: {
+          type: 'FREE',
+          value: 'smartA',
+        },
+        type: 'SMART',
+        query: {
+          type: 'SMART',
+          value: new TemplateExpression({
+            parts: [
+              '{{issue.',
+              createReference(new ElemID(JIRA, FIELD_TYPE_NAME, 'instance', 'Summary__string'), allElements),
+              '}}}',
+            ],
+          }),
+        },
+        lazy: false,
+      },
+      children: [],
+      conditions: [],
+    },
   ],
   labels: [],
 })

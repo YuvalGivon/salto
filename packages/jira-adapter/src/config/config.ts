@@ -60,7 +60,7 @@ type JiraFetchConfig = definitions.UserFetchConfig<{ fetchCriteria: JiraFetchFil
   addTypeToFieldName?: boolean
   convertUsersIds?: boolean
   parseTemplateExpressions?: boolean
-  parseAdditionalAutomationExpressions?: boolean
+  parseAdditionalAutomationExpressions: boolean
   enableScriptRunnerAddon?: boolean
   enableJSM?: boolean
   enableJsmExperimental?: boolean
@@ -190,6 +190,7 @@ const PARTIAL_DEFAULT_CONFIG: Omit<JiraConfig, 'apiDefinitions'> = {
     splitFieldContextOptions: true,
     remove10KOptionsContexts: false, // starting value, to be changed
     walkOnReferences: true,
+    parseAdditionalAutomationExpressions: true,
     enableProjectsScope: false,
   },
   deploy: {
