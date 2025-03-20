@@ -77,7 +77,10 @@ const isValidFieldDependency = (fd: Value): fd is FieldDependency =>
   Array.isArray(fd.valueSettings) &&
   fd.valueSettings.every(isValidValueSettings)
 
-const getValueSetOfField = (field: Field, picklistIndex: PicklistValuesReferenceIndex): Value => {
+const getValueSetOfField = (
+  field: Field,
+  picklistIndex: PicklistValuesReferenceIndex,
+): Record<string, ReferenceExpression> | undefined => {
   const index =
     field.annotations.valueSet !== undefined
       ? field.elemID.getFullName()
@@ -110,6 +113,9 @@ const addFieldDependencyReferences = (
     return
   }
   const controllingValueSet = getValueSetOfField(controllingField, picklistIndex)
+  if (controllingValueSet === undefined) {
+    return
+  }
   fieldDependency[FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS].forEach((vs: Value) => {
     if (_.isString(vs.valueName) && valueSetInstance[vs.valueName] !== undefined) {
       vs.valueName = new ReferenceExpression(valueSetInstance[vs.valueName].elemID, vs.valueName)
