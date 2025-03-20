@@ -6,16 +6,17 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import _ from 'lodash'
-import { ObjectType, ElemID, Field } from '@salto-io/adapter-api'
+import { ObjectType, ElemID, Field, SeverityLevel } from '@salto-io/adapter-api'
 import { MergeResult, MergeError, mergeNoDuplicates, DuplicateAnnotationError } from './common'
 
 abstract class FieldDefinitionMergeError extends MergeError {
   readonly cause: string
 
-  constructor({ elemID, cause }: { elemID: ElemID; cause: string }) {
+  constructor({ elemID, cause, severity }: { elemID: ElemID; cause: string; severity: SeverityLevel }) {
     super({
       elemID,
       error: `Cannot merge '${elemID.createParentID().getFullName()}': field '${elemID.name}' ${cause}`,
+      severity,
     })
     this.cause = cause
   }
@@ -23,37 +24,53 @@ abstract class FieldDefinitionMergeError extends MergeError {
 
 export class DuplicateAnnotationFieldDefinitionError extends FieldDefinitionMergeError {
   readonly annotationKey: string
-  constructor({ elemID, annotationKey }: { elemID: ElemID; annotationKey: string }) {
-    super({ elemID, cause: `has duplicate annotation key '${annotationKey}'` })
+  constructor({
+    elemID,
+    annotationKey,
+    severity = 'Error',
+  }: {
+    elemID: ElemID
+    annotationKey: string
+    severity?: SeverityLevel
+  }) {
+    super({ elemID, cause: `has duplicate annotation key '${annotationKey}'`, severity })
     this.annotationKey = annotationKey
   }
 }
 
 export class ConflictingFieldTypesError extends FieldDefinitionMergeError {
   readonly definedTypes: string[]
-  constructor({ elemID, definedTypes }: { elemID: ElemID; definedTypes: string[] }) {
-    super({ elemID, cause: `has conflicting type definitions '${[...definedTypes.values()].join(', ')}'` })
+  constructor({
+    elemID,
+    definedTypes,
+    severity = 'Error',
+  }: {
+    elemID: ElemID
+    definedTypes: string[]
+    severity?: SeverityLevel
+  }) {
+    super({ elemID, cause: `has conflicting type definitions '${[...definedTypes.values()].join(', ')}'`, severity })
     this.definedTypes = definedTypes
   }
 }
 
 export class ConflictingMetaTypeError extends MergeError {
-  constructor({ elemID }: { elemID: ElemID }) {
-    super({ elemID, error: 'conflicting meta type definitions' })
+  constructor({ elemID, severity = 'Error' }: { elemID: ElemID; severity?: SeverityLevel }) {
+    super({ elemID, error: 'conflicting meta type definitions', severity })
   }
 }
 
 export class ConflictingSettingError extends MergeError {
-  constructor({ elemID }: { elemID: ElemID }) {
-    super({ elemID, error: 'conflicting is settings definitions' })
+  constructor({ elemID, severity = 'Error' }: { elemID: ElemID; severity?: SeverityLevel }) {
+    super({ elemID, error: 'conflicting is settings definitions', severity })
   }
 }
 
 export class DuplicateAnnotationTypeError extends MergeError {
   readonly key: string
 
-  constructor({ elemID, key }: { elemID: ElemID; key: string }) {
-    super({ elemID, error: `duplicate annotation type '${key}'` })
+  constructor({ elemID, key, severity = 'Error' }: { elemID: ElemID; key: string; severity?: SeverityLevel }) {
+    super({ elemID, error: `duplicate annotation type '${key}'`, severity })
     this.key = key
   }
 }

@@ -15,7 +15,7 @@ export abstract class MergeError
     Readonly<{
       elemID: ElemID
       error: string
-    }>
+    }> & { severity: SeverityLevel }
   >
   implements SaltoElementError
 {
@@ -24,8 +24,6 @@ export abstract class MergeError
   get detailedMessage(): string {
     return `Error merging ${this.elemID.getFullName()}: ${this.error}`
   }
-
-  public severity: SeverityLevel = 'Error'
 
   toString(): string {
     return this.detailedMessage
@@ -42,15 +40,18 @@ export class DuplicateAnnotationError extends MergeError {
     key,
     existingValue,
     newValue,
+    severity = 'Error',
   }: {
     elemID: ElemID
     key: string
     existingValue: unknown
     newValue: unknown
+    severity?: SeverityLevel
   }) {
     super({
       elemID,
       error: `duplicate annotation key ${key} (values - ${inspectValue(existingValue)} & ${inspectValue(newValue)})`,
+      severity,
     })
     this.key = key
     this.existingValue = existingValue

@@ -375,6 +375,7 @@ const generalDeserializeParsed = async <T>(parsed: unknown, staticFileReviver?: 
           key: v.key,
           existingValue: restoreClasses(v.existingValue),
           newValue: restoreClasses(v.newValue),
+          severity: v.severity,
         }),
       DuplicateInstanceKeyError: v =>
         new DuplicateInstanceKeyError({
@@ -382,32 +383,43 @@ const generalDeserializeParsed = async <T>(parsed: unknown, staticFileReviver?: 
           key: v.key,
           existingValue: restoreClasses(v.existingValue),
           newValue: restoreClasses(v.newValue),
+          severity: v.severity,
         }),
       DuplicateAnnotationFieldDefinitionError: v =>
         new DuplicateAnnotationFieldDefinitionError({
           elemID: reviveElemID(v.elemID),
           annotationKey: v.annotationKey,
+          severity: v.severity,
         }),
       ConflictingFieldTypesError: v =>
         new ConflictingFieldTypesError({
           elemID: reviveElemID(v.elemID),
           definedTypes: v.definedTypes,
+          severity: v.severity,
         }),
-      ConflictingSettingError: v => new ConflictingSettingError({ elemID: reviveElemID(v.elemID) }),
+      ConflictingSettingError: v =>
+        new ConflictingSettingError({
+          elemID: reviveElemID(v.elemID),
+          severity: v.severity,
+        }),
       DuplicateAnnotationTypeError: v =>
         new DuplicateAnnotationTypeError({
           elemID: reviveElemID(v.elemID),
           key: v.key,
+          severity: v.severity,
         }),
       ConflictingMetaTypeError: v =>
         new ConflictingMetaTypeError({
           elemID: reviveElemID(v.elemID),
+          severity: v.severity,
         }),
-      DuplicateVariableNameError: v => new DuplicateVariableNameError({ elemID: reviveElemID(v.elemID) }),
+      DuplicateVariableNameError: v =>
+        new DuplicateVariableNameError({ elemID: reviveElemID(v.elemID), severity: v.severity }),
       MultiplePrimitiveTypesError: v =>
         new MultiplePrimitiveTypesError({
           elemID: reviveElemID(v.elemID),
           duplicates: restoreClasses(v.duplicates),
+          severity: v.severity,
         }),
       InvalidValueValidationError: v =>
         new InvalidValueValidationError({

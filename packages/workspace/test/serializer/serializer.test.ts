@@ -562,79 +562,90 @@ describe('State/cache serialization', () => {
     let multiplePrimitiveTypesUnsupportedError: MultiplePrimitiveTypesError
     let duplicateVariableNameError: DuplicateVariableNameError
     let conflictingMetaTypeError: ConflictingMetaTypeError
-    beforeAll(async () => {
-      duplicateAnnotationError = new DuplicateAnnotationError({
-        elemID,
-        key: 'test1',
-        existingValue: 'old',
-        newValue: 'new',
+    describe.each([['Error'], ['Warning']] as const)('when the severity is %s', severity => {
+      beforeAll(async () => {
+        duplicateAnnotationError = new DuplicateAnnotationError({
+          elemID,
+          key: 'test1',
+          existingValue: 'old',
+          newValue: 'new',
+          severity,
+        })
+        conflictingFieldTypesError = new ConflictingFieldTypesError({
+          elemID,
+          definedTypes: ['test', 'test2'],
+          severity,
+        })
+        duplicateAnnotationFieldDefinitionError = new DuplicateAnnotationFieldDefinitionError({
+          elemID,
+          annotationKey: 'test',
+          severity,
+        })
+        duplicateAnnotationTypeError = new DuplicateAnnotationTypeError({ elemID, key: 'bla', severity })
+        conflictingSettingError = new ConflictingSettingError({ elemID, severity })
+        duplicateInstanceKeyError = new DuplicateInstanceKeyError({
+          elemID,
+          key: 'test1',
+          existingValue: 'old',
+          newValue: 'new',
+          severity,
+        })
+        multiplePrimitiveTypesUnsupportedError = new MultiplePrimitiveTypesError({
+          elemID,
+          duplicates: [BuiltinTypes.BOOLEAN, BuiltinTypes.NUMBER],
+          severity,
+        })
+        duplicateVariableNameError = new DuplicateVariableNameError({ elemID, severity })
+        conflictingMetaTypeError = new ConflictingMetaTypeError({ elemID, severity })
+
+        const mergeErrors: MergeError[] = [
+          duplicateAnnotationError,
+          conflictingFieldTypesError,
+          duplicateAnnotationFieldDefinitionError,
+          duplicateAnnotationTypeError,
+          conflictingSettingError,
+          duplicateInstanceKeyError,
+          multiplePrimitiveTypesUnsupportedError,
+          duplicateVariableNameError,
+          conflictingMetaTypeError,
+        ]
+        serialized = await serialize(mergeErrors)
+        deserialized = await deserializeMergeErrors(serialized)
       })
-      conflictingFieldTypesError = new ConflictingFieldTypesError({ elemID, definedTypes: ['test', 'test2'] })
-      duplicateAnnotationFieldDefinitionError = new DuplicateAnnotationFieldDefinitionError({
-        elemID,
-        annotationKey: 'test',
+      it('serialized value should be non empty string', () => {
+        expect(typeof serialized).toEqual('string')
+        expect(serialized.length).toBeGreaterThan(0)
       })
-      duplicateAnnotationTypeError = new DuplicateAnnotationTypeError({ elemID, key: 'bla' })
-      conflictingSettingError = new ConflictingSettingError({ elemID })
-      duplicateInstanceKeyError = new DuplicateInstanceKeyError({
-        elemID,
-        key: 'test1',
-        existingValue: 'old',
-        newValue: 'new',
+      it('should serialize DuplicateAnnotationError correctly', () => {
+        expect(deserialized[0]).toEqual(duplicateAnnotationError)
       })
-      multiplePrimitiveTypesUnsupportedError = new MultiplePrimitiveTypesError({
-        elemID,
-        duplicates: [BuiltinTypes.BOOLEAN, BuiltinTypes.NUMBER],
+      it('should serialize ConflictingFieldTypesError correctly', () => {
+        expect(deserialized[1]).toEqual(conflictingFieldTypesError)
       })
-      duplicateVariableNameError = new DuplicateVariableNameError({ elemID })
-      conflictingMetaTypeError = new ConflictingMetaTypeError({ elemID })
-      const mergeErrors: MergeError[] = [
-        duplicateAnnotationError,
-        conflictingFieldTypesError,
-        duplicateAnnotationFieldDefinitionError,
-        duplicateAnnotationTypeError,
-        conflictingSettingError,
-        duplicateInstanceKeyError,
-        multiplePrimitiveTypesUnsupportedError,
-        duplicateVariableNameError,
-        conflictingMetaTypeError,
-      ]
-      serialized = await serialize(mergeErrors)
-      deserialized = await deserializeMergeErrors(serialized)
-    })
-    it('serialized value should be non empty string', () => {
-      expect(typeof serialized).toEqual('string')
-      expect(serialized.length).toBeGreaterThan(0)
-    })
-    it('should serialize DuplicateAnnotationError correctly', () => {
-      expect(deserialized[0]).toEqual(duplicateAnnotationError)
-    })
-    it('should serialize ConflictingFieldTypesError correctly', () => {
-      expect(deserialized[1]).toEqual(conflictingFieldTypesError)
-    })
-    it('should serialize DuplicateAnnotationFieldDefinitionError correctly', () => {
-      expect(deserialized[2]).toEqual(duplicateAnnotationFieldDefinitionError)
-    })
-    it('should serialize DuplicateAnnotationTypeError correctly', () => {
-      expect(deserialized[3]).toEqual(duplicateAnnotationTypeError)
-    })
-    it('should serialize ConflictingSettingError correctly', () => {
-      expect(deserialized[4]).toEqual(conflictingSettingError)
-    })
-    it('should serialize DuplicateInstanceKeyError correctly', () => {
-      expect(deserialized[5]).toEqual(duplicateInstanceKeyError)
-    })
-    it('should serialize MultiplePrimitiveTypesUnsupportedError correctly', () => {
-      expect(deserialized[6]).toEqual(multiplePrimitiveTypesUnsupportedError)
-    })
-    it('should serialize DuplicateVariableNameError correctly', () => {
-      expect(deserialized[7]).toEqual(duplicateVariableNameError)
-    })
-    it('should serialize ConflictingMetaTypeError correctly', () => {
-      expect(deserialized[8]).toEqual(conflictingMetaTypeError)
-    })
-    it('should throw error if trying to deserialize a non merge error object', async () => {
-      await expect(deserializeMergeErrors(safeJsonStringify([{ test }]))).rejects.toThrow()
+      it('should serialize DuplicateAnnotationFieldDefinitionError correctly', () => {
+        expect(deserialized[2]).toEqual(duplicateAnnotationFieldDefinitionError)
+      })
+      it('should serialize DuplicateAnnotationTypeError correctly', () => {
+        expect(deserialized[3]).toEqual(duplicateAnnotationTypeError)
+      })
+      it('should serialize ConflictingSettingError correctly', () => {
+        expect(deserialized[4]).toEqual(conflictingSettingError)
+      })
+      it('should serialize DuplicateInstanceKeyError correctly', () => {
+        expect(deserialized[5]).toEqual(duplicateInstanceKeyError)
+      })
+      it('should serialize MultiplePrimitiveTypesUnsupportedError correctly', () => {
+        expect(deserialized[6]).toEqual(multiplePrimitiveTypesUnsupportedError)
+      })
+      it('should serialize DuplicateVariableNameError correctly', () => {
+        expect(deserialized[7]).toEqual(duplicateVariableNameError)
+      })
+      it('should serialize ConflictingMetaTypeError correctly', () => {
+        expect(deserialized[8]).toEqual(conflictingMetaTypeError)
+      })
+      it('should throw error if trying to deserialize a non merge error object', async () => {
+        await expect(deserializeMergeErrors(safeJsonStringify([{ test }]))).rejects.toThrow()
+      })
     })
   })
 

@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { InstanceElement, ElemID, TypeReference, ObjectType } from '@salto-io/adapter-api'
+import { InstanceElement, ElemID, TypeReference, ObjectType, SeverityLevel } from '@salto-io/adapter-api'
 import { inspectValue } from '@salto-io/adapter-utils'
 import { MergeResult, MergeError, mergeNoDuplicates, DuplicateAnnotationError } from './common'
 
@@ -19,15 +19,18 @@ export class DuplicateInstanceKeyError extends MergeError {
     key,
     existingValue,
     newValue,
+    severity = 'Error',
   }: {
     elemID: ElemID
     key: string
     existingValue: unknown
     newValue: unknown
+    severity?: SeverityLevel
   }) {
     super({
       elemID,
       error: `duplicate key ${key} (values - ${inspectValue(existingValue)} & ${inspectValue(newValue)})`,
+      severity,
     })
     this.key = key
     this.existingValue = existingValue

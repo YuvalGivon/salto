@@ -5,20 +5,29 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { PrimitiveType, ElemID, PrimitiveTypes } from '@salto-io/adapter-api'
+import { PrimitiveType, ElemID, PrimitiveTypes, SeverityLevel } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { MergeResult, MergeError, mergeNoDuplicates } from './common'
 import { DuplicateAnnotationTypeError } from './object_types'
 
 export class MultiplePrimitiveTypesError extends MergeError {
   readonly duplicates: PrimitiveType[]
-  constructor({ elemID, duplicates }: { elemID: ElemID; duplicates: PrimitiveType[] }) {
+  constructor({
+    elemID,
+    duplicates,
+    severity = 'Error',
+  }: {
+    elemID: ElemID
+    duplicates: PrimitiveType[]
+    severity?: SeverityLevel
+  }) {
     super({
       elemID,
       error: [
         'Merging for primitive types with different primitives is not supported',
         `Found duplicated element ${duplicates[0].elemID.getFullName()}`,
       ].join('. '),
+      severity,
     })
     this.duplicates = duplicates
   }

@@ -5,12 +5,12 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { ElemID, Variable } from '@salto-io/adapter-api'
+import { ElemID, Variable, SeverityLevel } from '@salto-io/adapter-api'
 import { MergeError, MergeResult } from './common'
 
 export class DuplicateVariableNameError extends MergeError {
-  constructor({ elemID }: { elemID: ElemID }) {
-    super({ elemID, error: `duplicate variable ${elemID.getFullName()}` })
+  constructor({ elemID, severity = 'Error' }: { elemID: ElemID; severity?: SeverityLevel }) {
+    super({ elemID, error: `duplicate variable ${elemID.getFullName()}`, severity })
   }
 }
 
