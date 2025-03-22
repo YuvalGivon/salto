@@ -821,6 +821,16 @@ const graphBetaCustomDefinitions: DeployCustomDefinitions = {
               },
             },
           },
+          // Wait for policy to be available after creation to prevent it from being
+          // returned as deleted in subsequent fetch
+          {
+            request: {
+              endpoint: {
+                path: '/identity/conditionalAccess/policies/{id}',
+                method: 'get',
+              },
+            },
+          },
         ],
         modify: [
           {

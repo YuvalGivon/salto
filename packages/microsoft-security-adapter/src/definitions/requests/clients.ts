@@ -73,6 +73,16 @@ export const createClientDefinitions = (
               },
             },
           },
+          '/beta/identity/conditionalAccess/policies/{id}': {
+            get: {
+              polling: {
+                interval: 5000,
+                retries: 6,
+                retryOnStatus: [404],
+                checkStatus: response => response.status === 200,
+              },
+            },
+          },
         },
       },
     },
