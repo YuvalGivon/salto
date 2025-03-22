@@ -1586,7 +1586,7 @@ const createCustomizations = ({
       fieldCustomizations: {
         id: { hide: true },
         statusChanged: { omit: true },
-        lastLogin: { omit: true },
+        lastLogin: { hide: true },
         passwordChanged: { omit: true },
         activated: { omit: true },
         _links: { omit: true },
