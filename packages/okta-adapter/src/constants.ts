@@ -98,6 +98,7 @@ export const EMAIL_DOMAIN_TYPE_NAME = 'EmailDomain'
 export const SIGN_IN_PAGE_TYPE_NAME = 'SignInPage'
 export const ERROR_PAGE_TYPE_NAME = 'ErrorPage'
 export const API_SCOPES_FIELD_NAME = 'apiScopes'
+export const LOG_STREAM_TYPE_NAME = 'LogStream'
 
 export const APP_PROVISIONING_FIELD_NAMES = [
   'applicationUserProvisioning',

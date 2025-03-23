@@ -52,6 +52,7 @@ import {
   USER_ROLES_TYPE_NAME,
   API_SCOPES_FIELD_NAME,
   FEATURE_TYPE_NAME,
+  LOG_STREAM_TYPE_NAME,
 } from '../../constants'
 import {
   APP_POLICIES,
@@ -1773,6 +1774,74 @@ const createCustomizations = (): Record<string, InstanceDeployApiDefinitions> =>
           ],
         },
       },
+    },
+    [LOG_STREAM_TYPE_NAME]: {
+      requestsByAction: {
+        customizations: {
+          modify: [
+            {
+              condition: simpleStatus.modificationCondition,
+              request: {
+                endpoint: {
+                  path: '/api/v1/logStreams/{id}',
+                  method: 'put',
+                },
+              },
+            },
+          ],
+          remove: [
+            {
+              request: {
+                endpoint: {
+                  path: '/api/v1/logStreams/{id}',
+                  method: 'delete',
+                },
+              },
+            },
+          ],
+          activate: [
+            {
+              condition: {
+                custom: simpleStatus.activationCondition,
+              },
+              request: {
+                endpoint: {
+                  path: '/api/v1/logStreams/{id}/lifecycle/activate',
+                  method: 'post',
+                },
+              },
+            },
+          ],
+          deactivate: [
+            {
+              condition: {
+                custom: simpleStatus.deactivationCondition,
+              },
+              request: {
+                endpoint: {
+                  path: '/api/v1/logStreams/{id}/lifecycle/deactivate',
+                  method: 'post',
+                },
+              },
+            },
+          ],
+        },
+      },
+      toActionNames: async changeContext => {
+        // LogStream needs to be deactivated before removal
+        const { change } = changeContext
+        if (isRemovalChange(change) && getChangeData(change).value.status !== INACTIVE_STATUS) {
+          return ['deactivate', 'remove']
+        }
+        return simpleStatus.toActionNames(changeContext)
+      },
+      actionDependencies: [
+        ...simpleStatus.actionDependencies,
+        {
+          first: 'deactivate',
+          second: 'remove',
+        },
+      ],
     },
   }
 

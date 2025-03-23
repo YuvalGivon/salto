@@ -39,6 +39,7 @@ import {
   INBOUND_PROVISIONING_SUPPORTED_APP_NAMES,
   USER_PROVISIONING_SUPPORTED_APP_NAMES,
   USER_ROLES_TYPE_NAME,
+  LOG_STREAM_TYPE_NAME,
 } from '../../constants'
 import { isGroupPushEntry } from '../../filters/group_push'
 import { extractSchemaIdFromUserType } from './types/user_type'
@@ -1801,6 +1802,32 @@ const createCustomizations = ({
           fieldType: 'list<string>',
           sort: { properties: [] },
         },
+      },
+    },
+  },
+  [LOG_STREAM_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/api/v1/logStreams',
+          method: 'get',
+        },
+      },
+    ],
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        elemID: { parts: [{ fieldName: 'name' }] },
+        serviceUrl: { path: '/reports/log-streaming/edit/{id}' },
+        alias: { aliasComponents: [{ fieldName: 'name' }] },
+        importantValues: [
+          { value: 'status', indexed: true, highlighted: true },
+          { value: 'type', indexed: true, highlighted: true },
+          { value: 'name', indexed: false, highlighted: true },
+        ],
+      },
+      fieldCustomizations: {
+        _links: { omit: true },
       },
     },
   },
