@@ -40,8 +40,15 @@ import {
   PROFILE_METADATA_TYPE,
   PERMISSION_SET_METADATA_TYPE,
   MUTING_PERMISSION_SET_METADATA_TYPE,
+  FLOW_ELEMENT_REFERENCE_PARENT_FIELDS,
 } from '../constants'
-import { buildElementsSourceForFetch, extractFlatCustomObjectFields, hasApiName, isInstanceOfTypeSync } from './utils'
+import {
+  apiNameSync,
+  buildElementsSourceForFetch,
+  extractFlatCustomObjectFields,
+  hasApiName,
+  isInstanceOfTypeSync,
+} from './utils'
 import { Context } from '../config/types'
 
 const { awu } = collections.asynciterable
@@ -89,6 +96,24 @@ export const createContextStrategyLookups = (
     contextValueMapper?: referenceUtils.ContextValueMapperFunc
   }): referenceUtils.ContextFunc => neighborContextGetter({ ...args, getLookUpName: getLookupNameFunc })
   return {
+    flowElementReferenceField: async ({ instance, field, elemByElemID, fieldPath }) => {
+      const path = fieldPath?.getFullNameParts()
+      if (path === undefined || !path.some(part => FLOW_ELEMENT_REFERENCE_PARENT_FIELDS.includes(part))) {
+        return undefined
+      }
+      const hasRecordCreatesOrRecordUpdates = ['recordCreates', 'recordUpdates'].some(key => path.includes(key))
+      const hasInputAssignments = path.includes('inputAssignments')
+      // In inputAssignments within recordCreates or recordUpdates, the $Record reference points to the object specified in the 'object' field
+      if (hasRecordCreatesOrRecordUpdates && hasInputAssignments) {
+        return neighborContextFunc({
+          contextFieldName: 'object',
+          levelsUp: 2,
+        })({ instance, field, elemByElemID, fieldPath })
+      }
+      const parentRef = getParents(instance)[0]
+      const parent = isReferenceExpression(parentRef) ? elemByElemID.get(parentRef.elemID.getFullName()) : undefined
+      return parent !== undefined ? apiNameSync(parent) : undefined
+    },
     instanceParent: async ({ instance, elemByElemID }) => {
       const parentRef = getParents(instance)[0]
       const parent = isReferenceExpression(parentRef) ? elemByElemID.get(parentRef.elemID.getFullName()) : undefined
