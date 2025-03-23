@@ -13,3 +13,4 @@ export { UsernamePasswordCredentials, OauthAccessTokenCredentials } from './src/
 export { getAllInstances } from './src/filters/custom_objects_instances'
 export { loadElementsFromFolder } from './src/sfdx_parser/sfdx_parser'
 export { getAccountFetchTargets } from './src/filters/utils'
+export * as utils from './src/filters/utils'
