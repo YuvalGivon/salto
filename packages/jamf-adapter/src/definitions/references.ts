@@ -15,6 +15,7 @@ import {
   OS_X_CONFIGURATION_PROFILE_TYPE_NAME,
   PACKAGE_TYPE_NAME,
   POLICY_TYPE_NAME,
+  RESTRICTED_SOFTWARE_TYPE_NAME,
   SCRIPT_TYPE_NAME,
   SITE_TYPE_NAME,
 } from '../constants'
@@ -41,6 +42,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
           OS_X_CONFIGURATION_PROFILE_TYPE_NAME,
           MOBILE_DEVICE_CONFIGURATION_PROFILE_TYPE_NAME,
           POLICY_TYPE_NAME,
+          RESTRICTED_SOFTWARE_TYPE_NAME,
         ]),
       ],
     },
@@ -57,6 +59,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
           OS_X_CONFIGURATION_PROFILE_TYPE_NAME,
           MOBILE_DEVICE_CONFIGURATION_PROFILE_TYPE_NAME,
           POLICY_TYPE_NAME,
+          RESTRICTED_SOFTWARE_TYPE_NAME,
         ]),
       ],
     },

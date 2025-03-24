@@ -6,6 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import { definitions, fetch as fetchUtils } from '@salto-io/adapter-components'
+import { validatePlainObject } from '@salto-io/adapter-utils'
 import { UserFetchConfig } from '../../config'
 import { Options } from '../types'
 import {
@@ -22,8 +23,11 @@ import {
   OS_X_CONFIGURATION_PROFILE_TYPE_NAME,
   MOBILE_DEVICE_CONFIGURATION_PROFILE_TYPE_NAME,
   MAC_APPLICATION_TYPE_NAME,
+  COMPUTER_EXTENSION_ATTRIBUTES_TYPE_NAME,
+  RESTRICTED_SOFTWARE_TYPE_NAME,
 } from '../../constants'
 import * as transforms from './transforms'
+import { adjustSiteObjectToSiteId } from './transforms/utils'
 
 const NAME_ID_FIELD: definitions.fetch.FieldIDPart = { fieldName: 'name' }
 const DEFAULT_ID_PARTS = [NAME_ID_FIELD]
@@ -555,6 +559,124 @@ const createCustomizations = (
         id: {
           hide: true,
         },
+      },
+    },
+  },
+  [`${COMPUTER_EXTENSION_ATTRIBUTES_TYPE_NAME}_minimal`]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/JSSResource/computerextensionattributes',
+          client: 'classicApi',
+        },
+        transformation: {
+          root: 'computer_extension_attributes',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  [COMPUTER_EXTENSION_ATTRIBUTES_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/JSSResource/computerextensionattributes/id/{id}',
+          client: 'classicApi',
+        },
+        transformation: {
+          root: 'computer_extension_attribute',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+      context: {
+        dependsOn: {
+          id: {
+            parentTypeName: 'computer_extension_attributes_minimal',
+            transformation: {
+              root: 'id',
+            },
+          },
+        },
+      },
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        elemID: { parts: [{ fieldName: 'name' }] },
+        serviceUrl: {
+          baseUrl,
+          path: '/view/settings/computer-management/computer-extension-attributes/{id}',
+        },
+      },
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+    },
+  },
+  [`${RESTRICTED_SOFTWARE_TYPE_NAME}_minimal`]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/JSSResource/restrictedsoftware',
+          client: 'classicApi',
+        },
+        transformation: {
+          root: 'restricted_software',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  [RESTRICTED_SOFTWARE_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/JSSResource/restrictedsoftware/id/{id}',
+          client: 'classicApi',
+        },
+        transformation: {
+          rename: [{ from: 'restricted_software.general.id', to: 'restricted_software.id', onConflict: 'override' }], // rename runs first
+          root: 'restricted_software',
+          adjust: async ({ value }) => {
+            validatePlainObject(value, RESTRICTED_SOFTWARE_TYPE_NAME)
+            adjustSiteObjectToSiteId(value)
+            return { value }
+          },
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+      context: {
+        dependsOn: {
+          id: {
+            parentTypeName: `${RESTRICTED_SOFTWARE_TYPE_NAME}_minimal`,
+            transformation: {
+              root: 'id',
+            },
+          },
+        },
+      },
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        elemID: { parts: [{ fieldName: 'general.name' }] },
+        serviceUrl: {
+          baseUrl,
+          path: '/restrictedSoftware.html?id={id}&o=r',
+        },
+      },
+      fieldCustomizations: {
+        id: { hide: true },
       },
     },
   },
