@@ -74,10 +74,16 @@ const getTargetsForAccountElements = async ({
     adapter === account ? accountElemIds : accountElemIds.map(elemId => createAdapterReplacedID(elemId, adapter))
   const adapterElementsSource = createAdapterElementsSource({ elementsSource, account, adapter })
 
-  return adapterCreators[adapter]?.partialFetch?.getTargetsForElements({
+  const targets = await adapterCreators[adapter]?.partialFetch?.getTargetsForElements({
     elemIds: adapterElemIds,
     elementsSource: adapterElementsSource,
   })
+
+  if (targets === undefined) {
+    return undefined
+  }
+
+  return _.uniqWith(targets, _.isEqual)
 }
 
 export const getPartialFetchTargetsForElements = ({

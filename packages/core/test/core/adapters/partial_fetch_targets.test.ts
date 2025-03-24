@@ -187,7 +187,7 @@ describe('partial fetch targets', () => {
 
         return elemIds.map(elemId => ({
           group: elemId.adapter,
-          name: elemId.idType === 'type' ? elemId.name : `${elemId.typeName}.${elemId.name}`,
+          name: elemId.idType === 'type' ? 'type' : elemId.typeName,
         }))
       })
     })
@@ -198,8 +198,12 @@ describe('partial fetch targets', () => {
           elemIds: [
             new ElemID('salto', 'someType'),
             new ElemID('salto', 'someType', 'instance', 'instance1'),
+            new ElemID('salto', 'someType', 'instance', 'instance11'),
+            new ElemID('salto', 'someType', 'instance', 'instance111'),
             new ElemID('salto2', 'someType2'),
             new ElemID('salto2', 'someType2', 'instance', 'instance2'),
+            new ElemID('salto2', 'someType2', 'instance', 'instance22'),
+            new ElemID('salto2', 'someType2', 'instance', 'instance222'),
           ],
           workspace,
           adapterCreators: {
@@ -213,21 +217,21 @@ describe('partial fetch targets', () => {
           salto: [
             {
               group: 'salto',
-              name: 'someType',
+              name: 'type',
             },
             {
               group: 'salto',
-              name: 'someType.instance1',
+              name: 'someType',
             },
           ],
           salto2: [
             {
               group: 'salto',
-              name: 'someType2',
+              name: 'type',
             },
             {
               group: 'salto',
-              name: 'someType2.instance2',
+              name: 'someType2',
             },
           ],
         })
@@ -237,12 +241,22 @@ describe('partial fetch targets', () => {
         expect(mockAdapter.partialFetch.getTargetsForElements).toHaveBeenCalledTimes(2)
         expect(mockAdapter.partialFetch.getTargetsForElements).toHaveBeenCalledWith(
           expect.objectContaining({
-            elemIds: [new ElemID('salto', 'someType'), new ElemID('salto', 'someType', 'instance', 'instance1')],
+            elemIds: [
+              new ElemID('salto', 'someType'),
+              new ElemID('salto', 'someType', 'instance', 'instance1'),
+              new ElemID('salto', 'someType', 'instance', 'instance11'),
+              new ElemID('salto', 'someType', 'instance', 'instance111'),
+            ],
           }),
         )
         expect(mockAdapter.partialFetch.getTargetsForElements).toHaveBeenCalledWith(
           expect.objectContaining({
-            elemIds: [new ElemID('salto', 'someType2'), new ElemID('salto', 'someType2', 'instance', 'instance2')],
+            elemIds: [
+              new ElemID('salto', 'someType2'),
+              new ElemID('salto', 'someType2', 'instance', 'instance2'),
+              new ElemID('salto', 'someType2', 'instance', 'instance22'),
+              new ElemID('salto', 'someType2', 'instance', 'instance222'),
+            ],
           }),
         )
       })
