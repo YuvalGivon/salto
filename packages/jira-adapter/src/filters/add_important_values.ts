@@ -27,7 +27,7 @@ import { FIELD_TYPE_NAME } from './fields/constants'
 import { PROJECT_SCOPE_FIELD_NAME } from './projects_scope'
 import { addOrUpdate } from '../utils'
 
-const importantValuesMap: Record<string, ImportantValues> = {
+const getImportantValuesMap = (): Record<string, ImportantValues> => ({
   [APPLICATION_PROPERTY_TYPE]: [{ value: 'type', highlighted: false, indexed: true }],
   [AUTOMATION_TYPE]: [
     { value: 'name', highlighted: true, indexed: false },
@@ -95,9 +95,12 @@ const importantValuesMap: Record<string, ImportantValues> = {
   [SCRIPT_RUNNER_LISTENER_TYPE]: [{ value: 'enabled', highlighted: false, indexed: true }],
   [STATUS_TYPE_NAME]: [{ value: 'statusCategory', highlighted: false, indexed: true }],
   [WEBHOOK_TYPE]: [{ value: 'Enabled', highlighted: false, indexed: true }],
-}
+})
 
-const addProjectsScopeToImportantValuesMap = (objectTypes: ObjectType[]): void => {
+const addProjectsScopeToImportantValuesMap = (
+  importantValuesMap: Record<string, ImportantValues>,
+  objectTypes: ObjectType[],
+): void => {
   objectTypes
     .filter(objectType => objectType.fields[PROJECT_SCOPE_FIELD_NAME] !== undefined)
     .forEach(objectType => {
@@ -113,8 +116,9 @@ const addProjectsScopeToImportantValuesMap = (objectTypes: ObjectType[]): void =
 const filter: FilterCreator = () => ({
   name: 'addImportantValues',
   onFetch: async (elements: Element[]): Promise<void> => {
+    const importantValuesMap = getImportantValuesMap()
     const objectTypes = elements.filter(isObjectType)
-    addProjectsScopeToImportantValuesMap(objectTypes)
+    addProjectsScopeToImportantValuesMap(importantValuesMap, objectTypes)
 
     objectTypes.forEach(obj => {
       const { typeName } = obj.elemID
