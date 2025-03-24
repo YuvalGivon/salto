@@ -10,7 +10,7 @@ import { validateFetchParameters, buildContext } from '../../../src/config/conte
 import { mergeWithDefaultImportantValues } from '../../../src/config/context/important_values'
 import { FetchParameters } from '../../../src/config/types'
 
-describe('Fetch Profile', () => {
+describe('Context', () => {
   describe('validateFetchParameters', () => {
     describe('when additional important values contain duplicate definitions', () => {
       it('should throw an error', () => {
@@ -36,7 +36,7 @@ describe('Fetch Profile', () => {
     })
   })
   describe('buildContext', () => {
-    it('should build a fetch profile with the correct values', () => {
+    it('should build a context with the correct values', () => {
       const fetchParams: FetchParameters = {
         metadata: { include: [{ metadataType: 'CustomObject' }], exclude: [] },
         additionalImportantValues: [
