@@ -19,6 +19,7 @@ import {
   setupWorkspace,
   helpers as e2eHelpers,
 } from '@salto-io/e2e-test-utils'
+import { promises } from '@salto-io/lowerdash'
 import { credsLease } from './adapter'
 import { getAllInstancesToDeploy, UNIQUE_NAME } from './e2e_instance_generator'
 import {
@@ -32,6 +33,7 @@ import {
 import { modificationChangesBeforeAndAfterOverrides } from './mock_elements'
 
 const log = logger(module)
+const { sleep } = promises.timeout
 const {
   entraConstants: { TOP_LEVEL_TYPES: entraTopLevelTypes, ...entraConstants },
   intuneConstants: { TOP_LEVEL_TYPES: intuneTopLevelTypes },
@@ -128,6 +130,10 @@ describe('Microsoft Security adapter E2E', () => {
         adapterCreators,
         changeErrorFilter: microsoftSecurityDeployChangeErrorFilter,
       })
+
+      // TODO SALTO-7618: this is temporary workaround, to wait for the conditional access policy to be available
+      await sleep(1000 * 60 * 2)
+
       await fetchWorkspace({ workspace, adapterCreators })
       elements = await getElementsFromWorkspace(workspace)
     })

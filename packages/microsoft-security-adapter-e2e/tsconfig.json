@@ -16,6 +16,7 @@
     { "path": "../e2e-credentials-store" },
     { "path": "../element-test-utils" },
     { "path": "../logging" },
+    { "path": "../lowerdash" },
     { "path": "../workspace" }
   ]
 }

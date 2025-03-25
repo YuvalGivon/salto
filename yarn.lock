@@ -4787,6 +4787,7 @@ __metadata:
     "@salto-io/e2e-test-utils": 0.5.2
     "@salto-io/element-test-utils": 0.5.2
     "@salto-io/logging": 0.5.2
+    "@salto-io/lowerdash": 0.5.2
     "@salto-io/microsoft-security-adapter": 0.5.2
     "@salto-io/workspace": 0.5.2
     "@types/jest": ^29.5.12
