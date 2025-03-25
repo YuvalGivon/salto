@@ -52,6 +52,7 @@ const graphBetaCustomizations: FetchCustomizations = {
         },
         // TODO SALTO-7573: add service url once we use the security API
         allowEmptyArrays: true,
+        alias: { aliasComponents: [{ fieldName: 'description' }] },
       },
       fieldCustomizations: ID_FIELD_TO_HIDE,
     },

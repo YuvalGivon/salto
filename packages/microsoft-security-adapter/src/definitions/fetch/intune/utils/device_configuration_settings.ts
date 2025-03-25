@@ -80,6 +80,7 @@ export const createDeviceConfigurationSettingsFetchDefinition = ({
           path: serviceUrlPath,
         },
         allowEmptyArrays: true,
+        alias: { aliasComponents: [{ fieldName: 'name' }] },
       },
       fieldCustomizations: {
         ...ID_FIELD_TO_HIDE,

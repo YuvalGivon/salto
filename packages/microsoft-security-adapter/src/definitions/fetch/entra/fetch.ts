@@ -415,7 +415,6 @@ const graphV1Customizations: FetchCustomizations = {
           extendsParent: true,
           parts: [{ fieldName: 'value' }],
         },
-        alias: { aliasComponents: [NAME_ID_FIELD] },
       },
       fieldCustomizations: ID_FIELD_TO_HIDE,
     },
@@ -437,6 +436,7 @@ const graphV1Customizations: FetchCustomizations = {
           extendsParent: true,
           parts: [{ fieldName: 'permissionName' }],
         },
+        alias: { aliasComponents: [{ fieldName: 'permissionName' }] },
       },
       fieldCustomizations: ID_FIELD_TO_HIDE,
     },
@@ -465,6 +465,12 @@ const graphV1Customizations: FetchCustomizations = {
             { fieldName: 'resourceId', isReference: true },
           ],
         },
+        alias: {
+          aliasComponents: [
+            { fieldName: 'clientId', referenceFieldName: 'displayName' },
+            { fieldName: 'resourceId', referenceFieldName: 'displayName' },
+          ],
+        },
       },
       fieldCustomizations: ID_FIELD_TO_HIDE,
     },
@@ -486,6 +492,9 @@ const graphV1Customizations: FetchCustomizations = {
         isTopLevel: true,
         elemID: {
           parts: [{ fieldName: 'id' }],
+        },
+        alias: {
+          aliasComponents: [{ fieldName: 'id' }],
         },
       },
     },
@@ -519,6 +528,9 @@ const graphV1Customizations: FetchCustomizations = {
         isTopLevel: true,
         elemID: {
           parts: [{ fieldName: 'attributeSet', isReference: true }, { fieldName: 'name' }],
+        },
+        alias: {
+          aliasComponents: [{ fieldName: 'attributeSet', referenceFieldName: 'id' }, { fieldName: 'name' }],
         },
       },
       fieldCustomizations: {
@@ -565,6 +577,9 @@ const graphV1Customizations: FetchCustomizations = {
         elemID: {
           extendsParent: true,
           parts: [{ fieldName: 'id' }],
+        },
+        alias: {
+          aliasComponents: [{ fieldName: 'id' }],
         },
       },
     },
@@ -695,6 +710,9 @@ const graphV1Customizations: FetchCustomizations = {
         serviceUrl: {
           baseUrl: SERVICE_BASE_URL,
           path: '/#view/Microsoft_AAD_IAM/DomainDnsRecordsBlade/domainName/{id}',
+        },
+        alias: {
+          aliasComponents: [{ fieldName: 'id' }],
         },
       },
     },

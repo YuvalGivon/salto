@@ -34,6 +34,7 @@ export const createFetchDefinitions = (
       element: {
         topLevel: {
           elemID: { parts: DEFAULT_ID_PARTS },
+          alias: { aliasComponents: DEFAULT_ID_PARTS },
         },
         fieldCustomizations: DEFAULT_FIELD_CUSTOMIZATIONS,
       },
