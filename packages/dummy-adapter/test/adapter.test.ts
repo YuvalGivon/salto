@@ -17,12 +17,15 @@ import {
   ProgressReporter,
   ReferenceExpression,
   UnresolvedReference,
+  FetchResult,
+  PartialFetchTarget,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import DummyAdapter from '../src/adapter'
 import * as generator from '../src/generator'
 import testParams from './test_params'
 import { ChangeErrorFromConfigFile, DUMMY_ADAPTER } from '../src/generator'
+import { PARTIAL_FETCH_ANNOTATION } from '../src/targeted_fetch'
 
 const mockChangeError: ChangeErrorFromConfigFile = {
   elemID: 'dummy.Full.instance.myIns2',
@@ -103,18 +106,16 @@ describe('dummy adapter', () => {
   })
 
   describe('fetch', () => {
-    const progressReportMock = {
-      reportProgress: jest.fn(),
-    }
     it('should return the result of the generateElement command withuot modifications', async () => {
       const mockReporter = { reportProgress: jest.fn() }
       const fetchResult = await adapter.fetch({ progressReporter: mockReporter })
       expect(fetchResult).toEqual({ elements: await generator.generateElements(testParams, mockReporter) })
     })
     it('should report fetch progress', async () => {
-      await adapter.fetch({ progressReporter: progressReportMock })
-      expect(progressReportMock.reportProgress).toHaveBeenCalledTimes(9)
-      expect(progressReportMock.reportProgress).toHaveBeenLastCalledWith({
+      const mockReporter = { reportProgress: jest.fn() }
+      await adapter.fetch({ progressReporter: mockReporter })
+      expect(mockReporter.reportProgress).toHaveBeenCalledTimes(9)
+      expect(mockReporter.reportProgress).toHaveBeenLastCalledWith({
         message: 'Generation done',
       })
     })
@@ -134,6 +135,54 @@ describe('dummy adapter', () => {
         } else {
           expect(elem.annotations[CORE_ANNOTATIONS.ALIAS]).not.toBeDefined()
         }
+      })
+    })
+
+    describe('partial fetch', () => {
+      const partialFetchTargets: PartialFetchTarget[] = [
+        {
+          group: 'dummy',
+          name: 'Profile',
+        },
+        {
+          group: 'dummy',
+          name: 'Full',
+        },
+        {
+          group: 'dummy',
+          name: 'Partial',
+        },
+      ]
+
+      let fetchResult: FetchResult
+
+      beforeEach(async () => {
+        const mockReporter = { reportProgress: jest.fn() }
+        fetchResult = await adapter.fetch({ progressReporter: mockReporter, partialFetchTargets })
+      })
+
+      it('should return elements', async () => {
+        expect(fetchResult.elements).not.toHaveLength(0)
+      })
+
+      it('should return partial fetch data', async () => {
+        expect(fetchResult.partialFetchData?.isPartial).toBeTruthy()
+      })
+
+      it('should return only elements that match the targets', async () => {
+        expect(new Set(fetchResult.elements.map(element => element.elemID.typeName))).toEqual(
+          new Set(partialFetchTargets.map(target => target.name)),
+        )
+      })
+
+      it('should add partial fetch field to elements', async () => {
+        expect(
+          fetchResult.elements.every(element =>
+            isInstanceElement(element)
+              ? element.value[PARTIAL_FETCH_ANNOTATION]
+              : element.annotations[PARTIAL_FETCH_ANNOTATION],
+          ),
+        ).toBeTruthy()
       })
     })
   })

@@ -19,6 +19,7 @@ import {
 } from '@salto-io/adapter-api'
 import { generateElements, generateFetchErrorsFromConfig, GeneratorParams } from './generator'
 import { changeValidator } from './change_validator'
+import { getPartiallyFetchedElements } from './targeted_fetch'
 
 export default class DummyAdapter implements AdapterOperations {
   public constructor(private genParams: GeneratorParams) {}
@@ -27,10 +28,17 @@ export default class DummyAdapter implements AdapterOperations {
    * Fetch configuration elements: objects, types and instances for the given HubSpot account.
    * Account credentials were given in the constructor.
    */
-  public async fetch({ progressReporter }: FetchOptions): Promise<FetchResult> {
+  public async fetch({ progressReporter, partialFetchTargets }: FetchOptions): Promise<FetchResult> {
+    const elements = await generateElements(this.genParams, progressReporter)
+    const errors = generateFetchErrorsFromConfig(this.genParams.fetchErrors)
+
+    if (partialFetchTargets === undefined) {
+      return { elements, errors }
+    }
     return {
-      elements: await generateElements(this.genParams, progressReporter),
-      errors: generateFetchErrorsFromConfig(this.genParams.fetchErrors),
+      elements: getPartiallyFetchedElements(elements, partialFetchTargets),
+      errors,
+      partialFetchData: { isPartial: true },
     }
   }
 

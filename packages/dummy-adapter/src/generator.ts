@@ -381,7 +381,7 @@ const profileType = new ObjectType({
 
 export const generateElements = async (
   params: GeneratorParams,
-  progressReporter: ProgressReporter,
+  progressReporter?: ProgressReporter,
 ): Promise<Element[]> => {
   const randomGen = seedrandom(params.seed.toString())
   const elementRanks: Record<string, number> = {}
@@ -1105,19 +1105,19 @@ export const generateElements = async (
   }
 
   const defaultTypes: Element[] = [defaultObj, permissionsType, profileType, layoutAssignmentsType]
-  progressReporter.reportProgress({ message: 'Generating primitive types' })
+  progressReporter?.reportProgress({ message: 'Generating primitive types' })
   const primitiveTypes = await generatePrimitiveTypes()
-  progressReporter.reportProgress({ message: 'Generating types' })
+  progressReporter?.reportProgress({ message: 'Generating types' })
   const types = await generateTypes()
-  progressReporter.reportProgress({ message: 'Generating objects' })
+  progressReporter?.reportProgress({ message: 'Generating objects' })
   const objects = await generateObjects()
-  progressReporter.reportProgress({ message: 'Generating records' })
+  progressReporter?.reportProgress({ message: 'Generating records' })
   const records = await generateRecords()
-  progressReporter.reportProgress({ message: 'Generating profile likes' })
+  progressReporter?.reportProgress({ message: 'Generating profile likes' })
   const profiles = generateProfileLike()
-  progressReporter.reportProgress({ message: 'Generating users like instances' })
+  progressReporter?.reportProgress({ message: 'Generating users like instances' })
   const users = generateUsersLike()
-  progressReporter.reportProgress({ message: 'Generating conflicted elements' })
+  progressReporter?.reportProgress({ message: 'Generating conflicted elements' })
   const envObjects = generateEnvElements()
   const elementsToExclude = new Set(params.elementsToExclude ?? [])
   const allElements = defaultTypes
@@ -1130,13 +1130,13 @@ export const generateElements = async (
     .concat([new ObjectType({ elemID: new ElemID(DUMMY_ADAPTER, 'noPath'), fields: {} })])
     .concat(envObjects)
 
-  progressReporter.reportProgress({ message: 'Generating extra elements' })
+  progressReporter?.reportProgress({ message: 'Generating extra elements' })
   const elementSourceForExtraElements = elementSource.createInMemoryElementSource(allElements)
   const extraElements = await generateExtraElementsFromPaths(
     [path.join(dataPath, 'fixtures')].concat(params.extraNaclPaths ?? []),
     elementSourceForExtraElements,
   )
-  progressReporter.reportProgress({ message: 'Generation done' })
+  progressReporter?.reportProgress({ message: 'Generation done' })
   return allElements.concat(extraElements).filter(e => !elementsToExclude.has(e.elemID.getFullName()))
 }
 

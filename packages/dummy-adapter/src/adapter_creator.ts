@@ -31,6 +31,7 @@ import { Workspace } from '@salto-io/workspace'
 import _ from 'lodash'
 import DummyAdapter from './adapter'
 import { GeneratorParams, DUMMY_ADAPTER, defaultParams, changeErrorType, fetchErrorType } from './generator'
+import { getAllTargets, getTargetsForElements } from './targeted_fetch'
 
 const { awu } = collections.asynciterable
 
@@ -333,5 +334,9 @@ export const adapter: Adapter = {
     dumpElementsToFolder,
     initFolder,
     isInitializedFolder,
+  },
+  partialFetch: {
+    getAllTargets,
+    getTargetsForElements,
   },
 }
