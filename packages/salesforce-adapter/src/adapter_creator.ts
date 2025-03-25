@@ -54,6 +54,7 @@ import { getAdditionalReferences } from './additional_references'
 import { getCustomReferences } from './custom_references/handlers'
 import { dependencyChanger } from './dependency_changer'
 import { METADATA_DEPLOY_PENDING_STATUS } from './constants'
+import { getAllTargets, getTargetsForElements } from './fetch_targets'
 
 type ValidatorsActivationConfig = deployment.changeValidators.ValidatorsActivationConfig
 
@@ -388,6 +389,10 @@ export const adapter: Adapter = {
     initFolder: createProject,
     loadElementsFromFolder,
     dumpElementsToFolder,
+  },
+  partialFetch: {
+    getAllTargets,
+    getTargetsForElements,
   },
   getAdditionalReferences,
   getCustomReferences,

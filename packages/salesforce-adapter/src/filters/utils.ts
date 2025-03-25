@@ -115,7 +115,7 @@ import {
 import { Filter, FilterContext } from '../filter'
 import { createListMetadataObjectsConfigChange } from '../config/config_change'
 import { getFetchTargetsWithDependencies, SUPPORTED_METADATA_TYPES } from '../config/context/metadata_types'
-import { SalesforceFetchTargets } from './fetch_targets'
+import { SalesforceFetchTargets } from './fetch_targets_filter'
 
 const { toArrayAsync, awu } = collections.asynciterable
 const { splitDuplicates } = collections.array

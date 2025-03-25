@@ -74,6 +74,8 @@ import createMockClient from './client'
 import { mockInstances, mockTypes } from './mock_elements'
 import { buildContext } from '../src/config/context/context'
 import * as customListFuncsModule from '../src/client/custom_list_funcs'
+import * as utilsModule from '../src/filters/utils'
+import { METADATA_TYPES_GROUP } from '../src/fetch_targets'
 
 const { makeArray } = collections.array
 const { awu } = collections.asynciterable
@@ -2576,6 +2578,58 @@ public class LargeClass${index} {
             ]),
           }),
         )
+      })
+    })
+
+    describe('getMetadataIncludeFromFetchTargets', () => {
+      let getMetadataIncludeFromFetchTargetsSpy: jest.SpyInstance
+      let testAdapter: SalesforceAdapter
+
+      beforeEach(() => {
+        getMetadataIncludeFromFetchTargetsSpy = jest.spyOn(utilsModule, 'getMetadataIncludeFromFetchTargets')
+        ;({ adapter: testAdapter } = mockAdapter({
+          adapterParams: {
+            getElemIdFunc: mockGetElemIdFunc,
+            config: {
+              fetch: {},
+            },
+          },
+        }))
+      })
+
+      it('should use targets from adapter config when provided', async () => {
+        const fetchParamsTargets = ['Target1', 'Target2']
+        ;({ adapter: testAdapter } = mockAdapter({
+          adapterParams: {
+            getElemIdFunc: mockGetElemIdFunc,
+            config: {
+              fetch: {
+                target: fetchParamsTargets,
+              },
+            },
+          },
+        }))
+        await testAdapter.fetch(mockFetchOpts)
+
+        expect(getMetadataIncludeFromFetchTargetsSpy).toHaveBeenCalledWith(fetchParamsTargets, expect.any(Object))
+      })
+
+      it('should use targets from partialFetchTargets when provided', async () => {
+        const partialFetchTargets = [
+          { group: METADATA_TYPES_GROUP, name: 'Target1' },
+          { group: METADATA_TYPES_GROUP, name: 'Target2' },
+        ]
+        await testAdapter.fetch({
+          ...mockFetchOpts,
+          partialFetchTargets,
+        })
+
+        expect(getMetadataIncludeFromFetchTargetsSpy).toHaveBeenCalledWith(['Target1', 'Target2'], expect.any(Object))
+      })
+
+      it('should not call getMetadataIncludeFromFetchTargets when no targets are provided', async () => {
+        await testAdapter.fetch(mockFetchOpts)
+        expect(getMetadataIncludeFromFetchTargetsSpy).not.toHaveBeenCalled()
       })
     })
   })

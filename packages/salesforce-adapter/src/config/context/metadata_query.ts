@@ -168,7 +168,7 @@ export const buildMetadataQuery = ({ fetchParams, targetedFetchInclude }: BuildM
     include.some(params => isInstanceMatchQueryParams(instance, params)) &&
     isInstanceIncludedInTargetedFetch(instance) &&
     !fullExcludeList.some(params => isInstanceMatchQueryParams(instance, params))
-  const isTargetedFetch = (): boolean => fetchParams.target !== undefined
+  const isTargetedFetch = (): boolean => targetedFetchInclude !== undefined || fetchParams.target !== undefined
   return {
     isTypeMatch: type => isTypeIncluded(type) && !isTypeExcluded(type),
     isTargetedFetch,

@@ -126,7 +126,7 @@ import waveStaticFilesFilter from './filters/wave_static_files'
 import generatedDependenciesFilter from './filters/generated_dependencies'
 import extendTriggersMetadataFilter from './filters/extend_triggers_metadata'
 import profilesAndPermissionSetsBrokenPathsFilter from './filters/profiles_and_permission_sets_broken_paths'
-import fetchTargetsFilter from './filters/fetch_targets'
+import fetchTargetsFilter from './filters/fetch_targets_filter'
 import { CUSTOM_REFS_CONFIG, FetchElements, Context, MetadataQuery, SalesforceConfig } from './config/types'
 import mergeProfilesWithSourceValuesFilter from './filters/merge_profiles_with_source_values'
 import flowCoordinatesFilter from './filters/flow_coordinates'
@@ -558,7 +558,11 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
    * Account credentials were given in the constructor.
    */
   @logDuration('fetching account configuration')
-  async fetch({ progressReporter, withChangesDetection = false }: FetchOptions): Promise<FetchResult> {
+  async fetch({
+    progressReporter,
+    withChangesDetection = false,
+    partialFetchTargets,
+  }: FetchOptions): Promise<FetchResult> {
     const fetchParams = this.userConfig.fetch ?? {}
     this.initializeCustomListFunctions(withChangesDetection)
     const baseQuery = buildMetadataQuery({ fetchParams })
@@ -568,8 +572,9 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       metadataQuery: buildFilePropsMetadataQuery(baseQuery),
       metadataTypeInfos,
     })
-    const targetedFetchInclude = fetchParams.target
-      ? await getMetadataIncludeFromFetchTargets(fetchParams.target, this.elementsSource)
+    const targets = partialFetchTargets?.map(t => t.name) ?? fetchParams.target
+    const targetedFetchInclude = targets
+      ? await getMetadataIncludeFromFetchTargets(targets, this.elementsSource)
       : undefined
     const metadataQuery = withChangesDetection
       ? await buildMetadataQueryForFetchWithChangesDetection({

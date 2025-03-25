@@ -6,7 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import { Element, InstanceElement, isInstanceElement } from '@salto-io/adapter-api'
-import filterCreator from '../../src/filters/fetch_targets'
+import filterCreator from '../../src/filters/fetch_targets_filter'
 import { FilterWith } from './mocks'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
 import { buildContext } from '../../src/config/context/context'
