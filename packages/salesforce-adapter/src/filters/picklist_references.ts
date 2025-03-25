@@ -113,7 +113,12 @@ const addFieldDependencyReferences = (
     return
   }
   const controllingValueSet = getValueSetOfField(controllingField, picklistIndex)
-  if (controllingValueSet === undefined) {
+  if (!controllingValueSet) {
+    log.trace(
+      'picklist controllingField %s did not contain valueSet or valueSetName. Annotations: %s',
+      controllingField.elemID.getFullName(),
+      inspectValue(controllingField.annotations),
+    )
     return
   }
   fieldDependency[FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS].forEach((vs: Value) => {

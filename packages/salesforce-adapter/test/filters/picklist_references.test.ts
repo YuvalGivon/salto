@@ -414,6 +414,7 @@ describe('picklistReferences filter', () => {
       secondValueSet: InstanceElement,
       includeOnlyExistingValue = true,
       validFieldDependencies = true,
+      createValueSetInState = true,
     ): ObjectType =>
       new ObjectType({
         elemID: mockElemID,
@@ -424,7 +425,9 @@ describe('picklistReferences filter', () => {
               [CORE_ANNOTATIONS.REQUIRED]: false,
               [API_NAME]: apiName,
               label: 'test label',
-              [VALUE_SET_FIELDS.VALUE_SET_NAME]: new ReferenceExpression(valueSet.elemID, valueSet.elemID.name),
+              ...(createValueSetInState
+                ? { [VALUE_SET_FIELDS.VALUE_SET_NAME]: new ReferenceExpression(valueSet.elemID, valueSet.elemID.name) }
+                : {}),
               [FIELD_ANNOTATIONS.RESTRICTED]: true,
             },
           },
@@ -734,6 +737,42 @@ describe('picklistReferences filter', () => {
             gvs.value.customValue.values.val2.fullName,
           ),
         )
+      })
+    })
+    describe('when valueSet of controlling field is undefined', () => {
+      it('should not create any references', async () => {
+        const elements: (InstanceElement | ObjectType)[] = [
+          gvs,
+          svs,
+          createPicklistObjectType(new ElemID(SALESFORCE, 'test'), 'test', gvs, svs, true, true, false),
+        ]
+        const elem = elements[2] as ObjectType
+        await filter.onFetch(elements)
+        expect(
+          elem.fields.customPicklistField.annotations[FIELD_ANNOTATIONS.FIELD_DEPENDENCY][
+            FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS
+          ][0][VALUE_SETTINGS_FIELDS.VALUE_NAME],
+        ).toEqual('val1')
+        expect(
+          elem.fields.customPicklistField.annotations[FIELD_ANNOTATIONS.FIELD_DEPENDENCY][
+            FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS
+          ][0][VALUE_SETTINGS_FIELDS.CONTROLLING_FIELD_VALUE][0],
+        ).toEqual('val1')
+        expect(
+          elem.fields.customPicklistField.annotations[FIELD_ANNOTATIONS.FIELD_DEPENDENCY][
+            FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS
+          ][0][VALUE_SETTINGS_FIELDS.CONTROLLING_FIELD_VALUE][1],
+        ).toEqual('val2')
+        expect(
+          elem.fields.customPicklistField.annotations[FIELD_ANNOTATIONS.FIELD_DEPENDENCY][
+            FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS
+          ][1][VALUE_SETTINGS_FIELDS.VALUE_NAME],
+        ).toEqual('val2')
+        expect(
+          elem.fields.customPicklistField.annotations[FIELD_ANNOTATIONS.FIELD_DEPENDENCY][
+            FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS
+          ][1][VALUE_SETTINGS_FIELDS.CONTROLLING_FIELD_VALUE][0],
+        ).toEqual('val2')
       })
     })
   })
