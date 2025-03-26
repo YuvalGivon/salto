@@ -45,13 +45,14 @@ describe('createSalesforceChangeValidator', () => {
 
   describe('when checkOnly is false', () => {
     describe('with no validator config', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         validator = createSalesforceChangeValidator({
           config: {},
           isSandbox: false,
           checkOnly: false,
           client,
         })
+        await validator([])
       })
       it('should create a validator', () => {
         expect(validator).toBeDefined()
@@ -69,7 +70,7 @@ describe('createSalesforceChangeValidator', () => {
       })
     })
     describe('with a disabled validator config', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         validator = createSalesforceChangeValidator({
           config: {
             deploy: {
@@ -82,6 +83,7 @@ describe('createSalesforceChangeValidator', () => {
           checkOnly: false,
           client,
         })
+        await validator([])
       })
       it('should create a validator', () => {
         expect(validator).toBeDefined()
@@ -110,8 +112,9 @@ describe('createSalesforceChangeValidator', () => {
           client,
         })
       describe('when checkOnly is true in the deploy config', () => {
-        it('should create validator according to the validate default config', () => {
+        it('should create validator according to the validate default config', async () => {
           validator = createValidatorWithConfig(true)
+          await validator([])
           expect(validator).toBeDefined()
           expect(createChangeValidatorMock.mock.calls[0][0].validatorsActivationConfig).toMatchObject(
             defaultChangeValidatorsValidateConfig,
@@ -119,8 +122,9 @@ describe('createSalesforceChangeValidator', () => {
         })
       })
       describe('when checkOnly is false in the deploy config', () => {
-        it('should create validator according to the deploy default config', () => {
+        it('should create validator according to the deploy default config', async () => {
           validator = createValidatorWithConfig(false)
+          await validator([])
           expect(validator).toBeDefined()
           expect(createChangeValidatorMock.mock.calls[0][0].validatorsActivationConfig).toMatchObject(
             defaultChangeValidatorsDeployConfig,
@@ -131,13 +135,14 @@ describe('createSalesforceChangeValidator', () => {
   })
   describe('when checkOnly is true', () => {
     describe('with no validator config', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         validator = createSalesforceChangeValidator({
           config: {},
           isSandbox: false,
           checkOnly: true,
           client,
         })
+        await validator([])
       })
       it('should create validator according to the validate default config', () => {
         const enabledValidatorsCount =

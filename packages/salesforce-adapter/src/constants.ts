@@ -562,6 +562,8 @@ export const CHANGED_AT_SINGLETON = 'ChangedAtSingleton'
 export const PROFILE_AND_PERMISSION_SETS_BROKEN_PATHS = 'ProfilesAndPermissionSetsBrokenPaths'
 export const PATHS_FIELD = 'paths'
 export const FETCH_TARGETS = 'FetchTargets'
+export const FLAGS_ITERATION_TYPE_NAME = 'FlagsIteration'
+export const FLAGS_ITERATION_FIELD_NAME = 'iteration'
 export const CUSTOM_OBJECTS_FIELD = 'customObjects'
 export const CUSTOM_OBJECTS_LOOKUPS_FIELD = 'customObjectsLookups'
 export const METADATA_TYPES_FIELD = 'metadataTypes'
@@ -610,6 +612,17 @@ export const ArtificialTypes = {
       [CUSTOM_OBJECTS_FIELD]: { refType: new ListType(BuiltinTypes.STRING) },
       [CUSTOM_OBJECTS_LOOKUPS_FIELD]: { refType: new MapType(new ListType(BuiltinTypes.STRING)) },
     },
+  }),
+  [FLAGS_ITERATION_TYPE_NAME]: new ObjectType({
+    elemID: new ElemID(SALESFORCE, FLAGS_ITERATION_TYPE_NAME),
+    fields: {
+      [FLAGS_ITERATION_FIELD_NAME]: { refType: BuiltinTypes.NUMBER },
+    },
+    annotations: {
+      [CORE_ANNOTATIONS.HIDDEN]: true,
+      [CORE_ANNOTATIONS.HIDDEN_VALUE]: true,
+    },
+    isSettings: true,
   }),
 } as const
 

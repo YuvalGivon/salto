@@ -34,6 +34,7 @@ export const DEPLOY_CONFIG = 'deploy'
 export const METADATA_CONFIG = 'metadata'
 export const CUSTOM_REFS_CONFIG = 'customReferences'
 export const FIX_ELEMENTS_CONFIG = 'fixElements'
+export const FLAGS_CONFIG = 'flags'
 export const METADATA_INCLUDE_LIST = 'include'
 export const METADATA_EXCLUDE_LIST = 'exclude'
 const METADATA_TYPE = 'metadataType'
@@ -67,7 +68,6 @@ const OPTIONAL_FEATURES = [
   'shouldPopulateInternalIdAfterDeploy',
   'packageVersionReference',
   'omitTotalTrustedRequestsUsageField',
-  'supportProfileTabVisibilities',
   'disablePermissionsOmissions',
   'omitStandardFieldsNonDeployableValues',
   'handleInsufficientAccessRightsOnEntity',
@@ -103,9 +103,15 @@ const DEPRECATED_OPTIONAL_FEATURES = [
   'toolingDepsOfCurrentNamespace',
   'useLabelAsAlias',
   'waveMetadataSupport',
+  'supportProfileTabVisibilities',
 ] as const
 export type OptionalFeatures = {
   [key in (typeof OPTIONAL_FEATURES)[number]]?: boolean
+}
+
+const FLAGS = ['testFlag', 'supportProfileTabVisibilities'] as const
+export type Flags = {
+  [key in (typeof FLAGS)[number]]: boolean
 }
 
 const CHANGE_VALIDATORS = [
@@ -202,6 +208,11 @@ export type CustomReferencesHandlers = (typeof customReferencesHandlersNames)[nu
 export type CustomReferencesSettings = Partial<Record<CustomReferencesHandlers, boolean>>
 
 export type FixElementsSettings = Partial<Record<CustomReferencesHandlers, boolean>>
+
+export type FlagsSettings = {
+  iterationOverride?: number
+  flagOverrides?: Partial<Flags>
+}
 
 const objectIdSettings = new ObjectType({
   elemID: new ElemID(constants.SALESFORCE, 'objectIdSettings'),
@@ -321,6 +332,19 @@ const customReferencesSettingsType = new ObjectType({
 const fixElementsSettingsType = new ObjectType({
   elemID: new ElemID(constants.SALESFORCE, 'saltoFixElementsSettings'),
   fields: Object.fromEntries(customReferencesHandlersNames.map(name => [name, { refType: BuiltinTypes.BOOLEAN }])),
+})
+
+const flagsOverridesType = new ObjectType({
+  elemID: new ElemID(constants.SALESFORCE, 'adapterFlagsOverrides'),
+  fields: Object.fromEntries(FLAGS.map(flag => [flag, { refType: BuiltinTypes.BOOLEAN }])),
+})
+
+const flagsConfigType = new ObjectType({
+  elemID: new ElemID(constants.SALESFORCE, 'adapterFlagsSettings'),
+  fields: {
+    iterationOverride: { refType: BuiltinTypes.NUMBER },
+    flagsOverrides: { refType: flagsOverridesType },
+  },
 })
 
 const warningSettingsType = new ObjectType({
@@ -451,6 +475,7 @@ export type SalesforceConfig = {
   [DEPLOY_CONFIG]?: UserDeployConfig
   [CUSTOM_REFS_CONFIG]?: CustomReferencesSettings
   [FIX_ELEMENTS_CONFIG]?: FixElementsSettings
+  [FLAGS_CONFIG]?: FlagsSettings
 }
 
 type DataManagementConfigSuggestions = {
@@ -954,6 +979,9 @@ export const configType = createMatchingObjectType<SalesforceConfig>({
     [FIX_ELEMENTS_CONFIG]: {
       refType: fixElementsSettingsType,
     },
+    [FLAGS_CONFIG]: {
+      refType: flagsConfigType,
+    },
   },
   annotations: {
     [CORE_ANNOTATIONS.ADDITIONAL_PROPERTIES]: false,
@@ -989,6 +1017,7 @@ export type Context = {
   readonly metadataQuery: MetadataQuery
   readonly dataManagement?: DataManagement
   readonly isFeatureEnabled: (name: keyof OptionalFeatures) => boolean
+  readonly isFlagEnabled: (flag: keyof Flags) => boolean
   readonly isCustomReferencesHandlerEnabled: (name: CustomReferencesHandlers) => boolean
   readonly shouldFetchAllCustomSettings: () => boolean
   readonly maxInstancesPerType: number

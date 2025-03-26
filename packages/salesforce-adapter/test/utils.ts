@@ -34,7 +34,7 @@ import { buildContext } from '../src/config/context/context'
 import { createDeployProgressReporter, DeployProgressReporter } from '../src/adapter_creator'
 import { SalesforceClient } from '../index'
 import { LastChangeDateOfTypesWithNestedInstances } from '../src/types'
-import { CustomReferencesSettings, OptionalFeatures } from '../src/config/types'
+import { CustomReferencesSettings, FlagsSettings, OptionalFeatures } from '../src/config/types'
 
 export const findElements = (elements: ReadonlyArray<Element>, ...name: ReadonlyArray<string>): Element[] => {
   const expectedElemId =
@@ -387,14 +387,17 @@ export const createCustomSettingsObject = (name: string, settingsType: string): 
 
 export const buildFilterContext = ({
   optionalFeatures,
+  flagsOverrides,
   customReferencesSettings,
 }: {
   optionalFeatures?: OptionalFeatures
+  flagsOverrides?: FlagsSettings['flagOverrides']
   customReferencesSettings?: CustomReferencesSettings
 }): FilterContext => ({
   systemFields: SYSTEM_FIELDS,
   context: buildContext({
     fetchParams: { optionalFeatures },
+    flagsSettings: { flagOverrides: flagsOverrides },
     customReferencesSettings,
   }),
   elementsSource: buildElementsSourceFromElements([]),

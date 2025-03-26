@@ -39,6 +39,7 @@ import {
   FETCH_CONFIG,
   MAX_ITEMS_IN_RETRIEVE_REQUEST,
   DEPLOY_CONFIG,
+  FLAGS_CONFIG,
 } from './config/types'
 import { validateFetchParameters } from './config/context/context'
 import { ConfigValidationError } from './config/config_validation'
@@ -167,7 +168,7 @@ const adapterConfigFromConfig = (config: Readonly<InstanceElement> | undefined):
     deploy: config?.value?.[DEPLOY_CONFIG],
     fixElements: config?.value?.fixElements,
     customReferences: config?.value?.customReferences,
-    // Deprecated and used for backwards compatibility (SALTO-4468)
+    flags: config?.value?.[FLAGS_CONFIG],
   }
   Object.keys(config?.value ?? {})
     .filter(k => !Object.keys(adapterConfig).includes(k))

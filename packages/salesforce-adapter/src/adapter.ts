@@ -127,7 +127,15 @@ import generatedDependenciesFilter from './filters/generated_dependencies'
 import extendTriggersMetadataFilter from './filters/extend_triggers_metadata'
 import profilesAndPermissionSetsBrokenPathsFilter from './filters/profiles_and_permission_sets_broken_paths'
 import fetchTargetsFilter from './filters/fetch_targets_filter'
-import { CUSTOM_REFS_CONFIG, FetchElements, Context, MetadataQuery, SalesforceConfig } from './config/types'
+import {
+  CUSTOM_REFS_CONFIG,
+  FetchElements,
+  Context,
+  MetadataQuery,
+  SalesforceConfig,
+  FETCH_CONFIG,
+  FLAGS_CONFIG,
+} from './config/types'
 import mergeProfilesWithSourceValuesFilter from './filters/merge_profiles_with_source_values'
 import flowCoordinatesFilter from './filters/flow_coordinates'
 import taskAndEventCustomFields from './filters/task_and_event_custom_fields'
@@ -178,6 +186,7 @@ import { fixElementsFunc } from './custom_references/handlers'
 import { createListApexClassesDef, createListMissingWaveDataflowsDef } from './client/custom_list_funcs'
 import { SalesforceAdapterDeployOptions } from './adapter_creator'
 import { enrichSaltoDeployErrors, getUserFriendlyDeployErrorMessage } from './client/user_facing_errors'
+import { createFlagsIterationInstance, CURRENT_FLAGS_ITERATION, getIteration } from './config/context/flags'
 
 const { awu } = collections.asynciterable
 const { partition } = promises.array
@@ -563,7 +572,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     withChangesDetection = false,
     partialFetchTargets,
   }: FetchOptions): Promise<FetchResult> {
-    const fetchParams = this.userConfig.fetch ?? {}
+    const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
     this.initializeCustomListFunctions(withChangesDetection)
     const baseQuery = buildMetadataQuery({ fetchParams })
     const metadataTypeInfos = await this.client.listMetadataTypes()
@@ -585,11 +594,16 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
           customObjectsWithDeletedFields: await this.getCustomObjectsWithDeletedFields(),
         })
       : buildMetadataQuery({ fetchParams, targetedFetchInclude })
+    const flagsIteration = metadataQuery.isPartialFetch()
+      ? await getIteration(this.elementsSource)
+      : CURRENT_FLAGS_ITERATION
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
       metadataQuery,
       maxItemsInRetrieveRequest: this.maxItemsInRetrieveRequest,
+      flagsSettings: this.userConfig[FLAGS_CONFIG],
+      flagsIteration,
     })
     log.debug('going to fetch salesforce account configuration..')
     const fieldTypes = Types.getAllFieldTypes()
@@ -639,6 +653,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       ...metadataTypes,
       ...metadataInstancesElements,
       ...settingsTypes,
+      createFlagsIterationInstance(flagsIteration),
     ]
     progressReporter.reportProgress({
       message: 'Running filters for additional information',
@@ -699,10 +714,12 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     { changeGroup, progressReporter }: SalesforceAdapterDeployOptions,
     checkOnly: boolean,
   ): Promise<DeployResult> {
-    const fetchParams = this.userConfig.fetch ?? {}
+    const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
+      flagsSettings: this.userConfig[FLAGS_CONFIG],
+      flagsIteration: await getIteration(this.elementsSource),
     })
     log.debug(
       `about to ${checkOnly ? 'validate' : 'deploy'} group ${changeGroup.groupID} with scope (first 100): ${safeJsonStringify(

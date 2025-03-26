@@ -186,7 +186,7 @@ export const getMetadataTypeToFieldToMapDef: (
 ) => Record<string, Record<string, MapDef>> = context => ({
   [BUSINESS_HOURS_METADATA_TYPE]: BUSINESS_HOURS_MAP_FIELD_DEF,
   [EMAIL_TEMPLATE_METADATA_TYPE]: EMAIL_TEMPLATE_MAP_FIELD_DEF,
-  [PROFILE_METADATA_TYPE]: context.isFeatureEnabled('supportProfileTabVisibilities')
+  [PROFILE_METADATA_TYPE]: context.isFlagEnabled('supportProfileTabVisibilities')
     ? { ...PROFILE_MAP_FIELD_DEF, ...{ tabVisibilities: { key: 'tab' } } }
     : PROFILE_MAP_FIELD_DEF,
   [PERMISSION_SET_METADATA_TYPE]: PERMISSIONS_SET_MAP_FIELD_DEF,

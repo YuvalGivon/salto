@@ -48,7 +48,7 @@ import cpqBillingTriggers from './change_validators/cpq_billing_triggers'
 import managedApexComponent from './change_validators/managed_apex_component'
 import orderedMaps from './change_validators/ordered_maps'
 import SalesforceClient from './client/client'
-import { ChangeValidatorName, DEPLOY_CONFIG, Context, SalesforceConfig } from './config/types'
+import { ChangeValidatorName, DEPLOY_CONFIG, Context, SalesforceConfig, FLAGS_CONFIG } from './config/types'
 import { buildContext } from './config/context/context'
 import { getLookUpName } from './transformers/reference_mapping'
 import layoutDuplicateFields from './change_validators/layout_duplicate_fields'
@@ -58,6 +58,7 @@ import liveChatButtonRoutingType from './change_validators/live_chat_button_rout
 import flexiPageUnusedOrMissingFacets from './change_validators/flexi_page_unused_or_missing_facets'
 import uniqueFlowElementName from './change_validators/unique_flow_element_name'
 import accessToSendEmail from './change_validators/access_to_send_email'
+import { getIteration } from './config/context/flags'
 
 const { createChangeValidator, getDefaultChangeValidators } = deployment.changeValidators
 
@@ -141,24 +142,30 @@ const createSalesforceChangeValidator = ({
     ? defaultChangeValidatorsValidateConfig
     : defaultChangeValidatorsDeployConfig
 
-  const context = buildContext({ fetchParams: config.fetch ?? {} })
-  const getLookupNameFunc: GetLookupNameFunc = getLookUpName(context)
-  const changeValidator = createChangeValidator({
-    validators: _.mapValues(changeValidators, validator =>
-      validator({ config, isSandbox, client, context, getLookupNameFunc }),
-    ),
-    validatorsActivationConfig: {
-      ...defaultValidatorsActivationConfig,
-      ...config[DEPLOY_CONFIG]?.changeValidators,
-    },
-  })
-
   // Returns a change validator with elementsSource that lazily resolves types using resolveTypeShallow
   // upon usage. This is relevant to Change Validators that get instances from the elementsSource.
-  return async (changes, elementSource) =>
-    elementSource === undefined
-      ? changeValidator(changes, elementSource)
-      : changeValidator(changes, buildLazyShallowTypeResolverElementsSource(elementSource))
+  return async (changes, elementSource) => {
+    const flagsIteration = await getIteration(elementSource)
+    const context = buildContext({
+      fetchParams: config.fetch ?? {},
+      flagsSettings: config[FLAGS_CONFIG],
+      flagsIteration,
+    })
+    const getLookupNameFunc: GetLookupNameFunc = getLookUpName(context)
+    const changeValidator = createChangeValidator({
+      validators: _.mapValues(changeValidators, validator =>
+        validator({ config, isSandbox, client, context, getLookupNameFunc }),
+      ),
+      validatorsActivationConfig: {
+        ...defaultValidatorsActivationConfig,
+        ...config[DEPLOY_CONFIG]?.changeValidators,
+      },
+    })
+    return changeValidator(
+      changes,
+      elementSource ? buildLazyShallowTypeResolverElementsSource(elementSource) : undefined,
+    )
+  }
 }
 
 export default createSalesforceChangeValidator

@@ -8,9 +8,8 @@
 import { ObjectType, ElemID, BuiltinTypes, Element, InstanceElement } from '@salto-io/adapter-api'
 import * as removeFieldsAndValuesFilter from '../../src/filters/remove_fields_and_values'
 import * as constants from '../../src/constants'
-import { defaultFilterContext } from '../utils'
+import { buildFilterContext } from '../utils'
 import { FilterWith } from './mocks'
-import * as optionalFeatures from '../../src/config/context/optional_features'
 
 describe('remove fields filter', () => {
   const mockObjId = new ElemID(constants.SALESFORCE, 'typeRemoval')
@@ -59,24 +58,20 @@ describe('remove fields filter', () => {
     },
   })
 
-  const filter = removeFieldsAndValuesFilter.makeFilter(
-    new Map([
-      ['typeRemoval', ['remove']],
-      ['typeWithInstance', ['removeAlsoFromInstance', 'removeAlsoFromInstance2']],
-      ['nested', ['remove']],
-    ]),
-  )({ config: defaultFilterContext }) as FilterWith<'onFetch'>
-
+  let filter: FilterWith<'onFetch'>
   let testElements: Element[]
 
   describe('when supportProfileTabVisibilities optional feature is disabled', () => {
     beforeEach(() => {
-      jest.spyOn(optionalFeatures, 'isFeatureEnabled').mockImplementation(feature => {
-        if (feature === 'supportProfileTabVisibilities') {
-          return false
-        }
-        return jest.requireActual<typeof optionalFeatures>('./myModule').isFeatureEnabled(feature)
-      })
+      filter = removeFieldsAndValuesFilter.makeFilter(
+        new Map([
+          ['typeRemoval', ['remove']],
+          ['typeWithInstance', ['removeAlsoFromInstance', 'removeAlsoFromInstance2']],
+          ['nested', ['remove']],
+        ]),
+      )({
+        config: buildFilterContext({ flagsOverrides: { supportProfileTabVisibilities: false } }),
+      }) as FilterWith<'onFetch'>
       testElements = [mockType.clone(), mockTypeWithInstance.clone(), mockNestedType.clone(), mockInstance.clone()]
     })
     describe('on fetch', () => {
@@ -130,12 +125,15 @@ describe('remove fields filter', () => {
   })
   describe('when supportProfileTabVisibilities optional feature is enabled', () => {
     beforeEach(() => {
-      jest.spyOn(optionalFeatures, 'isFeatureEnabled').mockImplementation(feature => {
-        if (feature === 'supportProfileTabVisibilities') {
-          return true
-        }
-        return jest.requireActual<typeof optionalFeatures>('./myModule').isFeatureEnabled(feature)
-      })
+      filter = removeFieldsAndValuesFilter.makeFilter(
+        new Map([
+          ['typeRemoval', ['remove']],
+          ['typeWithInstance', ['removeAlsoFromInstance', 'removeAlsoFromInstance2']],
+          ['nested', ['remove']],
+        ]),
+      )({
+        config: buildFilterContext({ flagsOverrides: { supportProfileTabVisibilities: true } }),
+      }) as FilterWith<'onFetch'>
       jest.spyOn(removeFieldsAndValuesFilter, 'removeFieldsFromTypes')
       jest.spyOn(removeFieldsAndValuesFilter, 'removeValuesFromInstances')
     })

@@ -67,7 +67,7 @@ export const makeFilter =
   ({ config }) => ({
     name: 'removeFieldsAndValuesFilter',
     onFetch: async (elements: Element[]) => {
-      if (config.context.isFeatureEnabled('supportProfileTabVisibilities')) {
+      if (config.context.isFlagEnabled('supportProfileTabVisibilities')) {
         return
       }
       removeValuesFromInstances(elements, typeNameToFieldRemovals)
