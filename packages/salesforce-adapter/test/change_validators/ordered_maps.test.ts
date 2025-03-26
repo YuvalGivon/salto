@@ -14,7 +14,7 @@ import { buildContext } from '../../src/config/context/context'
 
 describe('OrderedMap Change Validator', () => {
   const changeValidator = changeValidatorCreator(
-    buildContext({ fetchParams: { optionalFeatures: { picklistsAsMaps: true } } }),
+    buildContext({ fetchParams: {}, flagsSettings: { flagOverrides: { picklistsAsMaps: true } } }),
   )
   describe('InstanceElement with ordered map', () => {
     const gvsType = new ObjectType({

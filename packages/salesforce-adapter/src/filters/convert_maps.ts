@@ -192,7 +192,7 @@ export const getMetadataTypeToFieldToMapDef: (
   [PERMISSION_SET_METADATA_TYPE]: PERMISSIONS_SET_MAP_FIELD_DEF,
   [MUTING_PERMISSION_SET_METADATA_TYPE]: PERMISSIONS_SET_MAP_FIELD_DEF,
   [SHARING_RULES_TYPE]: SHARING_RULES_MAP_FIELD_DEF,
-  ...(context.isFeatureEnabled('picklistsAsMaps')
+  ...(context.isFlagEnabled('picklistsAsMaps')
     ? {
         [GLOBAL_VALUE_SET]: GLOBAL_VALUE_SET_MAP_FIELD_DEF,
         [STANDARD_VALUE_SET]: STANDARD_VALUE_SET_MAP_FIELD_DEF,
@@ -201,7 +201,7 @@ export const getMetadataTypeToFieldToMapDef: (
 })
 
 export const getAnnotationDefsByType: (context: Context) => Record<string, Record<string, MapDef>> = context => ({
-  ...(context.isFeatureEnabled('picklistsAsMaps')
+  ...(context.isFlagEnabled('picklistsAsMaps')
     ? {
         Picklist: {
           valueSet: PICKLIST_MAP_FIELD_DEF,

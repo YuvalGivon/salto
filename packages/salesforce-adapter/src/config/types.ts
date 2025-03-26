@@ -59,7 +59,6 @@ const OPTIONAL_FEATURES = [
   'extendedCustomFieldInformation',
   'hideTypesFolder',
   'metaTypes',
-  'picklistsAsMaps',
   'retrieveSettings',
   'genAiReferences',
   'networkReferences',
@@ -104,12 +103,13 @@ const DEPRECATED_OPTIONAL_FEATURES = [
   'useLabelAsAlias',
   'waveMetadataSupport',
   'supportProfileTabVisibilities',
+  'picklistsAsMaps',
 ] as const
 export type OptionalFeatures = {
   [key in (typeof OPTIONAL_FEATURES)[number]]?: boolean
 }
 
-const FLAGS = ['testFlag', 'supportProfileTabVisibilities'] as const
+const FLAGS = ['testFlag', 'supportProfileTabVisibilities', 'picklistsAsMaps'] as const
 export type Flags = {
   [key in (typeof FLAGS)[number]]: boolean
 }

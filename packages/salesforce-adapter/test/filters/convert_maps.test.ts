@@ -661,7 +661,7 @@ describe('Convert maps filter', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          context: buildContext({ fetchParams: { optionalFeatures: { picklistsAsMaps: true } } }),
+          context: buildContext({ fetchParams: {}, flagsSettings: { flagOverrides: { picklistsAsMaps: true } } }),
         },
       }) as FilterType
       await filter.onFetch(elements)
@@ -729,7 +729,7 @@ describe('Convert maps filter', () => {
       filter = filterCreator({
         config: {
           ...defaultFilterContext,
-          context: buildContext({ fetchParams: { optionalFeatures: { picklistsAsMaps: true } } }),
+          context: buildContext({ fetchParams: {}, flagsSettings: { flagOverrides: { picklistsAsMaps: true } } }),
         },
       }) as FilterType
     })
