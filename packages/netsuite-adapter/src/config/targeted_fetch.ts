@@ -18,9 +18,9 @@ import {
   CUSTOM_RECORD_TYPE_NAME_PREFIX,
   REFERENCE_TYPE_SUFFIX,
   FOLDER,
-  FILE_CABINET_PATH_SEPARATOR,
   CUSTOM_RECORD_TYPE,
   FILE,
+  NETSUITE,
 } from '../constants'
 import { standardTypesAliasMap, dataTypesAliasMap, settingsAliasMap } from '../filters/add_alias'
 import { netsuiteConfigFromConfig } from './config_creator'
@@ -73,40 +73,52 @@ export const getAllTargets: PartialFetchOperations['getAllTargets'] = async ({
     .filter(type => fetchQuery.isTypeMatch(type.name))
 
   const isCustomRecordTypeName = createIsCustomRecordTypeNameFunc()
-  const getTargetsWithPathFromElemID = async (elemId: ElemID): Promise<PartialFetchTargetWithPath[]> => {
+  const getTargetsFromElemID = (elemId: ElemID): PartialFetchTarget[] => {
     if (
       elemId.idType === 'type' &&
       isCustomRecordTypeName(elemId.name) &&
       fetchQuery.isCustomRecordTypeMatch(elemId.name)
     ) {
-      const customRecordTypeAlias = await getAlias(elemId)
       return [
         {
           group: CUSTOM_RECORDS_GROUP,
           name: elemId.name,
-          path: CUSTOM_RECORDS_PATH.concat(customRecordTypeAlias ?? elemId.name),
         },
       ]
     }
     if (elemId.idType === 'instance' && elemId.typeName === FOLDER) {
       const folderPath = invertNaclCase(elemId.name)
-      return [
-        {
-          group: FILE_CABINET_GROUP,
-          name: folderPath,
-          path: FILE_CABINET_PATH.concat(folderPath.split(FILE_CABINET_PATH_SEPARATOR)),
-        },
-      ]
+      if (fetchQuery.isFileMatch(`${posix.sep}${folderPath}${posix.sep}`)) {
+        return [
+          {
+            group: FILE_CABINET_GROUP,
+            name: folderPath,
+          },
+        ]
+      }
     }
     return []
   }
 
-  const groupedTargets = await awu(await elementsSource.list())
-    .flatMap(getTargetsWithPathFromElemID)
-    .groupBy(type => type.group)
+  const { [CUSTOM_RECORDS_GROUP]: customRecordsTargets = [], [FILE_CABINET_GROUP]: fileCabinetTargets = [] } =
+    await awu(await elementsSource.list())
+      .flatMap(getTargetsFromElemID)
+      .groupBy(type => type.group)
 
-  const sortedCustomRecordsTargets = _.sortBy(groupedTargets[CUSTOM_RECORDS_GROUP], type => type.name)
-  const sortedFileCabinetTargets = _.sortBy(groupedTargets[FILE_CABINET_GROUP], type => type.name)
+  const customRecordsTargetsWithPath = await Promise.all(
+    customRecordsTargets.map(async target => ({
+      ...target,
+      path: CUSTOM_RECORDS_PATH.concat((await getAlias(new ElemID(NETSUITE, target.name))) ?? target.name),
+    })),
+  )
+
+  const fileCabinetTargetsWithPath = fileCabinetTargets.map(target => ({
+    ...target,
+    path: FILE_CABINET_PATH.concat(target.name.split(posix.sep)),
+  }))
+
+  const sortedCustomRecordsTargets = _.sortBy(customRecordsTargetsWithPath, type => type.name)
+  const sortedFileCabinetTargets = _.sortBy(fileCabinetTargetsWithPath, type => type.name)
   const sortedTypesTargets = _.sortBy(standardTypesTargets.concat(dataTypesTargets), type => type.name)
   const sortedSettingsTargets = _.sortBy(settingsTargets, type => type.name)
 
