@@ -15,6 +15,7 @@ import { createClientDefinitions, createDeployDefinitions, createFetchDefinition
 import { PAGINATION } from './definitions/requests/pagination'
 import { Options } from './definitions/types'
 import { REFERENCES } from './definitions/references'
+import fetchCriteria from './fetch_criteria'
 
 const { defaultCredentialsFromConfig } = credentials
 
@@ -52,4 +53,5 @@ export const adapter = createAdapter<Credentials, Options, UserConfig>({
       deploy: 5,
     },
   },
+  allCriteria: fetchCriteria,
 })
