@@ -169,4 +169,14 @@ export const modificationChangesBeforeAndAfterOverrides: Record<string, { before
     after: { isActive: true },
     before: { isActive: false },
   },
+  [entraTopLevelTypes.AUTHORIZATION_POLICY_TYPE_NAME]: {
+    before: {
+      allowInvitesFrom: 'everyone',
+      allowedToSignUpEmailBasedSubscriptions: true,
+    },
+    after: {
+      allowInvitesFrom: 'adminsAndGuestInviters',
+      allowedToSignUpEmailBasedSubscriptions: false,
+    },
+  },
 }

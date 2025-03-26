@@ -37,6 +37,7 @@ const {
     PERMISSION_GRANT_POLICY_TYPE_NAME,
     APP_ROLE_TYPE_NAME,
     OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
+    AUTHORIZATION_POLICY_TYPE_NAME,
   },
   SERVICE_BASE_URL,
   SERVICE_PRINCIPAL_APP_ROLE_ASSIGNMENT_TYPE_NAME,
@@ -780,6 +781,25 @@ const graphV1Customizations: FetchCustomizations = {
       topLevel: {
         isTopLevel: true,
       },
+    },
+  },
+  [AUTHORIZATION_POLICY_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/policies/authorizationPolicy',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        singleton: true,
+      },
+      fieldCustomizations: ID_FIELD_TO_HIDE,
     },
   },
 }

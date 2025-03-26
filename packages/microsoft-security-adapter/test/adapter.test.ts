@@ -84,6 +84,7 @@ describe('Microsoft Security adapter', () => {
           'EntraAuthenticationMethodPolicy',
           'EntraAuthenticationMethodPolicy__authenticationMethodConfigurations',
           'EntraAuthenticationStrengthPolicy',
+          'EntraAuthorizationPolicy',
           'EntraConditionalAccessPolicy',
           'EntraConditionalAccessPolicyNamedLocation',
           'EntraCustomSecurityAttributeDefinition',
@@ -304,6 +305,30 @@ describe('Microsoft Security adapter', () => {
               const authenticationStrengthPolicyNames = authenticationStrengthPolicies.map(e => e.elemID.name)
               expect(authenticationStrengthPolicyNames).toEqual(
                 expect.arrayContaining(['test_authentication_strength_policy@s']),
+              )
+            })
+          })
+
+          describe('authorization policies', () => {
+            let authorizationPolicies: InstanceElement[]
+            beforeEach(async () => {
+              authorizationPolicies = elements
+                .filter(isInstanceElement)
+                .filter(e => e.elemID.typeName === 'EntraAuthorizationPolicy')
+            })
+
+            it('should create a single singleton instance', async () => {
+              expect(authorizationPolicies).toHaveLength(1)
+              expect(authorizationPolicies[0].elemID.name).toEqual('_config')
+            })
+
+            it('should reference the correct directory role template', async () => {
+              const authorizationPolicy = authorizationPolicies[0]
+              expect(authorizationPolicy).toBeDefined()
+              const { guestUserRoleId } = authorizationPolicy.value
+              expect(guestUserRoleId).toBeInstanceOf(ReferenceExpression)
+              expect(guestUserRoleId.elemID.getFullName()).toEqual(
+                'microsoft_security.EntraDirectoryRoleTemplate.instance.Global_Administrator@s',
               )
             })
           })
@@ -1294,6 +1319,7 @@ describe('Microsoft Security adapter', () => {
           'EntraAuthenticationMethodPolicy',
           'EntraAuthenticationMethodPolicy__authenticationMethodConfigurations',
           'EntraAuthenticationStrengthPolicy',
+          'EntraAuthorizationPolicy',
           'EntraConditionalAccessPolicy',
           'EntraConditionalAccessPolicyNamedLocation',
           'EntraCustomSecurityAttributeDefinition',

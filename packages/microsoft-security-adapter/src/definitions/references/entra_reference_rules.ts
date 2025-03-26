@@ -30,6 +30,7 @@ const {
     CONDITIONAL_ACCESS_POLICY_TYPE_NAME,
     OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
     PERMISSION_GRANT_POLICY_TYPE_NAME,
+    AUTHORIZATION_POLICY_TYPE_NAME,
   },
   ADMINISTRATIVE_UNIT_MEMBERS_TYPE_NAME,
   APPLICATION_API_TYPE_NAME,
@@ -271,6 +272,14 @@ export const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
       ],
     },
     target: { type: OAUTH2_PERMISSION_SCOPE_TYPE_NAME },
+    serializationStrategy: 'id',
+  },
+  {
+    src: {
+      field: 'guestUserRoleId',
+      parentTypes: [AUTHORIZATION_POLICY_TYPE_NAME],
+    },
+    target: { type: DIRECTORY_ROLE_TEMPLATE_TYPE_NAME },
     serializationStrategy: 'id',
   },
 ]

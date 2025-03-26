@@ -51,13 +51,13 @@ export const CONDITIONAL_ACCESS_POLICY_ASSIGNMENT_FIELDS = [
 export const AUTHENTICATION_STRENGTH_PATH = ['grantControls', 'authenticationStrength']
 
 /* Type names */
-// Top level
 export const TOP_LEVEL_TYPES = {
   ADMINISTRATIVE_UNIT_TYPE_NAME: 'EntraAdministrativeUnit',
   APPLICATION_TYPE_NAME: 'EntraApplication',
   APP_ROLE_TYPE_NAME: 'EntraAppRole',
   AUTHENTICATION_STRENGTH_POLICY_TYPE_NAME: 'EntraAuthenticationStrengthPolicy',
   AUTHENTICATION_METHOD_POLICY_TYPE_NAME: 'EntraAuthenticationMethodPolicy',
+  AUTHORIZATION_POLICY_TYPE_NAME: 'EntraAuthorizationPolicy',
   CONDITIONAL_ACCESS_POLICY_TYPE_NAME: 'EntraConditionalAccessPolicy',
   CONDITIONAL_ACCESS_POLICY_NAMED_LOCATION_TYPE_NAME: 'EntraConditionalAccessPolicyNamedLocation',
   CUSTOM_SECURITY_ATTRIBUTE_DEFINITION_TYPE_NAME: 'EntraCustomSecurityAttributeDefinition',

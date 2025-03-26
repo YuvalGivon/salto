@@ -40,6 +40,7 @@ const {
     LIFE_CYCLE_POLICY_TYPE_NAME,
     APP_ROLE_TYPE_NAME,
     OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
+    AUTHORIZATION_POLICY_TYPE_NAME,
   },
   AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME,
   DELEGATED_PERMISSION_CLASSIFICATION_TYPE_NAME,
@@ -697,6 +698,22 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
               endpoint: {
                 path: '/groupLifecyclePolicies/{id}',
                 method: 'delete',
+              },
+            },
+          },
+        ],
+      },
+    },
+  },
+  [AUTHORIZATION_POLICY_TYPE_NAME]: {
+    requestsByAction: {
+      customizations: {
+        modify: [
+          {
+            request: {
+              endpoint: {
+                path: '/policies/authorizationPolicy',
+                method: 'patch',
               },
             },
           },

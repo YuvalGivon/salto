@@ -186,6 +186,10 @@ export const getAllInstancesToDeploy = async ({
       displayName: createName(entraTopLevelTypes.ROLE_DEFINITION_TYPE_NAME),
     },
   })
+  const authorizationPolicy = createInstanceElement({
+    typeName: entraTopLevelTypes.AUTHORIZATION_POLICY_TYPE_NAME,
+    singleton: true,
+  })
 
   const instancesToAdd = [
     group,
@@ -206,6 +210,7 @@ export const getAllInstancesToDeploy = async ({
   const instancesToModify = [
     lifeCyclePolicy,
     authenticationMethodPolicy,
+    authorizationPolicy,
     customSecurityAttributeSet,
     customSecurityAttributeDefinition,
     customSecurityAttributeAllowedValueA,
