@@ -565,6 +565,7 @@ export const FETCH_TARGETS = 'FetchTargets'
 export const FLAGS_ITERATION_TYPE_NAME = 'FlagsIteration'
 export const FLAGS_ITERATION_FIELD_NAME = 'iteration'
 export const CUSTOM_OBJECTS_FIELD = 'customObjects'
+export const CUSTOM_OBJECT_ALIASES_FIELD = 'customObjectAliases'
 export const CUSTOM_OBJECTS_LOOKUPS_FIELD = 'customObjectsLookups'
 export const METADATA_TYPES_FIELD = 'metadataTypes'
 
@@ -611,6 +612,7 @@ export const ArtificialTypes = {
     fields: {
       [CUSTOM_OBJECTS_FIELD]: { refType: new ListType(BuiltinTypes.STRING) },
       [CUSTOM_OBJECTS_LOOKUPS_FIELD]: { refType: new MapType(new ListType(BuiltinTypes.STRING)) },
+      [CUSTOM_OBJECT_ALIASES_FIELD]: { refType: new MapType(BuiltinTypes.STRING) },
     },
   }),
   [FLAGS_ITERATION_TYPE_NAME]: new ObjectType({

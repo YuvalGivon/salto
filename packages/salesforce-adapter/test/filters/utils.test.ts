@@ -92,6 +92,7 @@ import {
   METADATA_TYPES_FIELD,
   APEX_CLASS_METADATA_TYPE,
   CUSTOM_FIELD,
+  CUSTOM_OBJECT_ALIASES_FIELD,
 } from '../../src/constants'
 import { createInstanceElement, Types } from '../../src/transformers/transformer'
 import { CustomField, CustomObject, CustomPicklistValue, FilterItem } from '../../src/client/types'
@@ -1536,6 +1537,29 @@ describe('filter utils', () => {
           metadataTypes: ['ApexClass', 'Role', 'CustomObject'],
           customObjects: ['Account', 'Contact'],
           customObjectsLookups: { Account: ['Contact'] },
+        })
+      })
+    })
+    describe('when FetchTargets instance is valid and contains custom object aliases', () => {
+      beforeEach(() => {
+        const fetchTargets = new InstanceElement(ElemID.CONFIG_NAME, ArtificialTypes.FetchTargets, {
+          [METADATA_TYPES_FIELD]: ['ApexClass', 'Role', 'CustomObject'],
+          [CUSTOM_OBJECTS_FIELD]: ['Account', 'Contact', 'CustomType__c'],
+          [CUSTOM_OBJECTS_LOOKUPS_FIELD]: {
+            Account: ['Contact'],
+          },
+          [CUSTOM_OBJECT_ALIASES_FIELD]: {
+            CustomType__c: 'Custom Type Alias',
+          },
+        })
+        elementsSource = buildElementsSourceFromElements([fetchTargets])
+      })
+      it('should return correct fetch targets with custom object aliases', async () => {
+        expect(await getAccountFetchTargets({ elementsSource, accountName: SALESFORCE })).toEqual({
+          metadataTypes: ['ApexClass', 'Role', 'CustomObject'],
+          customObjects: ['Account', 'Contact', 'CustomType__c'],
+          customObjectsLookups: { Account: ['Contact'] },
+          customObjectAliases: { CustomType__c: 'Custom Type Alias' },
         })
       })
     })

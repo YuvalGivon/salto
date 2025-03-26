@@ -98,6 +98,7 @@ import {
   VALUE_SET_DEFINITION_FIELDS,
   VALUE_SET_FIELDS,
   DESCRIPTION,
+  CUSTOM_OBJECT_ALIASES_FIELD,
 } from '../constants'
 import { CustomField, CustomObject, JSONBool, SalesforceRecord } from '../client/types'
 import * as transformer from '../transformers/transformer'
@@ -1023,6 +1024,17 @@ const isFetchTargetsInstance = (instance: InstanceElement): instance is FetchTar
   _.isPlainObject(instance.value[CUSTOM_OBJECTS_LOOKUPS_FIELD]) &&
   Object.values(instance.value[CUSTOM_OBJECTS_LOOKUPS_FIELD]).every(isStringArray)
 
+export const getCustomObjectAliases = (fetchTargetsInstance: InstanceElement): Record<string, string> | undefined => {
+  const customObjectAliases = fetchTargetsInstance.value[CUSTOM_OBJECT_ALIASES_FIELD]
+  if (!_.isPlainObject(customObjectAliases)) {
+    return undefined
+  }
+  const aliases = Object.fromEntries(
+    Object.entries(customObjectAliases).filter(([key, value]) => _.isString(key) && _.isString(value)),
+  ) as Record<string, string>
+  return Object.keys(aliases).length > 0 ? aliases : undefined
+}
+
 export const getAccountFetchTargets = async ({
   elementsSource,
   accountName,
@@ -1043,7 +1055,14 @@ export const getAccountFetchTargets = async ({
       customObjectsLookups: {},
     }
   }
-  return fetchTargetsInstance.value
+  return {
+    metadataTypes: fetchTargetsInstance.value[METADATA_TYPES_FIELD],
+    customObjects: fetchTargetsInstance.value[CUSTOM_OBJECTS_FIELD],
+    customObjectsLookups: fetchTargetsInstance.value[CUSTOM_OBJECTS_LOOKUPS_FIELD],
+    ...(getCustomObjectAliases(fetchTargetsInstance)
+      ? { customObjectAliases: getCustomObjectAliases(fetchTargetsInstance) }
+      : {}),
+  }
 }
 
 const getCustomObjectDependenciesRecursively = (

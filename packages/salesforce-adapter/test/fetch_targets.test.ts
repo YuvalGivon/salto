@@ -17,7 +17,7 @@ import {
   METADATA_TYPES_PATH,
   OBJECTS_PATH,
 } from '../src/fetch_targets'
-import { SALESFORCE, API_NAME, CUSTOM_OBJECTS_LOOKUPS_FIELD } from '../src/constants'
+import { SALESFORCE, API_NAME, CUSTOM_OBJECTS_LOOKUPS_FIELD, CUSTOM_OBJECT_ALIASES_FIELD } from '../src/constants'
 import { createCustomObjectType } from './utils'
 import { createInstanceElement } from '../src/transformers/transformer'
 
@@ -35,18 +35,24 @@ describe('fetch targets', () => {
         metadataTypes: mockMetadataTypes,
         customObjects: mockCustomObjects,
         [CUSTOM_OBJECTS_LOOKUPS_FIELD]: {},
+        [CUSTOM_OBJECT_ALIASES_FIELD]: {
+          Object1: 'Object1 Alias',
+          Type1: 'Type1 Alias',
+        },
       })
     })
     it('should return metadata types and custom objects targets', async () => {
       const result = await getAllTargets({
         elementsSource: buildElementsSourceFromElements([]),
-        getAlias: async id => (id.getFullName() === 'salesforce.Type1' ? 'Type1 Alias' : undefined),
+        getAlias: async _id => {
+          throw new Error('Should not be invoked')
+        },
       })
 
       expect(result).toIncludeSameMembers([
-        { group: METADATA_TYPES_GROUP, name: 'Type1', path: METADATA_TYPES_PATH.concat('Type1 Alias') },
+        { group: METADATA_TYPES_GROUP, name: 'Type1', path: METADATA_TYPES_PATH.concat('Type1') },
         { group: METADATA_TYPES_GROUP, name: 'Type2', path: METADATA_TYPES_PATH.concat('Type2') },
-        { group: OBJECTS_GROUP, name: 'Object1', path: OBJECTS_PATH.concat('Object1') },
+        { group: OBJECTS_GROUP, name: 'Object1', path: OBJECTS_PATH.concat('Object1 Alias') },
         { group: OBJECTS_GROUP, name: 'Object2', path: OBJECTS_PATH.concat('Object2') },
       ])
     })

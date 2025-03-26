@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { Element, InstanceElement, isInstanceElement } from '@salto-io/adapter-api'
+import { CORE_ANNOTATIONS, Element, InstanceElement, isInstanceElement } from '@salto-io/adapter-api'
 import filterCreator from '../../src/filters/fetch_targets_filter'
 import { FilterWith } from './mocks'
 import { createCustomObjectType, defaultFilterContext } from '../utils'
@@ -15,6 +15,7 @@ import {
   APEX_CLASS_METADATA_TYPE,
   ArtificialTypes,
   CUSTOM_OBJECT,
+  CUSTOM_OBJECT_ALIASES_FIELD,
   FIELD_ANNOTATIONS,
   SALESFORCE,
   SUBTYPES_PATH,
@@ -25,24 +26,26 @@ import { mockTypes } from '../mock_elements'
 describe('fetch targets filter', () => {
   let filter: FilterWith<'onFetch'>
   describe('onFetch', () => {
-    const CUSTOM_OBJECT_NAME = 'CustomObject__c'
+    const STANDARD_OBJECT_NAME = 'TestStandardObject'
     const CUSTOM_OBJECT_WITH_LOOKUP_NAME = 'CustomObjectWithLookup__c'
     let elements: Element[]
     beforeEach(() => {
-      const customObjectType = createCustomObjectType(CUSTOM_OBJECT_NAME, {})
+      const standardObjectType = createCustomObjectType(STANDARD_OBJECT_NAME, {
+        annotations: { [CORE_ANNOTATIONS.ALIAS]: 'Standard Type Alias' },
+      })
       const customObjectTypeWithLookup = createCustomObjectType(CUSTOM_OBJECT_WITH_LOOKUP_NAME, {
         fields: {
           LookupField__c: {
             refType: Types.primitiveDataTypes.Lookup,
             annotations: {
-              [FIELD_ANNOTATIONS.REFERENCE_TO]: [CUSTOM_OBJECT_NAME],
+              [FIELD_ANNOTATIONS.REFERENCE_TO]: [STANDARD_OBJECT_NAME],
             },
           },
           // Make sure we store unique refTo lookups in the singleton
           AnotherLookupField__c: {
             refType: Types.primitiveDataTypes.Lookup,
             annotations: {
-              [FIELD_ANNOTATIONS.REFERENCE_TO]: [CUSTOM_OBJECT_NAME],
+              [FIELD_ANNOTATIONS.REFERENCE_TO]: [STANDARD_OBJECT_NAME],
             },
           },
           MultipleRefToLookupField__c: {
@@ -52,13 +55,14 @@ describe('fetch targets filter', () => {
             },
           },
         },
+        annotations: { [CORE_ANNOTATIONS.ALIAS]: 'Custom Type Alias' },
       })
       // Make sure subtypes are not included in the fetch targets
       const mockSubtype = createMetadataObjectType({
         annotations: { metadataType: 'mockSubtype' },
         path: [SALESFORCE, TYPES_PATH, SUBTYPES_PATH, 'mockSubtype'],
       })
-      elements = [customObjectType, customObjectTypeWithLookup, mockTypes.ApexClass, mockSubtype]
+      elements = [standardObjectType, customObjectTypeWithLookup, mockTypes.ApexClass, mockSubtype]
     })
     describe('when feature is enabled', () => {
       describe('when fetch is full', () => {
@@ -79,10 +83,11 @@ describe('fetch targets filter', () => {
           expect(fetchTargetsInstance).toBeDefined()
           expect(fetchTargetsInstance.value).toEqual({
             metadataTypes: [CUSTOM_OBJECT, APEX_CLASS_METADATA_TYPE],
-            customObjects: [CUSTOM_OBJECT_NAME, CUSTOM_OBJECT_WITH_LOOKUP_NAME],
+            customObjects: [STANDARD_OBJECT_NAME, CUSTOM_OBJECT_WITH_LOOKUP_NAME],
             customObjectsLookups: {
-              [CUSTOM_OBJECT_WITH_LOOKUP_NAME]: [CUSTOM_OBJECT_NAME, 'Account', 'Contact'],
+              [CUSTOM_OBJECT_WITH_LOOKUP_NAME]: [STANDARD_OBJECT_NAME, 'Account', 'Contact'],
             },
+            [CUSTOM_OBJECT_ALIASES_FIELD]: { [CUSTOM_OBJECT_WITH_LOOKUP_NAME]: 'Custom Type Alias' },
           })
         })
       })

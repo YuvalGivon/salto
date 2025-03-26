@@ -18,6 +18,7 @@ import {
   CORE_ANNOTATIONS,
 } from '@salto-io/adapter-api'
 import { types } from '@salto-io/lowerdash'
+import _ from 'lodash'
 
 type SaltoPrimitiveTypeForType<T> = T extends string
   ? PrimitiveTypes.STRING
@@ -60,3 +61,8 @@ export const createMatchingObjectType = <T>(params: ObjectTypeCtorForType<T>): O
 
 export const getElementPrettyName = (element: Element): string =>
   element.annotations[CORE_ANNOTATIONS.ALIAS] ?? element.elemID.name
+
+export const getElementAlias = (element: Element): string | undefined => {
+  const alias = element.annotations[CORE_ANNOTATIONS.ALIAS]
+  return _.isString(alias) ? alias : undefined
+}

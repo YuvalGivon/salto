@@ -7,6 +7,7 @@
  */
 import { CORE_ANNOTATIONS, Element, ElemID, InstanceElement, isObjectType, ObjectType } from '@salto-io/adapter-api'
 import { values } from '@salto-io/lowerdash'
+import { getElementAlias } from '@salto-io/adapter-utils'
 import _ from 'lodash'
 import {
   apiNameSync,
@@ -18,6 +19,7 @@ import {
 import { FilterCreator } from '../filter'
 import {
   ArtificialTypes,
+  CUSTOM_OBJECT_ALIASES_FIELD,
   CUSTOM_OBJECTS_FIELD,
   CUSTOM_OBJECTS_LOOKUPS_FIELD,
   FETCH_TARGETS,
@@ -27,6 +29,7 @@ import {
   SETTINGS_PATH,
   SUBTYPES_PATH,
 } from '../constants'
+import { isCustom } from '../transformers/transformer'
 
 const { isDefined } = values
 
@@ -36,6 +39,7 @@ const getCustomObjectLookupTypes = (customObject: ObjectType): string[] =>
 export type SalesforceFetchTargets = {
   [METADATA_TYPES_FIELD]: ReadonlyArray<string>
   [CUSTOM_OBJECTS_FIELD]: ReadonlyArray<string>
+  [CUSTOM_OBJECT_ALIASES_FIELD]?: Record<string, string>
   [CUSTOM_OBJECTS_LOOKUPS_FIELD]: Record<string, ReadonlyArray<string>>
 }
 
@@ -44,11 +48,17 @@ const isSubType = (objectType: ObjectType): boolean => objectType.path?.includes
 const createFetchTargetsValue = (elements: Element[]): SalesforceFetchTargets => {
   const customObjects = elements.filter(isCustomObjectSync)
   const customObjectNames: string[] = []
+  const customObjectAliases: SalesforceFetchTargets['customObjectAliases'] = {}
   const customObjectsLookups: Record<string, string[]> = {}
   customObjects.forEach(customObject => {
     const objectApiName = apiNameSync(customObject)
     if (objectApiName === undefined) {
       return
+    }
+    const alias = getElementAlias(customObject)
+    // We store aliases for custom objects only, since standard objects aliases are the same as their api name
+    if (isCustom(objectApiName) && alias !== undefined) {
+      customObjectAliases[objectApiName] = alias
     }
     customObjectNames.push(objectApiName)
     const customObjectLookupTypes = getCustomObjectLookupTypes(customObject)
@@ -66,6 +76,7 @@ const createFetchTargetsValue = (elements: Element[]): SalesforceFetchTargets =>
     ),
     [CUSTOM_OBJECTS_FIELD]: customObjectNames,
     [CUSTOM_OBJECTS_LOOKUPS_FIELD]: customObjectsLookups,
+    ...(Object.keys(customObjectAliases).length > 0 ? { [CUSTOM_OBJECT_ALIASES_FIELD]: customObjectAliases } : {}),
   }
 }
 

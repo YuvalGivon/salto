@@ -5,60 +5,102 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { ElemID, BuiltinTypes, ObjectType, ListType, MapType } from '@salto-io/adapter-api'
-import { createMatchingObjectType } from '../src/element'
+import { ElemID, BuiltinTypes, ObjectType, ListType, MapType, CORE_ANNOTATIONS } from '@salto-io/adapter-api'
+import { createMatchingObjectType, getElementAlias, getElementPrettyName } from '../src/element'
 
-describe('createMatchingObjectType', () => {
-  it('should enforce correct field name and type', () => {
-    type InnerType = {
-      inner: boolean
-    }
-    type Test = {
-      str: string
-      obj: InnerType
-      lst: number[]
-      objLst: InnerType[]
-      numMap: Record<string, number>
-    }
-    const innerType = createMatchingObjectType<InnerType>({
-      elemID: new ElemID('inner'),
-      fields: {
-        inner: { refType: BuiltinTypes.BOOLEAN, annotations: { _required: true } },
-      },
-    })
-    expect(
-      createMatchingObjectType<Test>({
-        elemID: new ElemID('test'),
+describe('element utils', () => {
+  describe('createMatchingObjectType', () => {
+    it('should enforce correct field name and type', () => {
+      type InnerType = {
+        inner: boolean
+      }
+      type Test = {
+        str: string
+        obj: InnerType
+        lst: number[]
+        objLst: InnerType[]
+        numMap: Record<string, number>
+      }
+      const innerType = createMatchingObjectType<InnerType>({
+        elemID: new ElemID('inner'),
         fields: {
-          str: { refType: BuiltinTypes.STRING, annotations: { _required: true } },
-          // enforced to be ObjectType, no enforcement on inner fields here
-          obj: { refType: innerType, annotations: { _required: true } },
-          lst: { refType: new ListType(BuiltinTypes.NUMBER), annotations: { _required: true } },
-          objLst: { refType: new ListType(innerType), annotations: { _required: true } },
-          numMap: { refType: new MapType(BuiltinTypes.NUMBER), annotations: { _required: true } },
+          inner: { refType: BuiltinTypes.BOOLEAN, annotations: { _required: true } },
         },
-      }),
-    ).toBeInstanceOf(ObjectType)
+      })
+      expect(
+        createMatchingObjectType<Test>({
+          elemID: new ElemID('test'),
+          fields: {
+            str: { refType: BuiltinTypes.STRING, annotations: { _required: true } },
+            // enforced to be ObjectType, no enforcement on inner fields here
+            obj: { refType: innerType, annotations: { _required: true } },
+            lst: { refType: new ListType(BuiltinTypes.NUMBER), annotations: { _required: true } },
+            objLst: { refType: new ListType(innerType), annotations: { _required: true } },
+            numMap: { refType: new MapType(BuiltinTypes.NUMBER), annotations: { _required: true } },
+          },
+        }),
+      ).toBeInstanceOf(ObjectType)
+    })
+    it('should enforce _required annotation value', () => {
+      type Test = {
+        a: string
+        b?: string
+        c?: string
+        d?: string
+      }
+      // For fields that are not required the _required annotation is not mandatory
+      // so it is possible to have no annotations, annotations without required and required false
+      expect(
+        createMatchingObjectType<Test>({
+          elemID: new ElemID('test'),
+          fields: {
+            a: { refType: BuiltinTypes.STRING, annotations: { _required: true } },
+            b: { refType: BuiltinTypes.STRING, annotations: { _required: false } },
+            c: { refType: BuiltinTypes.STRING, annotations: {} },
+            d: { refType: BuiltinTypes.STRING },
+          },
+        }),
+      ).toBeInstanceOf(ObjectType)
+    })
   })
-  it('should enforce _required annotation value', () => {
-    type Test = {
-      a: string
-      b?: string
-      c?: string
-      d?: string
-    }
-    // For fields that are not required the _required annotation is not mandatory
-    // so it is possible to have no annotations, annotations without required and required false
-    expect(
-      createMatchingObjectType<Test>({
-        elemID: new ElemID('test'),
+  describe('getElementPrettyName', () => {
+    it('should return the element alias if exists', () => {
+      const element = new ObjectType({
+        elemID: new ElemID('test', 'Type'),
         fields: {
           a: { refType: BuiltinTypes.STRING, annotations: { _required: true } },
-          b: { refType: BuiltinTypes.STRING, annotations: { _required: false } },
-          c: { refType: BuiltinTypes.STRING, annotations: {} },
-          d: { refType: BuiltinTypes.STRING },
         },
-      }),
-    ).toBeInstanceOf(ObjectType)
+        annotations: {
+          [CORE_ANNOTATIONS.ALIAS]: 'Type Alias',
+        },
+      })
+      expect(getElementPrettyName(element)).toBe('Type Alias')
+    })
+    it('should return the element name if no alias exists', () => {
+      const element = new ObjectType({
+        elemID: new ElemID('test', 'Type'),
+        fields: {
+          a: { refType: BuiltinTypes.STRING, annotations: { _required: true } },
+        },
+      })
+      expect(getElementPrettyName(element)).toBe('Type')
+    })
+  })
+  describe('getElementAlias', () => {
+    it('should return the element alias if exists', () => {
+      const element = new ObjectType({
+        elemID: new ElemID('test', 'Type'),
+        annotations: {
+          [CORE_ANNOTATIONS.ALIAS]: 'Type Alias',
+        },
+      })
+      expect(getElementAlias(element)).toBe('Type Alias')
+    })
+    it('should return undefined if no alias exists', () => {
+      const element = new ObjectType({
+        elemID: new ElemID('test', 'Type'),
+      })
+      expect(getElementAlias(element)).toBeUndefined()
+    })
   })
 })
