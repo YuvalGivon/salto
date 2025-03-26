@@ -337,6 +337,7 @@ describe('adapters.ts', () => {
       ).toThrow()
     })
   })
+
   describe('createResolvedTypesElementsSource', () => {
     const ADAPTER = 'salesforce'
 
@@ -362,11 +363,12 @@ describe('adapters.ts', () => {
       type = new ObjectType({
         elemID: new ElemID(ADAPTER, 'Type'),
         fields: {
-          field: { refType: nestedType },
+          string: { refType: BuiltinTypes.STRING },
+          nested: { refType: nestedType },
         },
       })
-      field = type.fields.field
-      instance = new InstanceElement('TestInstance', type)
+      field = type.fields.nested
+      instance = new InstanceElement('TestInstance', type, { string: 'Value' })
       containerType = new ListType(new ListType(type))
       primitiveTypeInstance = new InstanceElement('StringInstance', new TypeReference(BuiltinTypes.STRING.elemID))
       elementsSource = createResolvedTypesElementsSource(
@@ -384,7 +386,7 @@ describe('adapters.ts', () => {
     describe('get', () => {
       it('should return fully resolved TypeElement', async () => {
         const resolvedType = (await elementsSource.get(type.elemID)) as ObjectType
-        const resolvedNestedType = resolvedType.fields.field.refType.type as ObjectType
+        const resolvedNestedType = resolvedType.fields.nested.refType.type as ObjectType
         const resolvedNestedNestedType = resolvedNestedType.fields.field.refType.type as ObjectType
         expect([resolvedType, resolvedNestedType, resolvedNestedNestedType]).toSatisfyAll(isType)
       })
@@ -398,7 +400,7 @@ describe('adapters.ts', () => {
         const resolvedInstance = (await elementsSource.get(instance.elemID)) as InstanceElement
         const resolvedType = resolvedInstance.refType.type
         expect(isObjectType(resolvedType)).toBeTrue()
-        const resolvedNestedType = resolvedType?.fields.field.refType.type as ObjectType
+        const resolvedNestedType = resolvedType?.fields.nested.refType.type as ObjectType
         expect(isObjectType(resolvedNestedType)).toBeTrue()
         const resolvedNestedNestedType = resolvedNestedType.fields.field.refType.type
         expect(isObjectType(resolvedNestedNestedType)).toBeTrue()
@@ -413,10 +415,14 @@ describe('adapters.ts', () => {
         const resolvedInnerContainerType = resolvedContainerType.refInnerType.type as ContainerType
         expect(isContainerType(resolvedInnerContainerType)).toBeTrue()
         const resolvedInnerType = resolvedInnerContainerType.refInnerType.type as ObjectType
-        const resolvedNestedType = resolvedInnerType.fields.field.refType.type as ObjectType
+        const resolvedNestedType = resolvedInnerType.fields.nested.refType.type as ObjectType
         expect(isObjectType(resolvedNestedType)).toBeTrue()
         const resolvedNestedNestedType = resolvedNestedType.fields.field.refType.type as ObjectType
         expect(isObjectType(resolvedNestedNestedType)).toBeTrue()
+      })
+      it('should return value from inside Instance', async () => {
+        const value = await elementsSource.get(instance.elemID.createNestedID('string'))
+        expect(value).toEqual('Value')
       })
     })
     describe('getAll', () => {
@@ -430,7 +436,7 @@ describe('adapters.ts', () => {
         const resolvedInstance = resolvedElementsByElemId[instance.elemID.getFullName()] as InstanceElement
         const resolvedField = resolvedElementsByElemId[field.elemID.getFullName()] as Field
         expect(resolvedInnerType.fields.field.refType.type).toEqual(resolvedInnerInnerType)
-        expect(resolvedType.fields.field.refType.type).toEqual(resolvedInnerType)
+        expect(resolvedType.fields.nested.refType.type).toEqual(resolvedInnerType)
         expect(resolvedInstance.refType.type).toEqual(resolvedType)
         expect(resolvedField.refType.type).toEqual(resolvedInnerType)
         // Verify that expressions.resolve was invoked once for the whole process

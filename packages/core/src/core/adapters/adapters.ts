@@ -22,6 +22,7 @@ import {
   isType,
   TypeElement,
   isObjectType,
+  isElement,
 } from '@salto-io/adapter-api'
 import { createDefaultInstanceFromType, resolvePath, safeJsonStringify } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
@@ -153,11 +154,15 @@ const createElemIDReplacedElementsSource = (
             return ret
           }),
         get: async id => {
-          const element = (await elementsSource.get(createAdapterReplacedID(id, account)))?.clone()
-          if (element) {
-            await updateElementsWithAlternativeAccount([element], adapter, account, elementsSource)
+          const replacedID = createAdapterReplacedID(id, account)
+          const topLevelParentID = replacedID.createTopLevelParentID().parent
+          const originalElement = await elementsSource.get(topLevelParentID)
+          if (!isElement(originalElement)) {
+            return undefined
           }
-          return element
+          const element = originalElement.clone()
+          await updateElementsWithAlternativeAccount([element], adapter, account, elementsSource)
+          return resolvePath(element, createAdapterReplacedID(id, adapter))
         },
         list: async () => awu(await elementsSource.list()).map(id => createAdapterReplacedID(id, adapter)),
         has: async id => {
