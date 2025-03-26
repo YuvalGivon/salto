@@ -931,7 +931,7 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
           const changeIDs = changes.map(change => getChangeData(change).elemID)
           const changedElements: Element[] = changes.filter(isAdditionOrModificationChange).map(getChangeData)
           const dependents = await getDependents(
-            changeIDs,
+            changes,
             stateToBuild.states[envName].merged,
             stateToBuild.states[envName].referenceSources,
           )

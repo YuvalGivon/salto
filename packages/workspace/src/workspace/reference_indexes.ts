@@ -115,6 +115,14 @@ const getReferenceFromMetaType = (element: Element): ReferenceInfo | undefined =
   return undefined
 }
 
+export const getReferencesFromRefTypes = (element: Element): ReferenceInfo[] => {
+  const fieldRefTypesReferences = getReferencesFromFieldRefTypes(element)
+  const annotationRefTypesReferences = getReferencesFromAnnotationRefTypes(element)
+  const metaTypeRefTypeReference = getReferenceFromMetaType(element) ?? []
+
+  return fieldRefTypesReferences.concat(annotationRefTypesReferences).concat(metaTypeRefTypeReference)
+}
+
 const getReferencesFromTemplateStaticFile = async ({
   value,
   source,
@@ -131,7 +139,7 @@ const getReferencesFromTemplateStaticFile = async ({
   return []
 }
 
-const getReferences = async (element: Element, customReferences: ReferenceInfo[]): Promise<ReferenceInfo[]> => {
+export const getReferencesFromElement = async (element: Element): Promise<ReferenceInfo[]> => {
   const referenceInfos: ReferenceInfo[] = []
   const templateStaticFiles: { value: StaticFile; source: ElemID }[] = []
   walkOnElement({
@@ -153,20 +161,16 @@ const getReferences = async (element: Element, customReferences: ReferenceInfo[]
   })
 
   const templateExpressionReferences = await Promise.all(templateStaticFiles.map(getReferencesFromTemplateStaticFile))
+  return templateExpressionReferences.flat().concat(referenceInfos)
+}
 
-  const fieldRefTypesReferences = getReferencesFromFieldRefTypes(element)
-  const annotationRefTypesReferences = getReferencesFromAnnotationRefTypes(element)
-  const metaTypeRefTypeReference = getReferenceFromMetaType(element) ?? []
-
+const getReferences = async (element: Element, customReferences: ReferenceInfo[]): Promise<ReferenceInfo[]> => {
+  const refTypesReferences = getReferencesFromRefTypes(element)
+  const elementReferences = await getReferencesFromElement(element)
   return _.uniqBy(
     // `customReferences` should be the first on this list, so in case that a referenceInfo appears more than
     // once we'll take it from `customReferences` (uniqBy keeps the first occurrence of each unique item).
-    customReferences
-      .concat(templateExpressionReferences.flat())
-      .concat(referenceInfos)
-      .concat(fieldRefTypesReferences)
-      .concat(annotationRefTypesReferences)
-      .concat(metaTypeRefTypeReference),
+    customReferences.concat(elementReferences).concat(refTypesReferences),
     getReferenceDetailsIdentifier,
   )
 }

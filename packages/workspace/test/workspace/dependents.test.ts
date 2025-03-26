@@ -6,7 +6,8 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { ElemID } from '@salto-io/adapter-api'
+import { setupEnvVar } from '@salto-io/test-utils'
+import { Change, ElemID, Element, InstanceElement, ObjectType, toChange } from '@salto-io/adapter-api'
 import { Workspace } from '../../src/workspace/workspace'
 import { mockDirStore } from '../common/nacl_file_store'
 import { createWorkspace, createState } from '../common/workspace'
@@ -15,6 +16,7 @@ import { naclFilesSource, NaclFilesSource } from '../../src/workspace/nacl_files
 import { mockStaticFilesSource } from '../utils'
 import { createMockNaclFileSource } from '../common/nacl_file_source'
 import { inMemRemoteMapCreator } from '../../src/workspace/remote_map'
+import { WORKSPACE_FLAGS } from '../../src/flags'
 
 describe('dependents', () => {
   let workspace: Workspace
@@ -50,6 +52,18 @@ describe('dependents', () => {
   }
 `
 
+  const topLevelRefBaseInstFile = `
+  salto.base topLevelRefBaseInst {
+    str = salto.base.instance.aBaseInst
+  }
+`
+
+  const refTopLevelRefBaseInstFile = `
+  salto.base refTopLevelRefBaseInst {
+    str = salto.base.instance.topLevelRefBaseInst.str
+  }
+`
+
   const objFile = `
   type salto.obj {
     salto.base base {
@@ -72,87 +86,135 @@ describe('dependents', () => {
     baseInstFile,
     refBaseInstFile,
     anotherRefBaseInstFile,
+    topLevelRefBaseInstFile,
+    refTopLevelRefBaseInstFile,
     objInstFile,
   }
 
-  describe('getDependents', () => {
-    const getDependentIDs = async (elemID: ElemID): Promise<ElemID[]> => {
-      const dependents = await getDependents(
-        [elemID],
-        await workspace.elements(),
-        await workspace.getReferenceSourcesIndex(),
+  describe.each([false, true])(
+    'getDependents (skipValidationDependentElementsFiltering: %s)',
+    skipValidationDependentElementsFiltering => {
+      setupEnvVar(
+        `SALTO_${WORKSPACE_FLAGS.skipValidationDependentElementsFiltering}`,
+        skipValidationDependentElementsFiltering ? 'true' : 'false',
+        'all',
       )
-      return dependents.map(element => element.elemID)
-    }
-
-    beforeAll(async () => {
-      naclFiles = await naclFilesSource(
-        '',
-        mockDirStore(undefined, undefined, files),
-        mockStaticFilesSource(),
-        inMemRemoteMapCreator(),
-        true,
-      )
-      workspace = await createWorkspace(undefined, undefined, undefined, undefined, undefined, undefined, {
-        '': {
-          naclFiles,
-        },
-        default: {
-          naclFiles: createMockNaclFileSource([]),
-          state: createState([], true),
-        },
-      })
-    })
-
-    describe('type dependents', () => {
-      let dependentIDs: ElemID[]
+      const getDependentIDs = async (change: Change<Element>): Promise<ElemID[]> => {
+        const dependents = await getDependents(
+          [change],
+          await workspace.elements(),
+          await workspace.getReferenceSourcesIndex(),
+        )
+        return dependents.map(element => element.elemID)
+      }
 
       beforeAll(async () => {
-        dependentIDs = await getDependentIDs(new ElemID('salto', 'prim'))
+        naclFiles = await naclFilesSource(
+          '',
+          mockDirStore(undefined, undefined, files),
+          mockStaticFilesSource(),
+          inMemRemoteMapCreator(),
+          true,
+        )
+        workspace = await createWorkspace(undefined, undefined, undefined, undefined, undefined, undefined, {
+          '': {
+            naclFiles,
+          },
+          default: {
+            naclFiles: createMockNaclFileSource([]),
+            state: createState([], true),
+          },
+        })
       })
-      it('should have the correct amount of dependents', () => {
-        expect(dependentIDs).toHaveLength(6)
-      })
-      it('should have dependent type because of a field type', () => {
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base')).toBeDefined()
-      })
-      it('should have dependent type because of a field type that is dependent too', () => {
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.obj')).toBeDefined()
-      })
-      it('should have dependent instances that their type is a dependent too', () => {
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base.instance.aBaseInst')).toBeDefined()
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base.instance.bBaseInst')).toBeDefined()
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base.instance.cBaseInst')).toBeDefined()
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.obj.instance.objInst')).toBeDefined()
-      })
-    })
 
-    describe('reference dependents', () => {
-      let dependentIDs: ElemID[]
+      describe('type dependents', () => {
+        let dependentIDs: ElemID[]
 
-      beforeAll(async () => {
-        dependentIDs = await getDependentIDs(new ElemID('salto', 'base', 'instance', 'aBaseInst'))
+        beforeAll(async () => {
+          dependentIDs = await getDependentIDs(
+            toChange({ after: new ObjectType({ elemID: new ElemID('salto', 'prim') }) }),
+          )
+        })
+        it('should have the correct amount of dependents', () => {
+          expect(dependentIDs).toHaveLength(8)
+        })
+        it('should have dependent type because of a field type', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base'))
+        })
+        it('should have dependent type because of a field type that is dependent too', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'obj'))
+        })
+        it('should have dependent instances that their type is a dependent too', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'aBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'bBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'cBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'topLevelRefBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'refTopLevelRefBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'obj', 'instance', 'objInst'))
+        })
       })
-      it('should have the correct amount of dependents', () => {
-        expect(dependentIDs).toHaveLength(2)
-      })
-      it('should have a dependent that have a reference to the input ID', () => {
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base.instance.bBaseInst')).toBeDefined()
-      })
-      it('should have a dependent that have a reference to another dependent ID', () => {
-        expect(dependentIDs.find(id => id.getFullName() === 'salto.base.instance.cBaseInst')).toBeDefined()
-      })
-    })
 
-    describe('when element is not referenced', () => {
-      let dependentIDs: ElemID[]
+      describe('reference dependents', () => {
+        let dependentIDs: ElemID[]
 
-      beforeAll(async () => {
-        dependentIDs = await getDependentIDs(new ElemID('salto', 'obj', 'instance', 'objInst'))
+        beforeAll(async () => {
+          dependentIDs = await getDependentIDs(
+            toChange({
+              after: new InstanceElement('aBaseInst', new ObjectType({ elemID: new ElemID('salto', 'base') })),
+            }),
+          )
+        })
+        it('should have the correct amount of dependents', () => {
+          expect(dependentIDs).toHaveLength(skipValidationDependentElementsFiltering ? 4 : 2)
+        })
+        it('should have a dependent that have a reference to the input ID', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'bBaseInst'))
+        })
+        it('should have a dependent that have a reference to another dependent ID', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'cBaseInst'))
+        })
+        if (!skipValidationDependentElementsFiltering) {
+          it('should not have a dependent that have a top level reference to the input ID', () => {
+            expect(dependentIDs).not.toContainEqual(new ElemID('salto', 'base', 'instance', 'topLevelRefBaseInst'))
+          })
+          it('should not have a dependent that have a reference to a dependent that have a top level reference to the input ID', () => {
+            expect(dependentIDs).not.toContainEqual(new ElemID('salto', 'base', 'instance', 'refTopLevelRefBaseInst'))
+          })
+        }
       })
-      it('should have no dependents', () => {
-        expect(dependentIDs).toHaveLength(0)
+
+      describe('when an element is removed', () => {
+        let dependentIDs: ElemID[]
+
+        beforeAll(async () => {
+          dependentIDs = await getDependentIDs(
+            toChange({
+              before: new InstanceElement('aBaseInst', new ObjectType({ elemID: new ElemID('salto', 'base') })),
+            }),
+          )
+        })
+        it('should have a dependent that have a top level reference to the input ID', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'topLevelRefBaseInst'))
+        })
+        it('should have a dependent that have a reference to a dependent that have a top level reference to the input ID', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'refTopLevelRefBaseInst'))
+        })
       })
-    })
-  })
+
+      describe('when element is not referenced', () => {
+        let dependentIDs: ElemID[]
+
+        beforeAll(async () => {
+          dependentIDs = await getDependentIDs(
+            toChange({
+              after: new InstanceElement('objInst', new ObjectType({ elemID: new ElemID('salto', 'obj') })),
+            }),
+          )
+        })
+        it('should have no dependents', () => {
+          expect(dependentIDs).toHaveLength(0)
+        })
+      })
+    },
+  )
 })
