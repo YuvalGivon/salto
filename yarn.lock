@@ -2139,7 +2139,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@handlebars/parser@npm:^2.1.0":
+"@handlebars/parser@npm:2.1.0":
   version: 2.1.0
   resolution: "@handlebars/parser@npm:2.1.0"
   checksum: 47052eaac955da59d19a8ca9c603ac05b553244fae3eb025c9bd70f619e821a0745c51e3963e16d7c2d2cb4639bbdeb514f7f633e18bcd3769933878fc312bbb
@@ -5314,7 +5314,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@salto-io/zendesk-adapter@workspace:packages/zendesk-adapter"
   dependencies:
-    "@handlebars/parser": ^2.1.0
+    "@handlebars/parser": 2.1.0
     "@salto-io/adapter-api": 0.5.2
     "@salto-io/adapter-components": 0.5.2
     "@salto-io/adapter-utils": 0.5.2

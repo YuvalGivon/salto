@@ -30,7 +30,7 @@
     "check-format": "prettier --check . --ignore-path=../../.prettierignore --ignore-path=../../.gitignore --ignore-path=.gitignore"
   },
   "dependencies": {
-    "@handlebars/parser": "^2.1.0",
+    "@handlebars/parser": "2.1.0",
     "@salto-io/adapter-api": "0.5.2",
     "@salto-io/adapter-components": "0.5.2",
     "@salto-io/adapter-utils": "0.5.2",
