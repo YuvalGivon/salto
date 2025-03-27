@@ -334,8 +334,8 @@ const fixElementsSettingsType = new ObjectType({
   fields: Object.fromEntries(customReferencesHandlersNames.map(name => [name, { refType: BuiltinTypes.BOOLEAN }])),
 })
 
-const flagsOverridesType = new ObjectType({
-  elemID: new ElemID(constants.SALESFORCE, 'adapterFlagsOverrides'),
+const flagOverridesType = new ObjectType({
+  elemID: new ElemID(constants.SALESFORCE, 'adapterFlagOverrides'),
   fields: Object.fromEntries(FLAGS.map(flag => [flag, { refType: BuiltinTypes.BOOLEAN }])),
 })
 
@@ -343,7 +343,7 @@ const flagsConfigType = new ObjectType({
   elemID: new ElemID(constants.SALESFORCE, 'adapterFlagsSettings'),
   fields: {
     iterationOverride: { refType: BuiltinTypes.NUMBER },
-    flagsOverrides: { refType: flagsOverridesType },
+    flagOverrides: { refType: flagOverridesType },
   },
 })
 
