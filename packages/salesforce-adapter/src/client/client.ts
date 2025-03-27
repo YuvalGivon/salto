@@ -54,7 +54,6 @@ import {
   ClientRetryConfig,
   Credentials,
   CustomObjectsDeployRetryConfig,
-  Context,
   OauthAccessTokenCredentials,
   ReadMetadataChunkSizeConfig,
   SalesforceClientConfig,
@@ -923,7 +922,7 @@ export default class SalesforceClient implements ISalesforceClient {
   @throttle<ClientRateLimitConfig>({ bucketName: 'retrieve' })
   @logDecorator()
   @requiresLogin()
-  public async retrieve(retrieveRequest: RetrieveRequest, context?: Context): Promise<RetrieveResultWithErrors> {
+  public async retrieve(retrieveRequest: RetrieveRequest): Promise<RetrieveResultWithErrors> {
     const errorPattern = /INSUFFICIENT_ACCESS: insufficient access rights on entity: (\w+)/g
     const handleInsufficientAccessErrors = async (): Promise<{
       instancesErrors: ErrorInfo[]
@@ -985,26 +984,17 @@ export default class SalesforceClient implements ISalesforceClient {
         instancesErrors.forEach(({ instance, error }) => {
           log.debug(`Instance: ${instance}, Error: ${error.message}`)
         })
-        if (context?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
-          log.debug('Excluding the following instances from retrieve:')
-          instancesErrors.forEach(({ type, instance }) => {
-            log.debug(`Type: ${type}, Instance: ${instance}`)
-          })
-          const retrieveResult = await this.retrieve(newRetrieveRequest)
-          return {
-            ...retrieveResult,
-            errors: [...(retrieveResult.errors ?? []), ...instancesErrors],
-          }
-        }
-        log.debug(
-          'handleInsufficientAccessRightsOnEntity is disabled. Logging instances without exclusion from retrieve:',
-        )
+        log.debug('Excluding the following instances from retrieve:')
         instancesErrors.forEach(({ type, instance }) => {
           log.debug(`Type: ${type}, Instance: ${instance}`)
         })
-      } else {
-        log.debug('No errors found while reading')
+        const retrieveResult = await this.retrieve(newRetrieveRequest)
+        return {
+          ...retrieveResult,
+          errors: [...(retrieveResult.errors ?? []), ...instancesErrors],
+        }
       }
+      log.debug('No errors found while reading')
     }
     return result
   }

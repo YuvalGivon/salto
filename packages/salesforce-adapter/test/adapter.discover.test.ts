@@ -28,7 +28,7 @@ import { MetadataInfo } from '@salto-io/jsforce'
 import { collections, values } from '@salto-io/lowerdash'
 import { MockInterface } from '@salto-io/test-utils'
 import { FileProperties } from '@salto-io/jsforce-types'
-import { buildElementsSourceFromElements, safeJsonStringify } from '@salto-io/adapter-utils'
+import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import SalesforceAdapter from '../src/adapter'
 import Connection from '../src/client/jsforce'
 import { apiName, createInstanceElement, MetadataObjectType, Types } from '../src/transformers/transformer'
@@ -2984,127 +2984,85 @@ describe('Fetch via retrieve API', () => {
         }
         return []
       })
-    })
-    describe('when the feature is enabled', () => {
-      beforeEach(async () => {
-        context = buildContext({
-          fetchParams: {
-            optionalFeatures: {
-              handleInsufficientAccessRightsOnEntity: true,
-            },
-            addNamespacePrefixToFullName: false,
-            metadata: {
-              exclude: [{ metadataType: PROFILE_METADATA_TYPE }],
-            },
+      context = buildContext({
+        fetchParams: {
+          addNamespacePrefixToFullName: false,
+          metadata: {
+            exclude: [{ metadataType: PROFILE_METADATA_TYPE }],
           },
+        },
+      })
+      configChanges = (
+        await retrieveMetadataInstances({
+          client,
+          types: [mockTypes.ApexClass, mockTypes.CustomObject],
+          context,
         })
-        configChanges = (
-          await retrieveMetadataInstances({
-            client,
-            types: [mockTypes.ApexClass, mockTypes.CustomObject],
-            context,
-          })
-        ).configChanges
-      })
-
-      it('should retry retrieve and create a config change for exclusion', () => {
-        expect(configChanges).toEqual(
-          expect.arrayContaining([
-            {
-              type: 'metadataExclude',
-              reason: instanceError,
-              value: {
-                metadataType: 'ApexClass',
-                name: 'ProblematicApexClass',
-              },
-            },
-          ]),
-        )
-      })
-      it('should call read once for each type, and for the type that contains the problematic instance, there should be as many read calls as the number of members of that type', () => {
-        expect(metadataReadSpy).toHaveBeenCalledTimes(4)
-        expect(metadataReadSpy).toHaveBeenCalledWith('CustomObject', expect.arrayContaining(['Account', 'Lead']))
-        expect(metadataReadSpy).toHaveBeenCalledWith(
-          'ApexClass',
-          expect.arrayContaining(['SomeApexClass', 'ProblematicApexClass']),
-        )
-        expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['ProblematicApexClass']))
-        expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['SomeApexClass']))
-        expect(metadataRetrieveSpy).toHaveBeenCalledTimes(2)
-        expect(metadataRetrieveSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            apiVersion: expect.anything(),
-            singlePackage: expect.anything(),
-            unpackaged: expect.objectContaining({
-              types: expect.arrayContaining([
-                expect.objectContaining({
-                  name: 'ApexClass',
-                  members: expect.arrayContaining(['ProblematicApexClass', 'SomeApexClass']),
-                }),
-                expect.objectContaining({
-                  name: 'CustomObject',
-                  members: expect.arrayContaining(['Account']),
-                }),
-              ]),
-              version: expect.anything(),
-            }),
-          }),
-        )
-        expect(metadataRetrieveSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            apiVersion: expect.anything(),
-            singlePackage: expect.anything(),
-            unpackaged: expect.objectContaining({
-              types: expect.arrayContaining([
-                expect.objectContaining({
-                  name: 'ApexClass',
-                  members: expect.arrayContaining(['SomeApexClass']),
-                }),
-                expect.objectContaining({
-                  name: 'CustomObject',
-                  members: expect.arrayContaining(['Account']),
-                }),
-              ]),
-              version: expect.anything(),
-            }),
-          }),
-        )
-      })
+      ).configChanges
     })
 
-    describe('when the feature is disabled', () => {
-      beforeEach(async () => {
-        context = buildContext({
-          fetchParams: {
-            addNamespacePrefixToFullName: false,
-            metadata: {
-              exclude: [{ metadataType: PROFILE_METADATA_TYPE }],
+    it('should retry retrieve and create a config change for exclusion', () => {
+      expect(configChanges).toEqual(
+        expect.arrayContaining([
+          {
+            type: 'metadataExclude',
+            reason: instanceError,
+            value: {
+              metadataType: 'ApexClass',
+              name: 'ProblematicApexClass',
             },
           },
-        })
-      })
-      it('should call metadata.read with the right arguments and throw the right error', async () => {
-        try {
-          await retrieveMetadataInstances({
-            client,
-            types: [mockTypes.ApexClass, mockTypes.CustomObject],
-            context,
-          })
-        } catch (error) {
-          expect(metadataRetrieveSpy).toHaveBeenCalledOnce()
-          expect(error.message).toContain(
-            `Retrieve request for ApexClass,CustomObject failed. messages: ${makeArray(safeJsonStringify(retrieveResult.messages)).concat(retrieveResult.errorMessage ?? [])}`,
-          )
-          expect(metadataReadSpy).toHaveBeenCalledTimes(4)
-          expect(metadataReadSpy).toHaveBeenCalledWith('CustomObject', expect.arrayContaining(['Account', 'Lead']))
-          expect(metadataReadSpy).toHaveBeenCalledWith(
-            'ApexClass',
-            expect.arrayContaining(['SomeApexClass', 'ProblematicApexClass']),
-          )
-          expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['ProblematicApexClass']))
-          expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['SomeApexClass']))
-        }
-      })
+        ]),
+      )
+    })
+    it('should call read once for each type, and for the type that contains the problematic instance, there should be as many read calls as the number of members of that type', () => {
+      expect(metadataReadSpy).toHaveBeenCalledTimes(4)
+      expect(metadataReadSpy).toHaveBeenCalledWith('CustomObject', expect.arrayContaining(['Account', 'Lead']))
+      expect(metadataReadSpy).toHaveBeenCalledWith(
+        'ApexClass',
+        expect.arrayContaining(['SomeApexClass', 'ProblematicApexClass']),
+      )
+      expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['ProblematicApexClass']))
+      expect(metadataReadSpy).toHaveBeenCalledWith('ApexClass', expect.arrayContaining(['SomeApexClass']))
+      expect(metadataRetrieveSpy).toHaveBeenCalledTimes(2)
+      expect(metadataRetrieveSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiVersion: expect.anything(),
+          singlePackage: expect.anything(),
+          unpackaged: expect.objectContaining({
+            types: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'ApexClass',
+                members: expect.arrayContaining(['ProblematicApexClass', 'SomeApexClass']),
+              }),
+              expect.objectContaining({
+                name: 'CustomObject',
+                members: expect.arrayContaining(['Account']),
+              }),
+            ]),
+            version: expect.anything(),
+          }),
+        }),
+      )
+      expect(metadataRetrieveSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiVersion: expect.anything(),
+          singlePackage: expect.anything(),
+          unpackaged: expect.objectContaining({
+            types: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'ApexClass',
+                members: expect.arrayContaining(['SomeApexClass']),
+              }),
+              expect.objectContaining({
+                name: 'CustomObject',
+                members: expect.arrayContaining(['Account']),
+              }),
+            ]),
+            version: expect.anything(),
+          }),
+        }),
+      )
     })
   })
 })

@@ -985,9 +985,6 @@ describe('buildMetadataQuery', () => {
           metadata: {
             include: [{ metadataType: 'AccountSettings' }],
           },
-          optionalFeatures: {
-            retrieveSettings: true,
-          },
         },
       })
     })

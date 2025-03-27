@@ -15,17 +15,9 @@ const optionalFeaturesDefaultValues: OptionalFeaturesDefaultValues = {
   extendedCustomFieldInformation: false,
   hideTypesFolder: true,
   metaTypes: false,
-  retrieveSettings: true,
-  genAiReferences: true,
-  networkReferences: true,
   extendFetchTargets: true,
   shouldPopulateInternalIdAfterDeploy: true,
-  addParentToInstancesWithinFolder: true,
-  packageVersionReference: true,
-  omitTotalTrustedRequestsUsageField: true,
-  disablePermissionsOmissions: true,
   omitStandardFieldsNonDeployableValues: true,
-  handleInsufficientAccessRightsOnEntity: true,
   shuffleRetrieveInstances: false,
 }
 

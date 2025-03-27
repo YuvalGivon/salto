@@ -6,7 +6,6 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import _ from 'lodash'
-import { collections, values } from '@salto-io/lowerdash'
 import {
   InstanceElement,
   isObjectType,
@@ -32,16 +31,8 @@ import { applyFunctionToChangeDataSync } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
 import { FilterCreator } from '../filter'
 import { SALESFORCE, METADATA_TYPE, TYPES_PATH, SUBTYPES_PATH, PERMISSIONS_TYPES } from '../constants'
-import {
-  apiNameSync,
-  buildElementsSourceForFetch,
-  isCustomObjectSync,
-  isInstanceOfTypeChangeSync,
-  isInstanceOfTypeSync,
-} from './utils'
+import { apiNameSync, isInstanceOfTypeChangeSync, isInstanceOfTypeSync } from './utils'
 
-const { awu } = collections.asynciterable
-const { isDefined } = values
 const log = logger(module)
 
 const FIELD_PERMISSIONS = 'fieldPermissions'
@@ -213,26 +204,10 @@ const shouldRunDeployFiltersAccordingToInstanceType = (instanceType: ObjectType)
   isTypeWithFieldPermissions(instanceType) &&
   instanceType.fields.fieldPermissions.getTypeSync().elemID.isEqual(mapOfMapOfEnumFieldPermissions.elemID)
 
-const removeUnfethcedCustomObjects = (instance: InstanceElement, customObjects: string[]): void => {
-  if (isValidFieldPermissions(instance)) {
-    instance.value.fieldPermissions = _.pick(instance.value.fieldPermissions, customObjects)
-  }
-}
-
-const filter: FilterCreator = ({ config }) => ({
+const filter: FilterCreator = () => ({
   name: 'enumFieldPermissionsFilter',
   onFetch: async elements => {
     const relevantInstances = elements.filter(isInstanceOfTypeSync(...PERMISSIONS_TYPES))
-    if (!config.context.isFeatureEnabled('disablePermissionsOmissions')) {
-      const customObjects = await awu(await buildElementsSourceForFetch(elements, config).getAll())
-        .filter(isCustomObjectSync)
-        .map(element => apiNameSync(element))
-        .filter(isDefined)
-        .toArray()
-      relevantInstances.forEach(element => {
-        removeUnfethcedCustomObjects(element, customObjects)
-      })
-    }
     relevantInstances.forEach(fieldPermissionValuesToEnum)
     elements
       .filter(isObjectType)

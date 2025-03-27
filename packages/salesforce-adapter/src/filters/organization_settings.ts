@@ -40,6 +40,7 @@ const FIELDS_TO_IGNORE = [
   'SelfServiceNewPassTemplateId',
   'SelfServiceNewUserTemplateId',
   'SelfServiceSolutionCategoryStartNodeId',
+  'TotalTrustedRequestsUsage',
   'TrialExpirationDate',
   'WebToCaseAssignedEmailTemplateId',
   'WebToCaseCreatedEmailTemplateId',
@@ -160,11 +161,7 @@ const filterCreator: FilterCreator = ({ client, config }) => ({
       }
 
       const objectType = createOrganizationType()
-      const fieldsToIgnore = new Set(
-        FIELDS_TO_IGNORE.concat(config.systemFields ?? []).concat(
-          config.context.isFeatureEnabled('omitTotalTrustedRequestsUsageField') ? ['TotalTrustedRequestsUsage'] : [],
-        ),
-      )
+      const fieldsToIgnore = new Set(FIELDS_TO_IGNORE.concat(config.systemFields ?? []))
       await enrichTypeWithFields(client, objectType, fieldsToIgnore, config.context)
 
       const queryResult = await queryClient(client, ['SELECT FIELDS(ALL) FROM Organization LIMIT 200'])

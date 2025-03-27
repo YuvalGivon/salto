@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { collections, regex, values } from '@salto-io/lowerdash'
+import { regex, values } from '@salto-io/lowerdash'
 import _ from 'lodash'
 import { ReadOnlyElementsSource } from '@salto-io/adapter-api'
 import { FileProperties } from '@salto-io/jsforce'
@@ -40,9 +40,7 @@ import {
   NESTED_TYPE_TO_PARENT_TYPE,
 } from '../../last_change_date_of_types_with_nested_instances'
 import { includesSettingsTypes } from './metadata_types'
-import { isFeatureEnabled } from './optional_features'
 
-const { makeArray } = collections.array
 const { isDefined } = values
 const log = logger(module)
 
@@ -95,15 +93,7 @@ export const buildMetadataQuery = ({ fetchParams, targetedFetchInclude }: BuildM
   if (targetedFetchInclude !== undefined) {
     log.debug('targeted fetch include is: %s', inspectValue(targetedFetchInclude))
   }
-  const fullExcludeList: MetadataQueryParams[] = [
-    ...(metadata.exclude ?? []),
-    ...PERMANENT_SKIP_LIST,
-    ...makeArray(
-      isFeatureEnabled('retrieveSettings', fetchParams.optionalFeatures)
-        ? undefined
-        : { metadataType: SETTINGS_METADATA_TYPE },
-    ),
-  ]
+  const fullExcludeList: MetadataQueryParams[] = [...(metadata.exclude ?? []), ...PERMANENT_SKIP_LIST]
 
   const isTypeIncludedInTargetedFetch = (type: string): boolean => {
     if (targetedFetchInclude === undefined) {
@@ -114,8 +104,7 @@ export const buildMetadataQuery = ({ fetchParams, targetedFetchInclude }: BuildM
 
   const include = metadata.include
     ? metadata.include.concat(
-        isFeatureEnabled('retrieveSettings', fetchParams.optionalFeatures) &&
-          includesSettingsTypes(metadata.include.map(({ metadataType }) => metadataType).filter(isDefined) ?? [])
+        includesSettingsTypes(metadata.include.map(({ metadataType }) => metadataType).filter(isDefined) ?? [])
           ? [{ metadataType: SETTINGS_METADATA_TYPE }]
           : [],
       )
@@ -134,9 +123,7 @@ export const buildMetadataQuery = ({ fetchParams, targetedFetchInclude }: BuildM
     )
 
   const fixSettingsType = (metadataType: string, name: string): string =>
-    isFeatureEnabled('retrieveSettings', fetchParams.optionalFeatures) && metadataType === SETTINGS_METADATA_TYPE
-      ? name.concat(SETTINGS_METADATA_TYPE)
-      : metadataType
+    metadataType === SETTINGS_METADATA_TYPE ? name.concat(SETTINGS_METADATA_TYPE) : metadataType
 
   const isInstanceMatchQueryParams = (
     instance: MetadataInstance,

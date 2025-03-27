@@ -80,7 +80,6 @@ import flowFilter from './filters/flow'
 import addMissingIdsFilter from './filters/add_missing_ids'
 import animationRulesFilter from './filters/animation_rules'
 import samlInitMethodFilter from './filters/saml_initiation_method'
-import legacySettingsFilter from './filters/settings_type'
 import settingsFilter from './filters/settings_types'
 import workflowFilter, { WORKFLOW_FIELD_TO_TYPE } from './filters/workflow'
 import topicsForObjectsFilter from './filters/topics_for_objects'
@@ -198,7 +197,6 @@ const log = logger(module)
 export const allFilters: Array<FilterCreator> = [
   waveStaticFilesFilter,
   createMissingInstalledPackagesInstancesFilter,
-  legacySettingsFilter,
   settingsFilter,
   // should run before customObjectsFilter
   workflowFilter,
@@ -637,14 +635,13 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
 
     progressReporter.reportProgress({ message: 'Fetching Metadata Settings types' })
     const standardSettingsMetaType = context.isFeatureEnabled('metaTypes') ? StandardSettingsMetaType : undefined
-    const settingsTypes =
-      context.isFeatureEnabled('retrieveSettings') && !withChangesDetection
-        ? await this.fetchMetadataSettingsTypes({
-            instances: metadataInstancesElements,
-            knownTypes: hardCodedTypesMap,
-            standardSettingsMetaType,
-          })
-        : []
+    const settingsTypes = !withChangesDetection
+      ? await this.fetchMetadataSettingsTypes({
+          instances: metadataInstancesElements,
+          knownTypes: hardCodedTypesMap,
+          standardSettingsMetaType,
+        })
+      : []
 
     const elements = [
       ...[metadataMetaType, standardSettingsMetaType].filter(isDefined),

@@ -49,59 +49,37 @@ describe('addParentToInstancesWithinFolderFilter', () => {
       ]
     })
     describe('when the instances are within folder', () => {
-      describe('when addParentToInstancesWithinFolder is Enabled', () => {
-        beforeEach(async () => {
-          const filter: FilterWith<'onFetch'> = filterCreator({
-            config: {
-              ...defaultFilterContext,
-              context: buildContext({
-                fetchParams: { target: [], optionalFeatures: { addParentToInstancesWithinFolder: true } },
-              }),
-              elementsSource: buildElementsSourceFromElements(elementsSource),
-            },
-          }) as FilterWith<'onFetch'>
-          await filter.onFetch(elements)
-        })
-        it('should add parent annotation to email template', async () => {
-          expect(emailTemplateInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
-            new ReferenceExpression(emailFolderInstance.elemID, emailFolderInstance),
-          )
-        })
-        it('should add parent annotation to report', () => {
-          expect(reportInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
-            new ReferenceExpression(reportFolderInstance.elemID, reportFolderInstance),
-          )
-        })
-        it('should add parent annotation to document', () => {
-          expect(documentInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
-            new ReferenceExpression(documentFolderInstance.elemID, documentFolderInstance),
-          )
-        })
-        it('should add parent annotation to dashboard', () => {
-          expect(dashboardInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
-            new ReferenceExpression(dashboardFolderInstance.elemID, dashboardFolderInstance),
-          )
-        })
+      beforeEach(async () => {
+        const filter: FilterWith<'onFetch'> = filterCreator({
+          config: {
+            ...defaultFilterContext,
+            context: buildContext({
+              fetchParams: { target: [] },
+            }),
+            elementsSource: buildElementsSourceFromElements(elementsSource),
+          },
+        }) as FilterWith<'onFetch'>
+        await filter.onFetch(elements)
       })
-      describe('when addParentToInstancesWithinFolder is Disabled', () => {
-        beforeEach(async () => {
-          const filter: FilterWith<'onFetch'> = filterCreator({
-            config: {
-              ...defaultFilterContext,
-              context: buildContext({
-                fetchParams: { target: [], optionalFeatures: { addParentToInstancesWithinFolder: false } },
-              }),
-              elementsSource: buildElementsSourceFromElements(elementsSource),
-            },
-          }) as FilterWith<'onFetch'>
-          await filter.onFetch(elements)
-        })
-        it('should not create parent annotation', () => {
-          expect(emailTemplateInstance.annotations[CORE_ANNOTATIONS.PARENT]).toBeUndefined()
-          expect(reportInstance.annotations[CORE_ANNOTATIONS.PARENT]).toBeUndefined()
-          expect(documentInstance.annotations[CORE_ANNOTATIONS.PARENT]).toBeUndefined()
-          expect(dashboardInstance.annotations[CORE_ANNOTATIONS.PARENT]).toBeUndefined()
-        })
+      it('should add parent annotation to email template', async () => {
+        expect(emailTemplateInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
+          new ReferenceExpression(emailFolderInstance.elemID, emailFolderInstance),
+        )
+      })
+      it('should add parent annotation to report', () => {
+        expect(reportInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
+          new ReferenceExpression(reportFolderInstance.elemID, reportFolderInstance),
+        )
+      })
+      it('should add parent annotation to document', () => {
+        expect(documentInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
+          new ReferenceExpression(documentFolderInstance.elemID, documentFolderInstance),
+        )
+      })
+      it('should add parent annotation to dashboard', () => {
+        expect(dashboardInstance.annotations[CORE_ANNOTATIONS.PARENT][0]).toEqual(
+          new ReferenceExpression(dashboardFolderInstance.elemID, dashboardFolderInstance),
+        )
       })
     })
   })

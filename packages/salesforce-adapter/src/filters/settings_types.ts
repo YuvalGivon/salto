@@ -37,13 +37,9 @@ const getSettingsTypeName = (settings: InstanceElement): string | undefined => {
 /**
  * Match instances of the Settings metadata type to their specific types.
  */
-const filterCreator: FilterCreator = ({ config }) => ({
-  name: 'settingsFilterV2',
+const filterCreator: FilterCreator = () => ({
+  name: 'settingsFilter',
   onFetch: async (elements: Element[]): Promise<void> => {
-    if (!config.context.isFeatureEnabled('retrieveSettings')) {
-      return
-    }
-
     const oldInstances = elements.filter(isInstanceOfTypeSync(SETTINGS_METADATA_TYPE))
     const settingsTypes = elements.filter(isObjectType).filter(type => type.annotations.dirName === SETTINGS_DIR_NAME)
 

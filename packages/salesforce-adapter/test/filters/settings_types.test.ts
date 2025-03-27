@@ -40,11 +40,7 @@ describe('Test Settings Types', () => {
         config: {
           ...defaultFilterContext,
           context: buildContext({
-            fetchParams: {
-              optionalFeatures: {
-                retrieveSettings: true,
-              },
-            },
+            fetchParams: {},
           }),
         },
       }) as FilterWith<'onFetch'>
@@ -74,34 +70,6 @@ describe('Test Settings Types', () => {
 
       it('should drop the settings instances', () => {
         expect(elements).toBeEmpty()
-      })
-    })
-
-    describe('when optional feature is disabled', () => {
-      let types: Element[]
-      let beforeInstances: InstanceElement[]
-
-      beforeEach(async () => {
-        filter = filterCreator({
-          config: {
-            ...defaultFilterContext,
-            context: buildContext({
-              fetchParams: {
-                optionalFeatures: {
-                  retrieveSettings: false,
-                },
-              },
-            }),
-          },
-        }) as FilterWith<'onFetch'>
-        types = [createSettingsType('AccountSettings'), createSettingsType('CompanySettings')]
-        beforeInstances = [createSettingsInstance('Account'), createSettingsInstance('Company')]
-        elements = types.concat(beforeInstances)
-        await filter.onFetch(elements)
-      })
-
-      it('should leave all element unchanged', () => {
-        expect(elements).toEqual(types.concat(beforeInstances))
       })
     })
   })

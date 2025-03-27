@@ -44,9 +44,6 @@ const createFolderInstancesIndex = (elements: Element[]): FolderInstancesIndex =
 const filter: FilterCreator = ({ config }) => ({
   name: 'addParentToInstancesWithinFolderFilter',
   onFetch: async (elements: Element[]) => {
-    if (!config.context.isFeatureEnabled('addParentToInstancesWithinFolder')) {
-      return
-    }
     const folderInstancesIndex = createFolderInstancesIndex(
       await toArrayAsync(await buildElementsSourceForFetch(elements, config).getAll()),
     )

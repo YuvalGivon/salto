@@ -26,7 +26,6 @@ import fieldPermissionsEnumFilter, {
 import { generateProfileType, defaultFilterContext, buildFilterContext } from '../utils'
 import { API_NAME, CUSTOM_OBJECT, METADATA_TYPE, PERMISSION_SET_METADATA_TYPE, SALESFORCE } from '../../src/constants'
 import { FilterWith } from './mocks'
-import { buildContext } from '../../src/config/context/context'
 
 const { awu } = collections.asynciterable
 
@@ -203,49 +202,18 @@ describe('FieldPermissionsEnum filter', () => {
     })
 
     describe('with fieldPermissions that are not part of the fetch', () => {
-      describe('with disablePermissionsOmissions false', () => {
-        beforeAll(async () => {
-          filter = fieldPermissionsEnumFilter({
-            config: {
-              ...defaultFilterContext,
-              context: buildContext({
-                fetchParams: {
-                  optionalFeatures: {
-                    disablePermissionsOmissions: false,
-                  },
-                },
-              }),
-            },
-          }) as FilterWith<'onFetch' | 'onDeploy' | 'preDeploy'>
-          profileInstanceClone = profileInstance.clone()
-          profileObjectClone = profileObj.clone()
-          elements = [profileObjectClone, profileInstanceClone]
-          await filter.onFetch(elements)
-        })
-
-        it('should omit the fieldPermissions from the instance', () => {
-          expect(profileInstanceClone.value.fieldPermissions).toBeEmpty()
-        })
+      beforeAll(async () => {
+        filter = fieldPermissionsEnumFilter({
+          config: buildFilterContext({}),
+        }) as FilterWith<'onFetch' | 'onDeploy' | 'preDeploy'>
+        profileInstanceClone = profileInstance.clone()
+        profileObjectClone = profileObj.clone()
+        elements = [profileObjectClone, profileInstanceClone]
+        await filter.onFetch(elements)
       })
 
-      describe('with disablePermissionsOmissions true', () => {
-        beforeAll(async () => {
-          filter = fieldPermissionsEnumFilter({
-            config: buildFilterContext({
-              optionalFeatures: {
-                disablePermissionsOmissions: true,
-              },
-            }),
-          }) as FilterWith<'onFetch' | 'onDeploy' | 'preDeploy'>
-          profileInstanceClone = profileInstance.clone()
-          profileObjectClone = profileObj.clone()
-          elements = [profileObjectClone, profileInstanceClone]
-          await filter.onFetch(elements)
-        })
-
-        it('should not omit the fieldPermissions from the instance', () => {
-          expect(profileInstanceClone.value.fieldPermissions).not.toBeEmpty()
-        })
+      it('should not omit the fieldPermissions from the instance', () => {
+        expect(profileInstanceClone.value.fieldPermissions).not.toBeEmpty()
       })
     })
   })

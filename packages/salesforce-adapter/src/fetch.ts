@@ -462,29 +462,22 @@ export const retrieveMetadataInstances = async ({
     const typesToRetrieve = _.sortedUniq(filesToRetrieve.map(prop => prop.type).sort()).join(',')
     log.debug('retrieving types %s', typesToRetrieve)
     const request = toRetrieveRequest(filesToRetrieve)
-    const result = await client.retrieve(request, context)
+    const result = await client.retrieve(request)
 
     log.debug('retrieve result for types %s: %o', typesToRetrieve, _.omit(result, ['zipFile', 'fileProperties']))
 
     if (result.errors !== undefined && result.errors.length > 0) {
-      if (context?.isFeatureEnabled('handleInsufficientAccessRightsOnEntity')) {
-        log.debug('Excluding non retrievable instances using config suggestion:')
-        result.errors.forEach(({ type, instance, error }) => {
-          log.debug(`Type: ${type}, Instance: ${instance}`)
-          configChanges.push(
-            createSkippedListConfigChange({
-              type,
-              instance,
-              reason: error.message,
-            }),
-          )
-        })
-      } else {
-        log.debug(
-          'handleInsufficientAccessRightsOnEntity is disabled. Logging non-retrievable instances without exclusion in config file:',
+      log.debug('Excluding non retrievable instances using config suggestion:')
+      result.errors.forEach(({ type, instance, error }) => {
+        log.debug(`Type: ${type}, Instance: ${instance}`)
+        configChanges.push(
+          createSkippedListConfigChange({
+            type,
+            instance,
+            reason: error.message,
+          }),
         )
-        result.errors.forEach(({ type, instance }) => log.debug(`Type: ${type}, Instance: ${instance}`))
-      }
+      })
     }
 
     if (result.errorStatusCode === RETRIEVE_SIZE_LIMIT_ERROR) {

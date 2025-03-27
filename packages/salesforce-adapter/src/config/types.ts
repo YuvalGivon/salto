@@ -59,17 +59,9 @@ const OPTIONAL_FEATURES = [
   'extendedCustomFieldInformation',
   'hideTypesFolder',
   'metaTypes',
-  'retrieveSettings',
-  'genAiReferences',
-  'networkReferences',
   'extendFetchTargets',
-  'addParentToInstancesWithinFolder',
   'shouldPopulateInternalIdAfterDeploy',
-  'packageVersionReference',
-  'omitTotalTrustedRequestsUsageField',
-  'disablePermissionsOmissions',
   'omitStandardFieldsNonDeployableValues',
-  'handleInsufficientAccessRightsOnEntity',
   'shuffleRetrieveInstances',
 ] as const
 const DEPRECATED_OPTIONAL_FEATURES = [
@@ -104,6 +96,14 @@ const DEPRECATED_OPTIONAL_FEATURES = [
   'waveMetadataSupport',
   'supportProfileTabVisibilities',
   'picklistsAsMaps',
+  'retrieveSettings',
+  'genAiReferences',
+  'networkReferences',
+  'addParentToInstancesWithinFolder',
+  'packageVersionReference',
+  'omitTotalTrustedRequestsUsageField',
+  'disablePermissionsOmissions',
+  'handleInsufficientAccessRightsOnEntity',
 ] as const
 export type OptionalFeatures = {
   [key in (typeof OPTIONAL_FEATURES)[number]]?: boolean
