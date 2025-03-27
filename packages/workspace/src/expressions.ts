@@ -427,7 +427,7 @@ export const resolve = (
     elements.length,
   )
 
-export const resolveChanges = async <T extends ChangeDataType>({
+export const resolveChanges = async <T extends Element = ChangeDataType>({
   changes,
   elementsSource,
   opts,
@@ -436,8 +436,8 @@ export const resolveChanges = async <T extends ChangeDataType>({
   elementsSource: ReadOnlyElementsSource
   opts?: ResolveOpts
 }): Promise<Change<T>[]> => {
-  const beforeElements: ChangeDataType[] = []
-  const afterElements: ChangeDataType[] = []
+  const beforeElements: T[] = []
+  const afterElements: T[] = []
 
   changes.forEach(change => {
     if (change.action !== 'add') {

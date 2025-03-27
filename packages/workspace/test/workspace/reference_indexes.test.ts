@@ -697,7 +697,7 @@ describe('updateReferenceIndexes', () => {
       })
 
       it('should invoke getCustomReferences function with all the Elements from the elementsSource', () => {
-        expect(mockedGetCustomReferences).toHaveBeenCalledWith([instance])
+        expect(mockedGetCustomReferences).toHaveBeenCalledWith([expect.objectContaining({ elemID: instance.elemID })])
       })
 
       it('should update referenceTargets index using the element source', () => {

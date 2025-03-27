@@ -36,6 +36,7 @@ import { parserUtils } from '@salto-io/parser'
 import { ElementsSource } from './elements_source'
 import { getAllElementsChanges } from './index_utils'
 import { RemoteMap, RemoteMapEntry } from './remote_map'
+import { resolveChanges } from '../expressions'
 
 const log = logger(module)
 const { awu } = collections.asynciterable
@@ -385,7 +386,11 @@ export const updateReferenceIndexes = async (
     const isVersionMatch = (await mapVersions.get(REFERENCE_INDEXES_KEY)) === REFERENCE_INDEXES_VERSION
     if (!isCacheValid || !isVersionMatch) {
       if (!isVersionMatch) {
-        relevantChanges = await getAllElementsChanges(changes, elementsSource)
+        relevantChanges = await resolveChanges({
+          changes: await getAllElementsChanges(changes, elementsSource),
+          elementsSource,
+          opts: { shouldResolveReferences: false },
+        })
         log.info('references indexes maps are out of date, re-indexing')
       }
       if (!isCacheValid) {
