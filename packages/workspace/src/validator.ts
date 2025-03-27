@@ -17,13 +17,11 @@ import {
   InstanceElement,
   Field,
   PrimitiveTypes,
-  isPrimitiveType,
   Value,
   ElemID,
   CORE_ANNOTATIONS,
   SaltoElementError,
   SeverityLevel,
-  Values,
   isElement,
   isListType,
   getRestriction,
@@ -33,7 +31,6 @@ import {
   ListType,
   isReferenceExpression,
   StaticFile,
-  isContainerType,
   isMapType,
   ObjectType,
   InstanceAnnotationTypes,
@@ -47,8 +44,13 @@ import {
   isField,
   isTemplateExpression,
   UnresolvedReference,
+  MapType,
+  RestrictionAnnotationType,
+  PrimitiveType,
+  TemplateExpression,
+  ReferenceExpression,
 } from '@salto-io/adapter-api'
-import { ERROR_MESSAGES, safeJsonStringify, toObjectType } from '@salto-io/adapter-utils'
+import { ERROR_MESSAGES, safeJsonStringify } from '@salto-io/adapter-utils'
 import { parser } from '@salto-io/parser'
 import { InvalidStaticFile } from './workspace/static_files/common'
 import { CircularReference, resolve } from './expressions'
@@ -83,26 +85,11 @@ export const isValidationError = (
   value: any,
 ): value is ValidationError => value instanceof ValidationError
 
-const primitiveValidators = {
-  [PrimitiveTypes.STRING]: _.isString,
-  [PrimitiveTypes.NUMBER]: _.isNumber,
-  [PrimitiveTypes.BOOLEAN]: _.isBoolean,
-  [PrimitiveTypes.UNKNOWN]: (value: Value) => value !== undefined,
-}
-
-/**
- * Validate that all type fields values corresponding with core annotations (required, values)
- */
-const validateAnnotations = (elemID: ElemID, value: Value, type: TypeElement): ValidationError[] => {
-  if ((isObjectType(type) || isMapType(type)) && !isReferenceExpression(value)) {
-    const objType = toObjectType(type, value)
-    return Object.entries(objType.fields).flatMap(
-      // eslint-disable-next-line no-use-before-define
-      ([key, field]) => validateFieldAnnotations(elemID.createNestedID(key), value[key], field),
-    )
-  }
-
-  return []
+const primitiveValidators: Record<PrimitiveTypes, (value: unknown) => boolean> = {
+  [PrimitiveTypes.STRING]: value => typeof value === 'string',
+  [PrimitiveTypes.NUMBER]: value => typeof value === 'number',
+  [PrimitiveTypes.BOOLEAN]: value => typeof value === 'boolean',
+  [PrimitiveTypes.UNKNOWN]: value => value !== undefined,
 }
 
 const lengthLimiterStringify = (value: Value, length = MAX_VALUE_LENGTH): string => {
@@ -169,7 +156,7 @@ export class InvalidValueValidationError extends ValidationError {
     fieldName: string
     expectedValue: unknown
   }) {
-    const expectedValueStr = _.isArray(expectedValue)
+    const expectedValueStr = Array.isArray(expectedValue)
       ? `one of: ${expectedValue.map(v => `"${v}"`).join(', ')}`
       : `"${expectedValue}"`
     const safeValue = lengthLimiterStringify(value)
@@ -201,9 +188,9 @@ export class InvalidValueRangeValidationError extends ValidationError {
   readonly maxValue?: number
 
   static formatExpectedValue(minValue: number | undefined, maxValue: number | undefined): string {
-    const minErrStr: string = _.isUndefined(minValue) ? '' : `bigger than ${minValue}`
-    const maxErrStr: string = _.isUndefined(maxValue) ? '' : `smaller than ${maxValue}`
-    return _.join([minErrStr, maxErrStr], ' and ')
+    const minErrStr = minValue === undefined ? undefined : `bigger than ${minValue}`
+    const maxErrStr = maxValue === undefined ? undefined : `smaller than ${maxValue}`
+    return [minErrStr, maxErrStr].filter(values.isDefined).join(' and ')
   }
 
   constructor({
@@ -382,144 +369,118 @@ export class InvalidStaticFileError extends ValidationError {
   }
 }
 
-const validateRequiredValue = (elemID: ElemID, fieldName: string, annotations: Values): ValidationError[] =>
-  annotations[CORE_ANNOTATIONS.REQUIRED] === true
-    ? [new MissingRequiredFieldValidationError({ elemID, fieldName })]
-    : []
-
-const validateAnnotationsValue = (
+type RestrictionValidation = (
+  restrictions: RestrictionAnnotationType,
+  value: unknown,
   elemID: ElemID,
-  value: Value,
-  annotations: Values,
-  type: TypeElement,
-): ValidationError[] | undefined => {
-  const restrictions = getRestriction({ annotations })
-  const shouldEnforceValue = (): boolean =>
-    restrictions.enforce_value !== false && !(isReferenceExpression(value) && isElement(value.value))
+) => ValidationError[]
 
-  const validateRestrictionsValue = (val: Value): ValidationError[] => {
-    // When value is array we iterate (validate) each element
-    if (_.isArray(val)) {
-      return val.flatMap(v => validateRestrictionsValue(v))
-    }
-
-    const validateValueInsideRange = (): ValidationError[] => {
-      const minValue = restrictions.min
-      const maxValue = restrictions.max
-      if (
-        (values.isDefined(minValue) && (!_.isNumber(val) || val < minValue)) ||
-        (values.isDefined(maxValue) && (!_.isNumber(val) || val > maxValue))
-      ) {
-        return [new InvalidValueRangeValidationError({ elemID, value, fieldName: elemID.name, minValue, maxValue })]
-      }
-      return []
-    }
-
-    const validateValueInList = (): ValidationError[] => {
-      const restrictionValues = makeArray(restrictions.values)
-      if (_.isEmpty(restrictionValues)) {
-        return []
-      }
-      if (!restrictionValues.some(i => _.isEqual(i, val))) {
-        return [
-          new InvalidValueValidationError({ elemID, value, fieldName: elemID.name, expectedValue: restrictionValues }),
-        ]
-      }
-      return []
-    }
-
-    const validateRegexMatches = (): ValidationError[] => {
-      if (!_.isUndefined(restrictions.regex) && !new RegExp(restrictions.regex).test(val)) {
-        return [new RegexMismatchValidationError({ elemID, value, fieldName: elemID.name, regex: restrictions.regex })]
-      }
-      return []
-    }
-
-    const validateMaxLengthLimit = (): ValidationError[] => {
-      const maxLength = restrictions.max_length
-      if (values.isDefined(maxLength) && _.isString(val) && val.length > maxLength) {
-        return [new InvalidValueMaxLengthValidationError({ elemID, value, fieldName: elemID.name, maxLength })]
-      }
-      return []
-    }
-
-    const restrictionValidations = [
-      validateValueInsideRange,
-      validateValueInList,
-      validateRegexMatches,
-      validateMaxLengthLimit,
-    ]
-    return restrictionValidations.flatMap(validation => validation())
-  }
-
-  // Checking _required annotation
-  if (value === undefined) {
-    return validateRequiredValue(elemID.createParentID(), elemID.name, annotations)
-  }
-
-  if (isListType(type) && shouldEnforceValue() && _.isArray(value)) {
-    const maxListLength = restrictions.max_list_length
-    if (values.isDefined(maxListLength) && value.length > maxListLength) {
-      return [
-        new InvalidValueMaxListLengthValidationError({
-          elemID,
-          size: value.length,
-          fieldName: elemID.name,
-          maxListLength,
-        }),
-      ]
-    }
-  }
-
-  // Checking restrictions
+const validateValueInsideRange: RestrictionValidation = (restrictions, value, elemID) => {
+  const minValue = restrictions.min
+  const maxValue = restrictions.max
   if (
-    (isPrimitiveType(type) || (isContainerType(type) && isPrimitiveType(type.refInnerType.type))) &&
-    shouldEnforceValue()
+    (values.isDefined(minValue) && (typeof value !== 'number' || value < minValue)) ||
+    (values.isDefined(maxValue) && (typeof value !== 'number' || value > maxValue))
   ) {
-    // TODO: This currently only checks one level of nesting for primitive types inside lists.
-    // We should add support for List of list of primitives
-    return validateRestrictionsValue(value)
+    return [
+      new InvalidValueRangeValidationError({
+        elemID,
+        value,
+        fieldName: elemID.name,
+        minValue,
+        maxValue,
+      }),
+    ]
   }
-
-  return undefined
+  return []
 }
 
-type ItemWithNestedId<T> = {
-  value: T
-  nestedID: ElemID
-}
-const mapAsArrayWithIds = <T>(value: T | T[], elemID: ElemID): ItemWithNestedId<T>[] => {
-  if (Array.isArray(value)) {
-    return value.flatMap((val, i) => ({ value: val, nestedID: elemID.createNestedID(String(i)) }))
-  }
-  return [{ value, nestedID: elemID }]
-}
-
-/**
- * Validate that field values corresponding with core annotations (_required, _values, _restriction)
- */
-const validateFieldAnnotations = (elemID: ElemID, value: Value, field: Field): ValidationError[] => {
-  const fieldType = field.refType.type
-  const fieldInnerType = isListType(fieldType) ? fieldType.refInnerType.type : fieldType
-
-  if (!isType(fieldType) || !isType(fieldInnerType)) {
-    // Should never happen because we resolve the element before calling this
-    log.error(
-      'Found unresolved type at %s, fieldType=%s fieldInnerType=%o',
-      elemID.getFullName(),
-      fieldType?.elemID.getFullName(),
-      fieldInnerType,
-    )
+const validateValueInList: RestrictionValidation = (restrictions, value, elemID) => {
+  const restrictionValues = makeArray(restrictions.values)
+  if (restrictionValues.length === 0) {
     return []
   }
-  const errors = validateAnnotationsValue(elemID, value, field.annotations, fieldType)
-  if (!_.isUndefined(errors)) {
-    return errors
+  if (!restrictionValues.some(i => _.isEqual(i, value))) {
+    return [
+      new InvalidValueValidationError({
+        elemID,
+        value,
+        fieldName: elemID.name,
+        expectedValue: restrictionValues,
+      }),
+    ]
+  }
+  return []
+}
+
+const validateRegexMatches: RestrictionValidation = (restrictions, value, elemID) => {
+  if (restrictions.regex !== undefined && !new RegExp(restrictions.regex).test(String(value))) {
+    return [
+      new RegexMismatchValidationError({
+        elemID,
+        value,
+        fieldName: elemID.name,
+        regex: restrictions.regex,
+      }),
+    ]
+  }
+  return []
+}
+
+const validateMaxLengthLimit: RestrictionValidation = (restrictions, value, elemID) => {
+  const maxLength = restrictions.max_length
+  if (values.isDefined(maxLength) && typeof value === 'string' && value.length > maxLength) {
+    return [
+      new InvalidValueMaxLengthValidationError({
+        elemID,
+        value,
+        fieldName: elemID.name,
+        maxLength,
+      }),
+    ]
+  }
+  return []
+}
+
+const validateMaxListLengthLimit: RestrictionValidation = (restrictions, value, elemID) => {
+  const maxListLength = restrictions.max_list_length
+  if (values.isDefined(maxListLength) && Array.isArray(value) && value.length > maxListLength) {
+    return [
+      new InvalidValueMaxListLengthValidationError({
+        elemID,
+        size: value.length,
+        fieldName: elemID.name,
+        maxListLength,
+      }),
+    ]
+  }
+  return []
+}
+
+const restrictionValidations: RestrictionValidation[] = [
+  validateValueInsideRange,
+  validateValueInList,
+  validateRegexMatches,
+  validateMaxLengthLimit,
+]
+
+const shouldEnforceValue = (restrictions: RestrictionAnnotationType, value: unknown): boolean =>
+  restrictions.enforce_value !== false && !(isReferenceExpression(value) && isElement(value.value))
+
+const validateRestrictionsValue = (elemID: ElemID, value: Value, element: PrimitiveType | Field): ValidationError[] => {
+  const restrictions = getRestriction(element)
+  if (_.isEmpty(restrictions) || !shouldEnforceValue(restrictions, value)) {
+    return []
   }
 
-  return mapAsArrayWithIds(value, elemID).flatMap(item =>
-    validateAnnotations(item.nestedID, item.value, fieldInnerType),
-  )
+  // When value is array we iterate (validate) each element
+  if (Array.isArray(value)) {
+    return value
+      .flatMap(v => validateRestrictionsValue(elemID, v, element))
+      .concat(validateMaxListLengthLimit(restrictions, value, elemID))
+  }
+
+  return restrictionValidations.flatMap(validation => validation(restrictions, value, elemID))
 }
 
 export class InvalidValueTypeValidationError extends ValidationError {
@@ -547,6 +508,175 @@ const createReferenceValidationErrors = (elemID: ElemID, value: Value): Validati
   return []
 }
 
+const validateNoAdditionalProperties = (
+  elemID: ElemID,
+  value: Value,
+  type: ObjectType | MapType,
+): ValidationError[] => {
+  if (isObjectType(type) && type.annotations[CORE_ANNOTATIONS.ADDITIONAL_PROPERTIES] === false) {
+    return Object.keys(value)
+      .filter(key => !Object.prototype.hasOwnProperty.call(type.fields, key))
+      .map(
+        key =>
+          new AdditionalPropertiesValidationError({
+            elemID,
+            fieldName: key,
+            typeName: type.elemID.typeName,
+          }),
+      )
+  }
+  return []
+}
+
+const validatePrimitiveValueType = (elemID: ElemID, value: Value, type: PrimitiveType): ValidationError[] => {
+  if (!primitiveValidators[type.primitive](value)) {
+    return [
+      new InvalidValueTypeValidationError({
+        elemID,
+        value,
+        type: type.elemID,
+      }),
+    ]
+  }
+  return []
+}
+
+const isEmptyArray = (value: unknown): boolean => Array.isArray(value) && value.length === 0
+
+const validateRequiredFields = (elemID: ElemID, value: Value, type: TypeElement): ValidationError[] => {
+  if (!isObjectType(type) || elemID.idType !== 'instance') {
+    return []
+  }
+  return Object.values(type.fields)
+    .filter(field => field.annotations[CORE_ANNOTATIONS.REQUIRED] === true)
+    .filter(
+      field => value[field.name] === undefined || (isEmptyArray(value[field.name]) && !isListType(field.refType.type)),
+    )
+    .map(
+      field =>
+        new MissingRequiredFieldValidationError({
+          elemID: value[field.name] !== undefined ? elemID.createNestedID(field.name) : elemID,
+          fieldName: field.name,
+        }),
+    )
+}
+
+const validateRestrictedFields = (elemID: ElemID, value: Value, type: TypeElement): ValidationError[] => {
+  if (!isObjectType(type) || elemID.idType !== 'instance') {
+    return []
+  }
+  return Object.values(type.fields)
+    .filter(field => value[field.name] !== undefined)
+    .flatMap(field => validateRestrictionsValue(elemID.createNestedID(field.name), value[field.name], field))
+}
+
+const validateReferenceExpression = (
+  elemID: ElemID,
+  value: ReferenceExpression,
+  type: TypeElement,
+  validatedReferences: Set<string>,
+): ValidationError[] => {
+  if (!isElement(value.value) && !validatedReferences.has(value.elemID.getFullName())) {
+    validatedReferences.add(value.elemID.getFullName())
+    // eslint-disable-next-line no-use-before-define
+    const result = validateValue(elemID, value.value, type, validatedReferences)
+    validatedReferences.delete(value.elemID.getFullName())
+    return result
+  }
+  return []
+}
+
+const validateTemplateExpression = (
+  elemID: ElemID,
+  value: TemplateExpression,
+  type: TypeElement,
+  validatedReferences: Set<string>,
+): ValidationError[] => {
+  const templatedReferenceValidationErrors = value.parts
+    .map(part => (isReferenceExpression(part) ? createReferenceValidationErrors(elemID, part.value) : []))
+    .flat()
+  // eslint-disable-next-line no-use-before-define
+  return templatedReferenceValidationErrors.concat(validateValue(elemID, value.value, type, validatedReferences))
+}
+
+const validateObjectValue = (
+  elemID: ElemID,
+  value: Value,
+  type: ObjectType | MapType,
+  validatedReferences: Set<string>,
+): ValidationError[] => {
+  if (!_.isObjectLike(value)) {
+    // TODO: we shouldn't validate required fields for non-object values
+    return validateRequiredFields(elemID, value, type).concat(
+      new InvalidValueTypeValidationError({
+        elemID,
+        value,
+        type: type.elemID,
+      }),
+    )
+  }
+
+  const missingRequiredFieldsErrors = validateRequiredFields(elemID, value, type)
+  const additionalPropertiesErrors = validateNoAdditionalProperties(elemID, value, type)
+  const restrictedFieldsErrors = validateRestrictedFields(elemID, value, type)
+
+  const fieldValidationErrors = Object.keys(value).flatMap(k =>
+    // eslint-disable-next-line no-use-before-define
+    validateValue(
+      elemID.createNestedID(k),
+      value[k],
+      (isObjectType(type) ? type.fields[k]?.refType.type : type.refInnerType.type) ?? BuiltinTypes.UNKNOWN,
+      validatedReferences,
+    ),
+  )
+
+  return missingRequiredFieldsErrors
+    .concat(additionalPropertiesErrors)
+    .concat(fieldValidationErrors)
+    .concat(restrictedFieldsErrors)
+}
+
+const validateUnknownValue = (elemID: ElemID, value: Value, validatedReferences: Set<string>): ValidationError[] => {
+  if (!_.isObjectLike(value)) {
+    return []
+  }
+  return Object.keys(value).flatMap(k =>
+    // eslint-disable-next-line no-use-before-define
+    validateValue(elemID.createNestedID(k), value[k], BuiltinTypes.UNKNOWN, validatedReferences),
+  )
+}
+
+const validateListValue = (
+  elemID: ElemID,
+  value: Value,
+  type: ListType,
+  validatedReferences: Set<string>,
+): ValidationError[] => {
+  const innerType = type.refInnerType.type
+  if (!isType(innerType)) {
+    // Should never happen because we resolve the element before calling this
+    log.error(
+      'Found unresolved type at %s, type=%s innerType=%o',
+      elemID.getFullName(),
+      type.elemID.getFullName(),
+      innerType,
+    )
+    return []
+  }
+  return Array.isArray(value)
+    ? // eslint-disable-next-line no-use-before-define
+      value.flatMap((val, i) => validateValue(elemID.createNestedID(String(i)), val, innerType, validatedReferences))
+    : // eslint-disable-next-line no-use-before-define
+      validateValue(elemID, value, innerType, validatedReferences)
+}
+
+const validatePrimitiveValue = (elemID: ElemID, value: Value, type: PrimitiveType): ValidationError[] => {
+  const invalidValueTypeErrors = validatePrimitiveValueType(elemID, value, type)
+  const restrictionErrors = validateRestrictionsValue(elemID, value, type)
+
+  return invalidValueTypeErrors.concat(restrictionErrors)
+}
+
 const validateValue = (
   elemID: ElemID,
   value: Value,
@@ -554,32 +684,19 @@ const validateValue = (
   validatedReferences = new Set<string>(),
 ): ValidationError[] => {
   if (Array.isArray(value) && !isListType(type)) {
-    if (value.length === 0) {
-      // return an error if value is required
-      return validateRequiredValue(elemID, elemID.name, type.annotations)
-    }
     return validateValue(elemID, value, new ListType(type), validatedReferences)
   }
 
   if (isReferenceExpression(value)) {
-    if (!isElement(value.value) && !validatedReferences.has(value.elemID.getFullName())) {
-      validatedReferences.add(value.elemID.getFullName())
-      const result = validateValue(elemID, value.value, type, validatedReferences)
-      validatedReferences.delete(value.elemID.getFullName())
-      return result
-    }
-    return []
+    return validateReferenceExpression(elemID, value, type, validatedReferences)
   }
 
   if (isTemplateExpression(value)) {
-    const templatedReferenceValidationErrors = value.parts
-      .map(part => (isReferenceExpression(part) ? createReferenceValidationErrors(elemID, part.value) : []))
-      .flat()
-    return [...templatedReferenceValidationErrors, ...validateValue(elemID, value.value, type, validatedReferences)]
+    return validateTemplateExpression(elemID, value, type, validatedReferences)
   }
 
   const referenceValidationErrors = createReferenceValidationErrors(elemID, value)
-  if (!_.isEmpty(referenceValidationErrors)) {
+  if (referenceValidationErrors.length > 0) {
     return referenceValidationErrors
   }
 
@@ -589,12 +706,6 @@ const validateValue = (
 
   if (value instanceof StaticFile) {
     return []
-  }
-
-  if (isPrimitiveType(type)) {
-    if (!primitiveValidators[type.primitive](value)) {
-      return [new InvalidValueTypeValidationError({ elemID, value, type: type.elemID })]
-    }
   }
 
   if (isVariable(value)) {
@@ -609,110 +720,19 @@ const validateValue = (
   }
 
   if (isObjectType(type) || isMapType(type)) {
-    if (!_.isObjectLike(value)) {
-      return [new InvalidValueTypeValidationError({ elemID, value, type: type.elemID })]
-    }
-    const objectType = toObjectType(type, value)
-    return Object.keys(value).flatMap(k =>
-      // eslint-disable-next-line no-use-before-define
-      validateFieldValueAndName({
-        parentElemID: elemID,
-        value: value[k],
-        fieldName: k,
-        objType: objectType,
-        validatedIds: validatedReferences,
-      }),
-    )
+    return validateObjectValue(elemID, value, type, validatedReferences)
   }
 
   if (type === BuiltinTypes.UNKNOWN) {
-    if (!_.isObjectLike(value)) {
-      return []
-    }
-    return Object.keys(value).flatMap(
-      // eslint-disable-next-line no-use-before-define
-      k => validateFieldValue(elemID.createNestedID(k), value[k], BuiltinTypes.UNKNOWN, {}, validatedReferences),
-    )
+    return validateUnknownValue(elemID, value, validatedReferences)
   }
 
   if (isListType(type)) {
-    const innerType = type.refInnerType.type
-    if (!isType(innerType)) {
-      // Should never happen because we resolve the element before calling this
-      log.error(
-        'Found unresolved type at %s, type=%s innerType=%o',
-        elemID.getFullName(),
-        type.elemID.getFullName(),
-        innerType,
-      )
-      return []
-    }
-    return mapAsArrayWithIds(value, elemID).flatMap(item =>
-      validateValue(item.nestedID, item.value, innerType, validatedReferences),
-    )
+    return validateListValue(elemID, value, type, validatedReferences)
   }
 
-  return validateAnnotationsValue(elemID, value, type.annotations, type) ?? []
-}
-
-const validateFieldValue = (
-  elemID: ElemID,
-  value: Value,
-  fieldType: TypeElement,
-  annotations: Values,
-  validatedIds: Set<string>,
-): ValidationError[] => {
-  if (!isListType(fieldType) && Array.isArray(value) && value.length === 0) {
-    // return an error if value is required
-    return validateRequiredValue(elemID, elemID.name, annotations)
-  }
-  const innerType = isListType(fieldType) ? fieldType.refInnerType.type : fieldType
-  if (!isType(innerType)) {
-    // Should never happen because we resolve the element before calling this
-    log.error(
-      'Found unresolved type at %s, fieldType=%s innerType=%o',
-      elemID.getFullName(),
-      fieldType.elemID.getFullName(),
-      innerType,
-    )
-    return []
-  }
-  return mapAsArrayWithIds(value, elemID).flatMap(item =>
-    validateValue(item.nestedID, item.value, innerType, validatedIds),
-  )
-}
-
-const validateNotAdditionalProperty = (elemID: ElemID, fieldName: string, objType: ObjectType): ValidationError[] =>
-  !Object.prototype.hasOwnProperty.call(objType.fields, fieldName)
-    ? [new AdditionalPropertiesValidationError({ elemID, fieldName, typeName: objType.elemID.typeName })]
-    : []
-
-const validateFieldValueAndName = ({
-  parentElemID,
-  value,
-  fieldName,
-  objType,
-  validatedIds,
-}: {
-  parentElemID: ElemID
-  value: Value
-  fieldName: string
-  objType: ObjectType
-  validatedIds: Set<string>
-}): ValidationError[] => {
-  const errors =
-    objType.annotations[CORE_ANNOTATIONS.ADDITIONAL_PROPERTIES] === false
-      ? validateNotAdditionalProperty(parentElemID, fieldName, objType)
-      : []
-  return errors.concat(
-    validateFieldValue(
-      parentElemID.createNestedID(fieldName),
-      value,
-      objType.fields[fieldName]?.refType.type ?? BuiltinTypes.UNKNOWN,
-      objType.fields[fieldName]?.annotations ?? {},
-      validatedIds,
-    ),
-  )
+  // type-wise, we can only get here if type is a primitive type
+  return validatePrimitiveValue(elemID, value, type)
 }
 
 const syncGetElementAnnotationTypes = (element: TypeElement | Field): Record<string, TypeElement> => {
@@ -782,7 +802,7 @@ const validateType = (element: TypeElement): ValidationError[] => {
   if (isObjectType(element)) {
     const metaTypeErrors = validateMetaType(element)
     const fieldErrors = Object.values(element.fields).flatMap(elem => validateField(elem))
-    return [...errors, ...metaTypeErrors, ...fieldErrors]
+    return errors.concat(metaTypeErrors).concat(fieldErrors)
   }
   return errors
 }
@@ -798,19 +818,16 @@ const validateInstanceType = (elemID: ElemID, type: ObjectType): ValidationError
   return []
 }
 
-const validateInstanceElements = (element: InstanceElement): ValidationError[] => {
+const validateInstanceElement = (element: InstanceElement): ValidationError[] => {
   const instanceType = element.refType.type
   if (!isObjectType(instanceType)) {
     // Should never happen because we resolve the element before calling this
     log.error('Found unresolved type at %s, instanceType=%o', element.elemID.getFullName(), instanceType)
     return []
   }
-  return [
-    ...validateValue(element.elemID, element.value, instanceType),
-    ...validateAnnotations(element.elemID, element.value, instanceType),
-    ...validateValue(element.elemID, element.annotations, instanceAnnotationsType),
-    ...validateInstanceType(element.elemID, instanceType),
-  ]
+  return validateValue(element.elemID, element.value, instanceType)
+    .concat(validateValue(element.elemID, element.annotations, instanceAnnotationsType))
+    .concat(validateInstanceType(element.elemID, instanceType))
 }
 
 const validateVariableValue = (elemID: ElemID, value: Value): ValidationError[] => {
@@ -818,7 +835,7 @@ const validateVariableValue = (elemID: ElemID, value: Value): ValidationError[] 
     return validateVariableValue(elemID, value.value)
   }
   const referenceValidationErrors = createReferenceValidationErrors(elemID, value)
-  if (!_.isEmpty(referenceValidationErrors)) {
+  if (referenceValidationErrors.length > 0) {
     return referenceValidationErrors
   }
 
@@ -839,7 +856,7 @@ const validateVariable = (element: Variable): ValidationError[] => validateVaria
 
 export const validateElement = (element: Element): ValidationError[] => {
   if (isInstanceElement(element)) {
-    return validateInstanceElements(element)
+    return validateInstanceElement(element)
   }
   if (isVariable(element)) {
     return validateVariable(element)
