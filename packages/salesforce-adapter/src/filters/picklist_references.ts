@@ -26,7 +26,14 @@ import { logger } from '@salto-io/logging'
 import { FilterCreator } from '../filter'
 import { GLOBAL_VALUE_SET } from './global_value_sets'
 import { STANDARD_VALUE_SET } from './standard_value_sets'
-import { apiNameSync, buildElementsSourceForFetch, isInstanceOfTypeSync, metadataTypeSync } from './utils'
+import {
+  apiNameSync,
+  buildElementsSourceForFetch,
+  isCustomMetadataRecordInstanceSync,
+  isInstanceOfCustomObjectSync,
+  isInstanceOfTypeSync,
+  metadataTypeSync,
+} from './utils'
 import {
   BUSINESS_PROCESS_METADATA_TYPE,
   FIELD_ANNOTATIONS,
@@ -221,6 +228,19 @@ const getFullNameFromReference = (ref: ReferenceExpression): string | undefined 
   return undefined
 }
 
+const addReferencesToInstances = (
+  instance: InstanceElement,
+  picklistValuesReferenceIndex: PicklistValuesReferenceIndex,
+): void => {
+  const objectType = instance.getTypeSync()
+  Object.keys(instance.value).forEach(key => {
+    const picklistRefs = picklistValuesReferenceIndex[objectType.elemID.createNestedID('field', key).getFullName()]
+    if (picklistRefs) {
+      instance.value[key] = picklistRefs[instance.value[key]] ?? key
+    }
+  })
+}
+
 // Create reference index from baseElements full names (either Field, GlobalValueSet or StandardValueSet instances)
 // with references to each of their valueSet values.
 const createPicklistValuesReferenceIndex = (elements: Element[]): PicklistValuesReferenceIndex => {
@@ -341,6 +361,10 @@ const filterCreator: FilterCreator = ({ config }) => ({
     elements
       .filter(isObjectType)
       .forEach(objectType => addFieldDependencyReferencesToObjects(objectType, picklistValuesReferenceIndex))
+    elements
+      .filter(isInstanceElement)
+      .filter(element => isInstanceOfCustomObjectSync(element) || isCustomMetadataRecordInstanceSync(element))
+      .forEach(element => addReferencesToInstances(element, picklistValuesReferenceIndex))
   },
 })
 
