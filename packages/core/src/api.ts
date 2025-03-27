@@ -159,15 +159,14 @@ export async function preview({
   adapterCreators,
 }: PreviewArgs): Promise<Plan> {
   const stateElements = workspace.state()
-  const adapters = await getAdapters(
+  const adapters = await getAdapters({
     accounts,
-    await workspace.accountCredentials(accounts),
-    workspace.accountConfig.bind(workspace),
-    await workspace.elements(),
-    getAccountToServiceNameMap(workspace, accounts),
-    {},
+    credentials: await workspace.accountCredentials(accounts),
+    getConfig: workspace.accountConfig.bind(workspace),
+    elementsSource: await workspace.elements(),
+    accountToServiceName: getAccountToServiceNameMap(workspace, accounts),
     adapterCreators,
-  )
+  })
   return getPlan({
     before: stateElements,
     after: await workspace.elements(),
@@ -207,15 +206,14 @@ export async function deploy({
 }: DeployParams): Promise<DeployResult> {
   const changedElements = elementSource.createInMemoryElementSource()
   const adaptersElementSource = buildElementsSourceFromElements([], [changedElements, await workspace.elements()])
-  const adapters = await getAdapters(
+  const adapters = await getAdapters({
     accounts,
-    await workspace.accountCredentials(accounts),
-    workspace.accountConfig.bind(workspace),
-    adaptersElementSource,
-    getAccountToServiceNameMap(workspace, accounts),
-    {},
+    credentials: await workspace.accountCredentials(accounts),
+    getConfig: workspace.accountConfig.bind(workspace),
+    elementsSource: adaptersElementSource,
+    accountToServiceName: getAccountToServiceNameMap(workspace, accounts),
     adapterCreators,
-  )
+  })
 
   const postDeployAction = async (appliedChanges: ReadonlyArray<Change>): Promise<void> =>
     log.timeDebug(async () => {
@@ -759,15 +757,15 @@ export const fixElements = async (
   adapterCreators: Record<string, Adapter>,
 ): Promise<{ errors: ChangeError[]; changes: DetailedChangeWithBaseChange[] }> => {
   const accounts = workspace.accounts()
-  const adapters = await getAdapters(
+  const adapters = await getAdapters({
     accounts,
-    await workspace.accountCredentials(accounts),
-    workspace.accountConfig.bind(workspace),
-    await workspace.elements(),
-    getAccountToServiceNameMap(workspace, accounts),
-    {},
+    credentials: await workspace.accountCredentials(accounts),
+    getConfig: workspace.accountConfig.bind(workspace),
+    elementsSource: await workspace.elements(),
+    accountToServiceName: getAccountToServiceNameMap(workspace, accounts),
+    resolveTypes: true,
     adapterCreators,
-  )
+  })
 
   const nonTopLevelSelectors = selectors.filter(selector => !isTopLevelSelector(selector))
 
@@ -829,15 +827,14 @@ const initAccountAdapter = async ({
   }
   const accounts = [account]
   try {
-    const adaptersMap = await getAdapters(
+    const adaptersMap = await getAdapters({
       accounts,
-      await workspace.accountCredentials(accounts),
-      workspace.accountConfig.bind(workspace),
-      await workspace.elements(),
-      getAccountToServiceNameMap(workspace, accounts),
-      undefined,
+      credentials: await workspace.accountCredentials(accounts),
+      getConfig: workspace.accountConfig.bind(workspace),
+      elementsSource: await workspace.elements(),
+      accountToServiceName: getAccountToServiceNameMap(workspace, accounts),
       adapterCreators,
-    )
+    })
     const adapter = adaptersMap[account]
     if (adapter === undefined) {
       return {

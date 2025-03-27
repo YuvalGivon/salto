@@ -1526,24 +1526,23 @@ export const getFetchAdapterAndServicesSetup = async ({
   adaptersCreatorConfigs: Record<string, AdapterOperationsContext>
   currentConfigs: InstanceElement[]
 }> => {
-  const elemIDGetters = await createElemIdGetters({
+  const elemIdGetters = await createElemIdGetters({
     workspace,
     accountToServiceNameMap,
     elementsSource,
     ignoreStateElemIdMapping,
     ignoreStateElemIdMappingForSelectors,
   })
-  const resolveTypes = true
-  const adaptersCreatorConfigs = await getAdaptersCreatorConfigs(
-    fetchAccounts,
-    await workspace.accountCredentials(fetchAccounts),
-    workspace.accountConfig.bind(workspace),
+  const adaptersCreatorConfigs = await getAdaptersCreatorConfigs({
+    accounts: fetchAccounts,
+    credentials: await workspace.accountCredentials(fetchAccounts),
+    getConfig: workspace.accountConfig.bind(workspace),
     elementsSource,
-    accountToServiceNameMap,
-    elemIDGetters,
-    resolveTypes,
+    accountToServiceName: accountToServiceNameMap,
+    elemIdGetters,
+    resolveTypes: true,
     adapterCreators,
-  )
+  })
   const currentConfigs = Object.values(adaptersCreatorConfigs)
     .map(creatorConfig => creatorConfig.config)
     .filter(config => !_.isUndefined(config)) as InstanceElement[]

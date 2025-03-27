@@ -261,16 +261,25 @@ export const createResolvedTypesElementsSource = (elementsSource: ReadOnlyElemen
 
 type AdapterConfigGetter = (adapter: string, defaultValue?: InstanceElement) => Promise<InstanceElement | undefined>
 
-export const getAdaptersCreatorConfigs = async (
-  accounts: ReadonlyArray<string>,
-  credentials: Readonly<Record<string, InstanceElement>>,
-  getConfig: AdapterConfigGetter,
-  elementsSource: ReadOnlyElementsSource,
-  accountToServiceName: Record<string, string>,
-  elemIdGetters: Record<string, ElemIdGetter> = {},
+export const getAdaptersCreatorConfigs = async ({
+  accounts,
+  credentials,
+  getConfig,
+  elementsSource,
+  accountToServiceName,
+  elemIdGetters = {},
   resolveTypes = false,
-  adapterCreators: Record<string, Adapter>,
-): Promise<Record<string, AdapterOperationsContext>> =>
+  adapterCreators,
+}: {
+  accounts: ReadonlyArray<string>
+  credentials: Readonly<Record<string, InstanceElement>>
+  getConfig: AdapterConfigGetter
+  elementsSource: ReadOnlyElementsSource
+  accountToServiceName: Record<string, string>
+  elemIdGetters?: Record<string, ElemIdGetter>
+  resolveTypes?: boolean
+  adapterCreators: Record<string, Adapter>
+}): Promise<Record<string, AdapterOperationsContext>> =>
   Object.fromEntries(
     await Promise.all(
       accounts.map(async account => {
@@ -296,26 +305,36 @@ export const getAdaptersCreatorConfigs = async (
     ),
   )
 
-export const getAdapters = async (
-  adapters: ReadonlyArray<string>,
-  credentials: Readonly<Record<string, InstanceElement>>,
-  getConfig: AdapterConfigGetter,
-  workspaceElementsSource: ReadOnlyElementsSource,
-  accountToServiceName: Record<string, string>,
-  elemIdGetters: Record<string, ElemIdGetter> = {},
-  adapterCreators: Record<string, Adapter>,
-): Promise<Record<string, AdapterOperations>> =>
+export const getAdapters = async ({
+  accounts,
+  credentials,
+  getConfig,
+  elementsSource,
+  accountToServiceName,
+  elemIdGetters = {},
+  resolveTypes = false,
+  adapterCreators,
+}: {
+  accounts: ReadonlyArray<string>
+  credentials: Readonly<Record<string, InstanceElement>>
+  getConfig: AdapterConfigGetter
+  elementsSource: ReadOnlyElementsSource
+  accountToServiceName: Record<string, string>
+  elemIdGetters?: Record<string, ElemIdGetter>
+  resolveTypes?: boolean
+  adapterCreators: Record<string, Adapter>
+}): Promise<Record<string, AdapterOperations>> =>
   initAdapters(
-    await getAdaptersCreatorConfigs(
-      adapters,
+    await getAdaptersCreatorConfigs({
+      accounts,
       credentials,
       getConfig,
-      workspaceElementsSource,
+      elementsSource,
       accountToServiceName,
       elemIdGetters,
-      undefined,
+      resolveTypes,
       adapterCreators,
-    ),
+    }),
     accountToServiceName,
     adapterCreators,
   )

@@ -195,16 +195,14 @@ describe('adapters.ts', () => {
       createDefaultInstanceFromTypeMock.mockResolvedValue([])
     })
     it('should return default adapter config when there is no config', async () => {
-      const result = await getAdaptersCreatorConfigs(
-        [serviceName],
-        { [sfConfig.elemID.adapter]: sfConfig },
-        async () => undefined,
-        buildElementsSourceFromElements([]),
-        { [serviceName]: serviceName },
-        undefined,
-        undefined,
-        mockAdapterCreator,
-      )
+      const result = await getAdaptersCreatorConfigs({
+        accounts: [serviceName],
+        credentials: { [sfConfig.elemID.adapter]: sfConfig },
+        getConfig: async () => undefined,
+        elementsSource: buildElementsSourceFromElements([]),
+        accountToServiceName: { [serviceName]: serviceName },
+        adapterCreators: mockAdapterCreator,
+      })
       expect(result[serviceName]).toEqual(
         expect.objectContaining({
           credentials: sfConfig,
@@ -216,16 +214,14 @@ describe('adapters.ts', () => {
     })
 
     it('should return adapter config when there is config', async () => {
-      const result = await getAdaptersCreatorConfigs(
-        [serviceName],
-        { [sfConfig.elemID.adapter]: sfConfig },
-        async name => (name === sfConfig.elemID.adapter ? sfConfig : undefined),
-        buildElementsSourceFromElements([]),
-        { [serviceName]: serviceName },
-        undefined,
-        undefined,
-        mockAdapterCreator,
-      )
+      const result = await getAdaptersCreatorConfigs({
+        accounts: [serviceName],
+        credentials: { [sfConfig.elemID.adapter]: sfConfig },
+        getConfig: async name => (name === sfConfig.elemID.adapter ? sfConfig : undefined),
+        elementsSource: buildElementsSourceFromElements([]),
+        accountToServiceName: { [serviceName]: serviceName },
+        adapterCreators: mockAdapterCreator,
+      })
       expect(result[serviceName]).toEqual(
         expect.objectContaining({
           credentials: sfConfig,
@@ -239,16 +235,14 @@ describe('adapters.ts', () => {
     let result: Record<string, AdapterOperationsContext>
     describe('multi app adapter config', () => {
       beforeEach(async () => {
-        result = await getAdaptersCreatorConfigs(
-          [serviceName, 'd1'],
-          { [sfConfig.elemID.adapter]: sfConfig },
-          async name => (name === sfConfig.elemID.adapter ? sfConfig : undefined),
-          buildElementsSourceFromElements([objectType, d1Type]),
-          { [serviceName]: serviceName, d1: 'dummy' },
-          undefined,
-          undefined,
-          mockAdapterCreator,
-        )
+        result = await getAdaptersCreatorConfigs({
+          accounts: [serviceName, 'd1'],
+          credentials: { [sfConfig.elemID.adapter]: sfConfig },
+          getConfig: async name => (name === sfConfig.elemID.adapter ? sfConfig : undefined),
+          elementsSource: buildElementsSourceFromElements([objectType, d1Type]),
+          accountToServiceName: { [serviceName]: serviceName, d1: 'dummy' },
+          adapterCreators: mockAdapterCreator,
+        })
       })
 
       it('should only return elements that belong to the relevant account', async () => {
