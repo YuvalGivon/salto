@@ -31,7 +31,7 @@ import { restoreChangeElement } from '@salto-io/adapter-components'
 import { MetadataObject } from '@salto-io/jsforce'
 import _ from 'lodash'
 import { logger } from '@salto-io/logging'
-import { collections, objects, promises, values } from '@salto-io/lowerdash'
+import { collections, objects, values } from '@salto-io/lowerdash'
 import SalesforceClient, { CustomListFuncDef } from './client/client'
 import * as constants from './constants'
 import {
@@ -188,7 +188,6 @@ import { enrichSaltoDeployErrors, getUserFriendlyDeployErrorMessage } from './cl
 import { createFlagsIterationInstance, CURRENT_FLAGS_ITERATION, getIteration } from './config/context/flags'
 
 const { awu } = collections.asynciterable
-const { partition } = promises.array
 const { concatObjects } = objects
 const { isDefined } = values
 
@@ -477,7 +476,8 @@ type SalesforceAdapterOperations = Omit<AdapterOperations, 'deploy' | 'validate'
 
 export default class SalesforceAdapter implements SalesforceAdapterOperations {
   private maxItemsInRetrieveRequest: number
-  private metadataToRetrieve: string[]
+  private metadataToRetrieve: Set<string>
+  private metadataToRead: Set<string>
   private metadataTypesOfInstancesFetchedInFilters: string[]
   private nestedMetadataTypes: Record<string, NestedMetadataTypeInfo>
   private createFiltersRunner: (params: CreateFiltersRunnerParams) => Required<Filter>
@@ -501,7 +501,8 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     config,
   }: SalesforceAdapterParams) {
     this.maxItemsInRetrieveRequest = config.maxItemsInRetrieveRequest ?? maxItemsInRetrieveRequest
-    this.metadataToRetrieve = metadataToRetrieve
+    this.metadataToRetrieve = new Set(metadataToRetrieve)
+    this.metadataToRead = new Set(config.fetch?.metadata?.typesToRead ?? [])
     this.userConfig = config
     this.metadataTypesOfInstancesFetchedInFilters = metadataTypesOfInstancesFetchedInFilters
     this.nestedMetadataTypes = nestedMetadataTypes
@@ -889,9 +890,9 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       .filter(async t => topLevelTypeNames.includes(await apiName(t)) || t.annotations.folderContentType !== undefined)
       .toArray()
 
-    const [metadataTypesToRetrieve, metadataTypesToRead] = await partition(topLevelTypes, async t =>
-      this.metadataToRetrieve.includes(await apiName(t)),
-    )
+    const [metadataTypesToRetrieve, metadataTypesToRead] = context.isFlagEnabled('retrieveAllTypes')
+      ? _.partition(topLevelTypes, t => !this.metadataToRead.has(apiNameSync(t) ?? ''))
+      : _.partition(topLevelTypes, t => this.metadataToRetrieve.has(apiNameSync(t) ?? ''))
 
     const retrieveMetadataInstancesFunc = context.metadataQuery.isFetchWithChangesDetection()
       ? retrieveMetadataInstanceForFetchWithChangesDetection

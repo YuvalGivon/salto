@@ -37,6 +37,7 @@ export const FIX_ELEMENTS_CONFIG = 'fixElements'
 export const FLAGS_CONFIG = 'flags'
 export const METADATA_INCLUDE_LIST = 'include'
 export const METADATA_EXCLUDE_LIST = 'exclude'
+const METADATA_TYPES_TO_READ = 'typesToRead'
 const METADATA_TYPE = 'metadataType'
 const METADATA_NAME = 'name'
 const METADATA_NAMESPACE = 'namespace'
@@ -52,6 +53,7 @@ export type MetadataQueryParams = Partial<Omit<MetadataInstance, 'isFolderType'>
 export type MetadataParams = {
   include?: MetadataQueryParams[]
   exclude?: MetadataQueryParams[]
+  typesToRead?: string[]
   objectsToSeperateFieldsToFiles?: string[]
 }
 
@@ -109,7 +111,7 @@ export type OptionalFeatures = {
   [key in (typeof OPTIONAL_FEATURES)[number]]?: boolean
 }
 
-const FLAGS = ['testFlag', 'supportProfileTabVisibilities', 'picklistsAsMaps'] as const
+const FLAGS = ['testFlag', 'supportProfileTabVisibilities', 'picklistsAsMaps', 'retrieveAllTypes'] as const
 export type Flags = {
   [key in (typeof FLAGS)[number]]: boolean
 }
@@ -805,6 +807,7 @@ const metadataConfigType = createMatchingObjectType<MetadataParams>({
   fields: {
     [METADATA_INCLUDE_LIST]: { refType: new ListType(metadataQueryType) },
     [METADATA_EXCLUDE_LIST]: { refType: new ListType(metadataQueryType) },
+    [METADATA_TYPES_TO_READ]: { refType: new ListType(BuiltinTypes.STRING) },
     [METADATA_SEPARATE_FIELD_LIST]: {
       refType: new ListType(BuiltinTypes.STRING),
       annotations: {

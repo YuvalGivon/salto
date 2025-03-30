@@ -746,13 +746,13 @@ export default class SalesforceClient implements ISalesforceClient {
       return existingRequest
     }
     const customListFuncDef: CustomListFuncDef | undefined = this.customListFuncDefByType[type]
-    let request: Promise<SendChunkedResult<ListMetadataQuery, FileProperties>>
+    let listResult: Promise<SendChunkedResult<ListMetadataQuery, FileProperties>>
     if (customListFuncDef !== undefined) {
       // For partial custom list functions we run an additional full list request
       if (customListFuncDef.mode === 'partial') {
         this.fullListPromisesByType[type] = this.sendChunkedList([{ type }], isUnhandledError)
       }
-      request = customListFuncDef.func(this).catch(e => {
+      listResult = customListFuncDef.func(this).catch(e => {
         log.error(
           'Failed to run custom list function for type %s. Falling back to full list. Error: %s',
           type,
@@ -764,7 +764,7 @@ export default class SalesforceClient implements ISalesforceClient {
       if (customListFuncDef.mode === 'extendsOriginal') {
         const [originalListResult, customListResult] = await Promise.all([
           this.sendChunkedList([{ type }], isUnhandledError),
-          request,
+          listResult,
         ])
         const listedFullNames = new Set(originalListResult.result.map(props => props.fullName))
         const result = {
@@ -773,14 +773,22 @@ export default class SalesforceClient implements ISalesforceClient {
           ),
           errors: originalListResult.errors.concat(customListResult.errors),
         }
-        request = Promise.resolve(result)
+        listResult = Promise.resolve(result)
         this.populateListedInstancesByType(result)
       }
     } else {
-      request = this.sendChunkedList([{ type }], isUnhandledError)
+      listResult = this.sendChunkedList([{ type }], isUnhandledError)
     }
-    this.listMetadataObjectsOfTypePromises[type] = request
-    return request
+    // Some types (such as GlobalValueSetTranslation) do not return the type in the file properties.
+    listResult = listResult.then(result => ({
+      ...result,
+      result: result.result.map(props => ({
+        ...props,
+        type,
+      })),
+    }))
+    this.listMetadataObjectsOfTypePromises[type] = listResult
+    return listResult
   }
 
   @mapToUserFriendlyErrorMessages

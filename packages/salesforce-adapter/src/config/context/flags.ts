@@ -23,6 +23,7 @@ const FLAGS_ITERATIONS: FlagsIterations = {
   testFlag: 1,
   supportProfileTabVisibilities: 1,
   picklistsAsMaps: 1,
+  retrieveAllTypes: 1,
 }
 
 export const getIteration = async (elementsSource?: ReadOnlyElementsSource): Promise<number> => {
