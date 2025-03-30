@@ -22,6 +22,11 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     serializationStrategy: 'id',
     target: { type: 'FirewallPolicy' },
   },
+  {
+    src: { field: 'rule_group_ids', parentTypes: ['FirewallPolicy'] },
+    serializationStrategy: 'id',
+    target: { type: 'FirewallRuleGroup' },
+  },
   // FirewallRule__fields is a list of fields. This rule should only catch fields with name == 'network_location'
   {
     src: { field: 'values', parentTypes: ['FirewallRule__fields'] },

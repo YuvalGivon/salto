@@ -106,15 +106,75 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     },
   },
 
+  FirewallPolicyIds: {
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/queries/firewall/v1',
+        },
+        transformation: convertIdListToObject,
+      },
+    ],
+    resource: {
+      directFetch: true,
+      recurseInto: {
+        FirewallPolicy: {
+          typeName: 'FirewallPolicy',
+          context: {
+            args: {
+              ids: { root: 'ids' },
+            },
+          },
+        },
+      },
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true, // We just use this to get the group rule ID list.
+      },
+      fieldCustomizations: {
+        ids: { hide: true },
+        FirewallPolicy: {
+          standalone: {
+            typeName: 'FirewallPolicy',
+            addParentAnnotation: false,
+            referenceFromParent: false,
+            nestPathUnderParent: false,
+          },
+        },
+      },
+    },
+  },
+
   FirewallPolicy: {
     requests: [
       {
         endpoint: {
-          path: '/policy/combined/firewall/v1',
+          path: '/policy/entities/firewall/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
         },
         transformation: {
           root: 'resources',
           adjust: convertGroupSummaryToIdList,
+        },
+      },
+      {
+        endpoint: {
+          path: '/fwmgr/entities/policies/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+          adjust: async ({ value }) => {
+            validatePlainObject(value, 'FirewallPolicy')
+            // Set `id` so that we can match the different fragments into a single element.
+            return { value: { ...value, id: value.policy_id } }
+          },
         },
       },
     ],
@@ -131,7 +191,8 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         id: { hide: true },
-        rule_set_id: { hide: true }, // same as id
+        policy_id: { omit: true }, // same as id
+        rule_set_id: { omit: true }, // same as id
         ...COMMON_FIELD_CUSTOMIZATIONS,
       },
     },
