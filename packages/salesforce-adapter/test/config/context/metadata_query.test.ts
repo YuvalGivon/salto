@@ -851,6 +851,38 @@ describe('buildMetadataQuery', () => {
           [NON_UPDATED_INSTANCE_NAME]: '2023-11-06T00:00:00.000Z',
         }
       })
+
+      describe('when instance type is in TYPES_TO_ALWAYS_RETRIEVE', () => {
+        beforeEach(() => {
+          instance = {
+            metadataType: FLOW_DEFINITION_METADATA_TYPE,
+            namespace: '',
+            name: 'TestFlow',
+            isFolderType: false,
+            changedAt: '2023-11-06T00:00:00.000Z',
+          }
+        })
+
+        it('should return true regardless of other conditions', () => {
+          expect(instance).toSatisfy(metadataQuery.isInstanceMatch)
+        })
+
+        it('should return false if the type is not included in metadata query', async () => {
+          const queryWithExcludedType = await buildMetadataQueryForFetchWithChangesDetection({
+            fetchParams: {
+              metadata: {
+                include: [{ metadataType: INCLUDED_TYPE }],
+                exclude: [{ metadataType: FLOW_DEFINITION_METADATA_TYPE }],
+              },
+            },
+            elementsSource: buildElementsSourceFromElements([changedAtSingleton]),
+            lastChangeDateOfTypesWithNestedInstances: emptyLastChangeDateOfTypesWithNestedInstances(),
+            customObjectsWithDeletedFields: new Set(),
+          })
+          expect(instance).not.toSatisfy(queryWithExcludedType.isInstanceMatch)
+        })
+      })
+
       describe('when instance was updated', () => {
         beforeEach(() => {
           instance = {

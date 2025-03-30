@@ -14,6 +14,7 @@ import { inspectValue, safeJsonStringify } from '@salto-io/adapter-utils'
 import {
   CUSTOM_OBJECT,
   DEFAULT_NAMESPACE,
+  FLOW_DEFINITION_METADATA_TYPE,
   MAX_TYPES_TO_SEPARATE_TO_FILE_PER_FIELD,
   SETTINGS_METADATA_TYPE,
 } from '../../constants'
@@ -76,6 +77,8 @@ const getPaths = (regexString: string): string[] =>
 // Since fullPaths are provided for nested Folder names, a special handling is required
 const isFolderMetadataTypeNameMatch = ({ name: instanceName }: MetadataInstance, name: string): boolean =>
   getPaths(name).some(path => path.endsWith(instanceName)) || regex.isFullRegexMatch(instanceName, name)
+
+const TYPES_TO_ALWAYS_RETRIEVE = new Set([FLOW_DEFINITION_METADATA_TYPE])
 
 type BuildMetadataQueryParams = {
   fetchParams: FetchParameters
@@ -253,6 +256,9 @@ export const buildMetadataQueryForFetchWithChangesDetection = async (
     isInstanceMatch: instance => {
       if (!metadataQuery.isInstanceIncluded(instance)) {
         return false
+      }
+      if (TYPES_TO_ALWAYS_RETRIEVE.has(instance.metadataType)) {
+        return true
       }
       const { metadataType, name } = instance
       if (metadataType === CUSTOM_OBJECT && params.customObjectsWithDeletedFields.has(name)) {
