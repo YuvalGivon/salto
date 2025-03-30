@@ -179,7 +179,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
     ],
     resource: {
-      directFetch: true,
+      directFetch: false,
     },
     element: {
       topLevel: {
@@ -276,6 +276,12 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
+          adjust: async ({ value }) => {
+            validatePlainObject(value, 'FirewallRuleGroup')
+            // A synthetic field to indicate if the rule group has rules, to avoid recurseInto on empty rule groups.
+            const hasRules: string = value.rule_ids.length > 0 ? 'true' : 'false'
+            return { value: { ...value, hasRules } }
+          },
         },
       },
     ],
@@ -284,6 +290,12 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       recurseInto: {
         FirewallRule: {
           typeName: 'FirewallRule',
+          conditions: [
+            {
+              fromField: 'hasRules',
+              match: ['true'],
+            },
+          ],
           context: {
             args: {
               ids: { root: 'rule_ids' },
@@ -301,6 +313,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
       },
       fieldCustomizations: {
+        hasRules: { omit: true },
         ...COMMON_FIELD_CUSTOMIZATIONS,
         FirewallRule: {
           standalone: {
@@ -332,7 +345,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
     ],
     resource: {
-      directFetch: true,
+      directFetch: false,
     },
     element: {
       topLevel: {
@@ -439,7 +452,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     resource: {
       directFetch: true,
       recurseInto: {
-        FirewallRuleGroup: {
+        MachineLearningExclusion: {
           typeName: 'MachineLearningExclusion',
           context: {
             args: {
@@ -456,7 +469,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         ids: { hide: true },
-        FirewallRuleGroup: {
+        MachineLearningExclusion: {
           standalone: {
             typeName: 'MachineLearningExclusion',
             addParentAnnotation: false,
@@ -512,7 +525,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     resource: {
       directFetch: true,
       recurseInto: {
-        FirewallRuleGroup: {
+        CertBasedExclusion: {
           typeName: 'CertBasedExclusion',
           context: {
             args: {
@@ -529,7 +542,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         ids: { hide: true },
-        FirewallRuleGroup: {
+        CertBasedExclusion: {
           standalone: {
             typeName: 'CertBasedExclusion',
             addParentAnnotation: false,
@@ -584,7 +597,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     resource: {
       directFetch: true,
       recurseInto: {
-        FirewallRuleGroup: {
+        SensorVisibilityExclusion: {
           typeName: 'SensorVisibilityExclusion',
           context: {
             args: {
@@ -601,7 +614,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         ids: { hide: true },
-        FirewallRuleGroup: {
+        SensorVisibilityExclusion: {
           standalone: {
             typeName: 'SensorVisibilityExclusion',
             addParentAnnotation: false,
@@ -757,7 +770,11 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
-        elemID: { parts: [{ fieldName: 'hostname' }] },
+        elemID: { parts: [{ fieldName: 'hostname' }, { fieldName: 'device_id' }] },
+      },
+      fieldCustomizations: {
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+        slow_changing_modified_timestamp: { omit: true },
       },
     },
   },
@@ -834,7 +851,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     resource: {
       directFetch: false,
       recurseInto: {
-        FirewallRule: {
+        CustomIoaRule: {
           typeName: 'CustomIoaRule',
           context: {
             args: {
