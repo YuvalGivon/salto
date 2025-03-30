@@ -51,7 +51,6 @@ import appDeploymentFilter from './filters/app_fetch'
 import standardRolesFilter from './filters/standard_roles'
 import userSchemaFilter from './filters/user_schema'
 import oktaExpressionLanguageFilter from './filters/expression_language'
-import accessPolicyRuleConstraintsFilter from './filters/access_policy_rule_constraints'
 import defaultPolicyRuleDeployment from './filters/default_rule_deployment'
 import appUserSchemaAdditionAndRemovalFilter from './filters/app_user_schema_deployment'
 import authorizationRuleFilter from './filters/authorization_server_rule'
@@ -107,7 +106,6 @@ const DEFAULT_FILTERS = [
   oktaExpressionLanguageFilter,
   profileEnrollmentAttributesFilter,
   addImportantValues, // TODO SALTO-5607 - move to infra
-  accessPolicyRuleConstraintsFilter,
   defaultPolicyRuleDeployment,
   appUserSchemaAdditionAndRemovalFilter,
   schemaDeploymentFilter,
