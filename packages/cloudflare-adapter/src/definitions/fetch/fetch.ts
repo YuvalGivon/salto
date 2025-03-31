@@ -264,8 +264,8 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
-        elemID: { parts: [{ fieldName: 'phase' }, { fieldName: 'kind' }], extendsParent: true },
-        alias: { aliasComponents: [{ fieldName: 'phase' }, { fieldName: 'kind' }] },
+        elemID: { parts: [{ fieldName: 'name' }, { fieldName: 'phase' }, { fieldName: 'kind' }], extendsParent: true },
+        alias: { aliasComponents: [{ fieldName: 'name' }, { fieldName: 'phase' }, { fieldName: 'kind' }] },
       },
       fieldCustomizations: {
         id: { hide: true },
