@@ -59,7 +59,10 @@ describe('picklistReferences filter', () => {
     filter = filterCreator({
       config: {
         ...defaultFilterContext,
-        context: buildContext({ fetchParams: { target: [] } }),
+        context: buildContext({
+          fetchParams: { target: [] },
+          flagsSettings: { flagOverrides: { picklistsAsMaps: true } },
+        }),
         elementsSource: buildElementsSourceFromElements([gvs, svs]),
       },
     }) as typeof filter

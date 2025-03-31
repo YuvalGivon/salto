@@ -236,7 +236,8 @@ const addReferencesToInstances = (
   Object.keys(instance.value).forEach(key => {
     const picklistRefs = picklistValuesReferenceIndex[objectType.elemID.createNestedID('field', key).getFullName()]
     if (picklistRefs) {
-      instance.value[key] = picklistRefs[instance.value[key]] ?? key
+      const val = instance.value[key]
+      instance.value[key] = picklistRefs[val] ?? val
     }
   })
 }
@@ -340,6 +341,9 @@ const createReferencesForBusinessProcess = ({
 const filterCreator: FilterCreator = ({ config }) => ({
   name: 'picklistReferences',
   onFetch: async elements => {
+    if (!config.context.isFlagEnabled('picklistsAsMaps')) {
+      return
+    }
     const picklistValuesReferenceIndex = createPicklistValuesReferenceIndex(
       await toArrayAsync(await buildElementsSourceForFetch(elements, config).getAll()),
     )
