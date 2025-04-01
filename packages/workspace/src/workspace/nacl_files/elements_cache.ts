@@ -28,7 +28,6 @@ import { MergeError, MergeResult } from '../../merger'
 import { ElementsSource } from '../elements_source'
 import { RemoteMap, RemoteMapEntry, RemoteMapCreator } from '../remote_map'
 import { resolveChanges } from '../../expressions'
-import { getSaltoFlagBool, WORKSPACE_FLAGS } from '../../flags'
 
 const { awu } = collections.asynciterable
 const log = logger(module)
@@ -356,14 +355,11 @@ export const createMergeManager = async (
       currentElements,
     )
 
-    const allChanges = mergedChanges.concat(deleteChanges)
-    const changes = getSaltoFlagBool(WORKSPACE_FLAGS.resolveTypesInCacheUpdate)
-      ? await resolveChanges({
-          changes: allChanges,
-          elementsSource: currentElements,
-          opts: { shouldResolveReferences: false },
-        })
-      : allChanges
+    const changes = await resolveChanges({
+      changes: mergedChanges.concat(deleteChanges),
+      elementsSource: currentElements,
+      opts: { shouldResolveReferences: false },
+    })
 
     return {
       mergeErrors: awu(mergeErrors),
