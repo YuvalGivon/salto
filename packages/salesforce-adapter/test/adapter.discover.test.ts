@@ -2498,7 +2498,7 @@ public class LargeClass${index} {
       })
     })
     describe('when org has a namespace defined', () => {
-      const TEST_TYPE_NAME = 'TestType'
+      const TEST_TYPE_NAME = 'CustomObject'
       const ORG_NAMESPACE = 'test'
       const INSTALLED_PACKAGE_NAMESPACE = 'SBQQ'
 
@@ -2508,7 +2508,6 @@ public class LargeClass${index} {
         ;({ connection, adapter } = mockAdapter({
           adapterParams: {
             getElemIdFunc: mockGetElemIdFunc,
-            metadataToRetrieve: [TEST_TYPE_NAME],
             config: {
               fetch: {
                 metadata: {

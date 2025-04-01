@@ -302,21 +302,9 @@ export const allFilters: Array<FilterCreator> = [
   addParentToInstancesWithinFolderFilter,
 ]
 
-export interface SalesforceAdapterParams {
-  // Max items to fetch in one retrieve request
-  maxItemsInRetrieveRequest?: number
-
+export type SalesforceAdapterParams = {
   // Metadata types that are being fetched in the filters
   metadataTypesOfInstancesFetchedInFilters?: string[]
-
-  // Metadata types that we have to fetch using the retrieve API
-  metadataToRetrieve?: string[]
-
-  // Metadata types that we should not create, update or delete in the main adapter code
-  metadataTypesToSkipMutation?: string[]
-
-  // Metadata types that that include metadata types inside them
-  nestedMetadataTypes?: Record<string, NestedMetadataTypeInfo>
 
   // Filters to deploy to all adapter operations
   filterCreators?: Array<FilterCreator>
@@ -327,19 +315,12 @@ export interface SalesforceAdapterParams {
   // callback function to get an existing elemId or create a new one by the ServiceIds values
   getElemIdFunc?: ElemIdGetter
 
-  // System fields that salesforce may add to custom objects - to be ignored when creating objects
-  systemFields?: string[]
-
-  // Unsupported System fields that salesforce may add to custom objects
-  // to not be fetched and managed
-  unsupportedSystemFields?: string[]
-
   config: SalesforceConfig
 
   elementsSource: ReadOnlyElementsSource
 }
 
-const METADATA_TO_RETRIEVE = [
+const METADATA_TO_RETRIEVE = new Set([
   // Metadata with content - we use retrieve to get the StaticFiles properly
   'ApexClass', // contains encoded zip content
   'ApexComponent', // contains encoded zip content
@@ -392,9 +373,13 @@ const METADATA_TO_RETRIEVE = [
   'Layout', // retrieve returns more information about relatedLists
   'Workflow',
   'StreamingAppDataConnector',
+])
+const METADATA_TO_READ = [
+  // SALTO-5593
+  'Translation',
 ]
 
-export const NESTED_METADATA_TYPES = {
+export const NESTED_METADATA_TYPES: Record<string, NestedMetadataTypeInfo> = {
   CustomLabels: {
     nestedInstanceFields: ['labels'],
     isNestedApiNameRelative: false,
@@ -476,10 +461,8 @@ type SalesforceAdapterOperations = Omit<AdapterOperations, 'deploy' | 'validate'
 
 export default class SalesforceAdapter implements SalesforceAdapterOperations {
   private maxItemsInRetrieveRequest: number
-  private metadataToRetrieve: Set<string>
   private metadataToRead: Set<string>
   private metadataTypesOfInstancesFetchedInFilters: string[]
-  private nestedMetadataTypes: Record<string, NestedMetadataTypeInfo>
   private createFiltersRunner: (params: CreateFiltersRunnerParams) => Required<Filter>
 
   private client: SalesforceClient
@@ -489,23 +472,16 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
 
   public constructor({
     metadataTypesOfInstancesFetchedInFilters = [FLOW_METADATA_TYPE],
-    maxItemsInRetrieveRequest = constants.DEFAULT_MAX_ITEMS_IN_RETRIEVE_REQUEST,
-    metadataToRetrieve = METADATA_TO_RETRIEVE,
-    nestedMetadataTypes = NESTED_METADATA_TYPES,
     filterCreators = allFilters,
     client,
     getElemIdFunc,
     elementsSource,
-    systemFields = SYSTEM_FIELDS,
-    unsupportedSystemFields = UNSUPPORTED_SYSTEM_FIELDS,
     config,
   }: SalesforceAdapterParams) {
-    this.maxItemsInRetrieveRequest = config.maxItemsInRetrieveRequest ?? maxItemsInRetrieveRequest
-    this.metadataToRetrieve = new Set(metadataToRetrieve)
-    this.metadataToRead = new Set(config.fetch?.metadata?.typesToRead ?? [])
+    this.maxItemsInRetrieveRequest = config.maxItemsInRetrieveRequest ?? constants.DEFAULT_MAX_ITEMS_IN_RETRIEVE_REQUEST
+    this.metadataToRead = new Set(METADATA_TO_READ.concat(config.fetch?.metadata?.typesToRead ?? []))
     this.userConfig = config
     this.metadataTypesOfInstancesFetchedInFilters = metadataTypesOfInstancesFetchedInFilters
-    this.nestedMetadataTypes = nestedMetadataTypes
     this.client = client
     this.elementsSource = elementsSource
     this.createFiltersRunner = ({ context, contextOverrides = {} }: CreateFiltersRunnerParams) =>
@@ -513,8 +489,8 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
         {
           client: this.client,
           config: {
-            unsupportedSystemFields,
-            systemFields,
+            UNSUPPORTED_SYSTEM_FIELDS,
+            SYSTEM_FIELDS,
             context,
             elementsSource,
             separateFieldToFiles: config.fetch?.metadata?.objectsToSeperateFieldsToFiles,
@@ -762,7 +738,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       deployResult = await deployMetadata(
         resolvedChanges,
         this.client,
-        this.nestedMetadataTypes,
+        NESTED_METADATA_TYPES,
         progressReporter,
         context,
         this.userConfig.client?.deploy?.deleteBeforeUpdate,
@@ -892,7 +868,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
 
     const [metadataTypesToRetrieve, metadataTypesToRead] = context.isFlagEnabled('retrieveAllTypes')
       ? _.partition(topLevelTypes, t => !this.metadataToRead.has(apiNameSync(t) ?? ''))
-      : _.partition(topLevelTypes, t => this.metadataToRetrieve.has(apiNameSync(t) ?? ''))
+      : _.partition(topLevelTypes, t => METADATA_TO_RETRIEVE.has(apiNameSync(t) ?? ''))
 
     const retrieveMetadataInstancesFunc = context.metadataQuery.isFetchWithChangesDetection()
       ? retrieveMetadataInstanceForFetchWithChangesDetection
