@@ -270,11 +270,6 @@ export const referenceFieldTargetTypes = (field: Field): string[] => {
     // hierarchy fields always reference the type that contains them
     return makeArray(apiNameSync(field.parent))
   }
-  log.warn(
-    'Unknown reference field type %s for field %s',
-    field.refType.elemID.getFullName(),
-    field.elemID.getFullName(),
-  )
   return []
 }
 
