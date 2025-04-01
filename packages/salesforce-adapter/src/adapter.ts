@@ -485,12 +485,12 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     this.client = client
     this.elementsSource = elementsSource
     this.createFiltersRunner = ({ context, contextOverrides = {} }: CreateFiltersRunnerParams) =>
-      filter.filtersRunner(
+      filter.filtersRunner<FilterResult, { client: SalesforceClient; config: FilterContext }>(
         {
           client: this.client,
           config: {
-            UNSUPPORTED_SYSTEM_FIELDS,
-            SYSTEM_FIELDS,
+            systemFields: SYSTEM_FIELDS,
+            unsupportedSystemFields: UNSUPPORTED_SYSTEM_FIELDS,
             context,
             elementsSource,
             separateFieldToFiles: config.fetch?.metadata?.objectsToSeperateFieldsToFiles,
