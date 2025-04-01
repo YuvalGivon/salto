@@ -13,7 +13,7 @@ import { Flags, FlagsSettings } from '../types'
 
 const log = logger(module)
 
-export const CURRENT_FLAGS_ITERATION = 0
+const CURRENT_FLAGS_ITERATION = 0
 
 type FlagsIterations = {
   [FlagName in keyof Flags]: number
@@ -26,22 +26,31 @@ const FLAGS_ITERATIONS: FlagsIterations = {
   retrieveAllTypes: 1,
 }
 
-export const getIteration = async (elementsSource?: ReadOnlyElementsSource): Promise<number> => {
-  if (!elementsSource) {
-    return CURRENT_FLAGS_ITERATION
+export const getIteration = async (
+  elementsSource: ReadOnlyElementsSource | undefined,
+  flagsSettings: FlagsSettings | undefined,
+  preferCurrent = false,
+): Promise<number> => {
+  const currentIteration = flagsSettings?.currentIterationOverride ?? CURRENT_FLAGS_ITERATION
+  if (!elementsSource || preferCurrent) {
+    log.debug(`Using current flags iteration: ${currentIteration}`)
+    return currentIteration
   }
   const flagsIteration = await elementsSource.get(
     new ElemID(SALESFORCE, FLAGS_ITERATION_TYPE_NAME, 'instance', ElemID.CONFIG_NAME, FLAGS_ITERATION_FIELD_NAME),
   )
   if (!_.isNumber(flagsIteration)) {
     log.warn(`Flags iteration is not a number: ${flagsIteration}`)
-    return CURRENT_FLAGS_ITERATION
+    log.debug(`Using current flags iteration: ${currentIteration}`)
+    return currentIteration
   }
+  log.debug(`Using flags iteration from elements source: ${flagsIteration}`)
   return flagsIteration
 }
 
-export const isFlagEnabled = (flag: keyof Flags, iteration: number, flagsSettings?: FlagsSettings): boolean =>
-  flagsSettings?.flagOverrides?.[flag] ?? FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration)
+export const isFlagEnabled = (flag: keyof Flags, iteration?: number, flagsSettings?: FlagsSettings): boolean =>
+  flagsSettings?.flagOverrides?.[flag] ??
+  FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration ?? CURRENT_FLAGS_ITERATION)
 
 export const createFlagsIterationInstance = (iteration: number): InstanceElement =>
   new InstanceElement(ElemID.CONFIG_NAME, ArtificialTypes[FLAGS_ITERATION_TYPE_NAME], {

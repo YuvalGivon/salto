@@ -8,37 +8,32 @@
 import { ElemID, InstanceElement, ObjectType } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { SALESFORCE } from '../../../src/constants'
-import {
-  getIteration,
-  isFlagEnabled,
-  CURRENT_FLAGS_ITERATION,
-  createFlagsIterationInstance,
-} from '../../../src/config/context/flags'
+import { getIteration, isFlagEnabled, createFlagsIterationInstance } from '../../../src/config/context/flags'
 import { FlagsSettings } from '../../../src/config/types'
 
 describe('flags', () => {
   describe('getIteration', () => {
-    it('should return CURRENT_FLAGS_ITERATION when elementsSource is not provided', async () => {
-      const result = await getIteration()
-      expect(result).toBe(CURRENT_FLAGS_ITERATION)
+    it('should return CURRENT_FLAGS_ITERATION when elementsSource and flagsSettings are undefined', async () => {
+      const result = await getIteration(undefined, undefined)
+      expect(result).toBe(0)
     })
 
-    it('should return iteration from elementsSource when available', async () => {
+    it('should return iteration from elementsSource when available and not overridden', async () => {
       const iteration = 5
       const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(iteration)])
 
-      const result = await getIteration(elementsSource)
+      const result = await getIteration(elementsSource, undefined)
       expect(result).toBe(iteration)
     })
 
-    it('should return CURRENT_FLAGS_ITERATION when the flags iteration instance is missing', async () => {
+    it('should return CURRENT_FLAGS_ITERATION when the flags iteration instance is missing and not overridden', async () => {
       const elementsSource = buildElementsSourceFromElements([])
 
-      const result = await getIteration(elementsSource)
-      expect(result).toBe(CURRENT_FLAGS_ITERATION)
+      const result = await getIteration(elementsSource, undefined)
+      expect(result).toBe(0)
     })
 
-    it('should return CURRENT_FLAGS_ITERATION when the flags iteration instance is malformed', async () => {
+    it('should return CURRENT_FLAGS_ITERATION when the flags iteration instance is malformed and not overridden', async () => {
       const nonNumberInstance = new InstanceElement(
         ElemID.CONFIG_NAME,
         new ObjectType({ elemID: new ElemID(SALESFORCE, 'FlagsIteration') }),
@@ -46,8 +41,34 @@ describe('flags', () => {
       )
       const elementsSource = buildElementsSourceFromElements([nonNumberInstance])
 
-      const result = await getIteration(elementsSource)
-      expect(result).toBe(CURRENT_FLAGS_ITERATION)
+      const result = await getIteration(elementsSource, undefined)
+      expect(result).toBe(0)
+    })
+
+    it('should return currentIterationOverride when provided', async () => {
+      const iteration = 5
+      const flagsSettings: FlagsSettings = {
+        currentIterationOverride: iteration,
+      }
+      const result = await getIteration(undefined, flagsSettings)
+      expect(result).toBe(iteration)
+    })
+
+    it('should prefer current iteration when requested', async () => {
+      const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(5)])
+
+      const result = await getIteration(elementsSource, undefined, true)
+      expect(result).toBe(0)
+    })
+
+    it('should prefer currentIterationOverride when provided and requested', async () => {
+      const iteration = 5
+      const flagsSettings: FlagsSettings = {
+        currentIterationOverride: iteration,
+      }
+      const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(3)])
+      const result = await getIteration(elementsSource, flagsSettings, true)
+      expect(result).toBe(iteration)
     })
   })
 

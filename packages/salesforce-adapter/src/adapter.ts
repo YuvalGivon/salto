@@ -185,7 +185,7 @@ import { fixElementsFunc } from './custom_references/handlers'
 import { createListApexClassesDef, createListMissingWaveDataflowsDef } from './client/custom_list_funcs'
 import { SalesforceAdapterDeployOptions } from './adapter_creator'
 import { enrichSaltoDeployErrors, getUserFriendlyDeployErrorMessage } from './client/user_facing_errors'
-import { createFlagsIterationInstance, CURRENT_FLAGS_ITERATION, getIteration } from './config/context/flags'
+import { createFlagsIterationInstance, getIteration } from './config/context/flags'
 
 const { awu } = collections.asynciterable
 const { concatObjects } = objects
@@ -548,6 +548,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     partialFetchTargets,
   }: FetchOptions): Promise<FetchResult> {
     const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
+    const flagsSettings = this.userConfig[FLAGS_CONFIG]
     this.initializeCustomListFunctions(withChangesDetection)
     const baseQuery = buildMetadataQuery({ fetchParams })
     const metadataTypeInfos = await this.client.listMetadataTypes()
@@ -569,15 +570,13 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
           customObjectsWithDeletedFields: await this.getCustomObjectsWithDeletedFields(),
         })
       : buildMetadataQuery({ fetchParams, targetedFetchInclude })
-    const flagsIteration = metadataQuery.isPartialFetch()
-      ? await getIteration(this.elementsSource)
-      : CURRENT_FLAGS_ITERATION
+    const flagsIteration = await getIteration(this.elementsSource, flagsSettings, !metadataQuery.isPartialFetch())
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
       metadataQuery,
       maxItemsInRetrieveRequest: this.maxItemsInRetrieveRequest,
-      flagsSettings: this.userConfig[FLAGS_CONFIG],
+      flagsSettings,
       flagsIteration,
     })
     log.debug('going to fetch salesforce account configuration..')
@@ -693,7 +692,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
       flagsSettings: this.userConfig[FLAGS_CONFIG],
-      flagsIteration: await getIteration(this.elementsSource),
+      flagsIteration: await getIteration(this.elementsSource, this.userConfig[FLAGS_CONFIG]),
     })
     log.debug(
       `about to ${checkOnly ? 'validate' : 'deploy'} group ${changeGroup.groupID} with scope (first 100): ${safeJsonStringify(
