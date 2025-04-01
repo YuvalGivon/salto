@@ -8,6 +8,7 @@
 import { Adapter } from '@salto-io/e2e-credentials-store'
 import { validateCredentials } from '../../src/client/client'
 import { UsernamePasswordCredentials } from '../../src/config/types'
+import { API_VERSION } from '../../src/config/context/flags'
 
 type Args = {
   username: string
@@ -43,7 +44,7 @@ const adapter: Adapter<Args, UsernamePasswordCredentials> = {
       apiToken: args['api-token'],
       isSandbox: args.sandbox,
     }),
-  validateCredentials: config => validateCredentials(config) as unknown as Promise<void>,
+  validateCredentials: config => validateCredentials(config, API_VERSION) as unknown as Promise<void>,
 }
 
 export default adapter

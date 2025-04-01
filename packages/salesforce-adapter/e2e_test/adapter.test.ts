@@ -74,7 +74,7 @@ import {
   findCustomFieldsObject,
   findFullCustomObject,
 } from '../test/utils'
-import SalesforceClient, { API_VERSION } from '../src/client/client'
+import SalesforceClient from '../src/client/client'
 import SalesforceAdapter from '../src/adapter'
 import { fromRetrieveResult, createDeployPackage } from '../src/transformers/xml_transformer'
 import { addDefaults } from '../src/filters/utils'
@@ -106,6 +106,7 @@ import {
 import { testHelpers } from './jest_environment'
 import { buildContext } from '../src/config/context/context'
 import { ORDERED_MAP_VALUES_FIELD } from '../src/filters/convert_maps'
+import { API_VERSION } from '../src/config/context/flags'
 
 const { awu } = collections.asynciterable
 const log = logger(module)
@@ -2687,7 +2688,7 @@ describe('Salesforce adapter E2E with real account', () => {
 
         const removeIfAlreadyExists = async (instance: MetadataInstanceElement): Promise<void> => {
           if (await findInstance(instance)) {
-            const pkg = createDeployPackage()
+            const pkg = createDeployPackage(API_VERSION)
             pkg.delete(assertMetadataObjectType(await instance.getType()), await apiName(instance))
             await client.deploy(await pkg.getZip())
           }

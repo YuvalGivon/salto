@@ -29,6 +29,9 @@ import {
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 
+// Bumping the API version in the adapter and in the E2E tests doesn't have to happen at the same time.
+const API_VERSION = '62.0'
+
 export const naclNameToSFName = (objName: string): string => `${objName}__c`
 export const objectExists = async (
   client: SalesforceClient,
@@ -82,6 +85,7 @@ export const getSalesforceCredsInstance = (creds: UsernamePasswordCredentials): 
 export const getSalesforceClient = (credentials: UsernamePasswordCredentials): SalesforceClient =>
   new SalesforceClient({
     credentials: new UsernamePasswordCredentials(credentials),
+    apiVersion: API_VERSION,
     // Default to purge on delete to avoid leaving definitions in the recycle bin
     config: { deploy: { purgeOnDelete: true } },
   })

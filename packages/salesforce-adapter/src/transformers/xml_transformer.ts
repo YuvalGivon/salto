@@ -23,7 +23,6 @@ import {
   TransformFunc,
   transformValues,
 } from '@salto-io/adapter-utils'
-import { API_VERSION } from '../client/client'
 import {
   INSTANCE_FULL_NAME_FIELD,
   IS_ATTRIBUTE,
@@ -85,10 +84,10 @@ export const getManifestTypeName = (type: MetadataObjectType): string =>
     : type.annotations.folderContentType ?? type.annotations.metadataType
 
 export const toRetrieveRequest = (files: ReadonlyArray<FileProperties>): RetrieveRequest => ({
-  apiVersion: API_VERSION,
   singlePackage: false,
   [PACKAGE]: {
-    version: API_VERSION,
+    // The version is populated by the client.
+    version: 'version-placeholder',
     types: _(files)
       .groupBy(file => file.type)
       .entries()
@@ -577,9 +576,9 @@ const getValuesToDeploy = async (instance: InstanceElement): Promise<Values> => 
   return cloneValuesWithAttributePrefixes(instance)
 }
 
-const toPackageXml = (manifest: Map<string, string[]>): string =>
+const toPackageXml = (manifest: Map<string, string[]>, version: string): string =>
   toMetadataXml('Package', {
-    version: API_VERSION,
+    version,
     types: [...manifest.entries()].map(([name, members]) => ({
       name,
       members,
@@ -596,7 +595,7 @@ export type DeployPackage = {
   getZipContent(): Map<string, string | Buffer>
 }
 
-export const createDeployPackage = (deleteBeforeUpdate?: boolean): DeployPackage => {
+export const createDeployPackage = (apiVersion: string, deleteBeforeUpdate?: boolean): DeployPackage => {
   const addManifest = new collections.map.DefaultMap<string, string[]>(() => [])
   const deleteManifest = new collections.map.DefaultMap<string, string[]>(() => [])
   const zipContent = new Map<string, string | Buffer>()
@@ -674,9 +673,9 @@ export const createDeployPackage = (deleteBeforeUpdate?: boolean): DeployPackage
       deleteManifest.get(typeName).push(name)
     },
     getZip: () => {
-      zipContent.set(`${PACKAGE}/package.xml`, toPackageXml(addManifest))
+      zipContent.set(`${PACKAGE}/package.xml`, toPackageXml(addManifest, apiVersion))
       if (deleteManifest.size !== 0) {
-        zipContent.set(`${PACKAGE}/${deletionsPackageName}`, toPackageXml(deleteManifest))
+        zipContent.set(`${PACKAGE}/${deletionsPackageName}`, toPackageXml(deleteManifest, apiVersion))
       }
 
       const zip = new JSZip()
@@ -696,7 +695,7 @@ export const createDeployPackage = (deleteBeforeUpdate?: boolean): DeployPackage
       return zip.generateAsync({ type: 'nodebuffer' })
     },
     getDeletionsPackageName: () => deletionsPackageName,
-    getPackageXmlContent: () => toPackageXml(addManifest),
+    getPackageXmlContent: () => toPackageXml(addManifest, apiVersion),
     getZipContent: () => zipContent,
   }
 }

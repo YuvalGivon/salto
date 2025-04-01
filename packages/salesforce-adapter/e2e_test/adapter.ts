@@ -11,6 +11,7 @@ import { ElemID, ServiceIds } from '@salto-io/adapter-api'
 import SalesforceClient from '../src/client/client'
 import SalesforceAdapter, { SalesforceAdapterParams } from '../src/adapter'
 import { SalesforceConfig, Credentials } from '../src/config/types'
+import { API_VERSION } from '../src/config/context/flags'
 
 type Reals = {
   client: SalesforceClient
@@ -27,7 +28,8 @@ const mockGetElemIdFunc = (adapterName: string, _serviceIds: ServiceIds, name: s
 const realAdapter = ({ adapterParams, credentials }: Opts, config?: SalesforceConfig): Reals => {
   // Default to purge on delete to avoid leaving definitions in the recycle bin
   const clientConfig = _.merge({ deploy: { purgeOnDelete: true } }, config?.client)
-  const client = (adapterParams && adapterParams.client) || new SalesforceClient({ credentials, config: clientConfig })
+  const client =
+    adapterParams?.client || new SalesforceClient({ credentials, config: clientConfig, apiVersion: API_VERSION })
   const adapter = new SalesforceAdapter({
     client,
     // to be changed at https://salto-io.atlassian.net/browse/SALTO-7121

@@ -19,7 +19,6 @@ import {
   xmlToValues,
 } from '../../src/transformers/xml_transformer'
 import { MetadataValues, createInstanceElement } from '../../src/transformers/transformer'
-import { API_VERSION } from '../../src/client/client'
 import { createEncodedZipContent } from '../utils'
 import { mockFileProperties } from '../connection'
 import { mockTypes, mockDefaultValues } from '../mock_elements'
@@ -30,6 +29,7 @@ import {
 } from '../../src/constants'
 import { Context } from '../../src/config/types'
 import { buildContext } from '../../src/config/context/context'
+import { API_VERSION } from '../../src/config/context/flags'
 
 describe('XML Transformer', () => {
   let context: Context
@@ -53,20 +53,20 @@ describe('XML Transformer', () => {
 
     describe('getDeletionsPackageName', () => {
       it('get the right package name when deleteBeforeUpdate is true', () => {
-        expect(createDeployPackage(true).getDeletionsPackageName()).toBe('destructiveChanges.xml')
+        expect(createDeployPackage(API_VERSION, true).getDeletionsPackageName()).toBe('destructiveChanges.xml')
       })
 
       it('get the right package name when deleteBeforeUpdate is false', () => {
-        expect(createDeployPackage(false).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
+        expect(createDeployPackage(API_VERSION, false).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
       })
 
       it('get the right package name when deleteBeforeUpdate is undefined', () => {
-        expect(createDeployPackage(undefined).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
+        expect(createDeployPackage(API_VERSION).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
       })
     })
 
     beforeEach(() => {
-      pkg = createDeployPackage()
+      pkg = createDeployPackage(API_VERSION)
     })
 
     describe('empty package', () => {
@@ -221,7 +221,7 @@ describe('XML Transformer', () => {
         })
         describe('when a field is missing', () => {
           beforeEach(async () => {
-            pkg = createDeployPackage()
+            pkg = createDeployPackage(API_VERSION)
             await pkg.add(
               createInstanceElement(
                 _.omit(mockDefaultValues.AuraDefinitionBundle, 'designContent'),

@@ -35,6 +35,7 @@ import {
 } from './salesforce_imports'
 import { SyncZipTreeContainer } from './tree_container'
 import { detailedMessageFromSfError } from './errors'
+import { API_VERSION } from '../config/context/flags'
 
 const log = logger(module)
 const { withLimitedConcurrency } = promises.array
@@ -163,7 +164,7 @@ export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, 
   const { validChanges, errors } = await validateChanges(resolvedChanges)
 
   log.debug('Adding %d changes to SFDX dump package', validChanges.length)
-  const pkg = createDeployPackage()
+  const pkg = createDeployPackage(API_VERSION)
   await Promise.all(
     validChanges.map(change =>
       addChangeToPackage(pkg, change, NESTED_METADATA_TYPES, {

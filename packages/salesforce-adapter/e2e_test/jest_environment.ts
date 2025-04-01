@@ -19,6 +19,7 @@ import { ApiLimitsTooLowError, validateCredentials } from '../src/client/client'
 import { UsernamePasswordCredentials } from '../src/config/types'
 import { CUSTOM_OBJECT } from '../src/constants'
 import { CustomObject as tCustomObject } from '../src/client/types'
+import { API_VERSION } from '../src/config/context/flags'
 
 const log = logger(module)
 
@@ -44,7 +45,7 @@ const credsSpec = (envName?: string): CredsSpec<UsernamePasswordCredentials> => 
     },
     validate: async (credentials: UsernamePasswordCredentials): Promise<void> => {
       try {
-        await validateCredentials(new UsernamePasswordCredentials(credentials), MIN_API_REQUESTS_NEEDED)
+        await validateCredentials(new UsernamePasswordCredentials(credentials), API_VERSION, MIN_API_REQUESTS_NEEDED)
       } catch (e) {
         if (e instanceof ApiLimitsTooLowError) {
           throw new SuspendCredentialsError(e, NOT_ENOUGH_API_REQUESTS_SUSPENSION_TIMEOUT)

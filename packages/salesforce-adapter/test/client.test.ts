@@ -22,12 +22,7 @@ import { collections, types, values } from '@salto-io/lowerdash'
 import { MockInterface } from '@salto-io/test-utils'
 import { buildElementsSourceFromElements, safeJsonStringify } from '@salto-io/adapter-utils'
 import { QueryResult } from '@salto-io/jsforce'
-import SalesforceClient, {
-  API_VERSION,
-  ApiLimitsTooLowError,
-  getConnectionDetails,
-  validateCredentials,
-} from '../src/client/client'
+import SalesforceClient, { ApiLimitsTooLowError, getConnectionDetails, validateCredentials } from '../src/client/client'
 import mockClient from './client'
 import { OauthAccessTokenCredentials, UsernamePasswordCredentials } from '../src/config/types'
 import Connection from '../src/client/jsforce'
@@ -61,6 +56,7 @@ import {
   enrichSaltoDeployErrors,
 } from '../src/client/user_facing_errors'
 import { createInstanceElement, createMetadataObjectType } from '../src/transformers/transformer'
+import { API_VERSION } from '../src/config/context/flags'
 
 const { array, asynciterable } = collections
 const { makeArray } = array
@@ -92,6 +88,7 @@ describe('salesforce client', () => {
           list: undefined,
         },
       },
+      apiVersion: API_VERSION,
     })
   })
   const credentials = new UsernamePasswordCredentials({
@@ -740,7 +737,7 @@ describe('salesforce client', () => {
 
   describe('getConnectionDetails', () => {
     it('should return empty orgId', async () => {
-      const { orgId, remainingDailyRequests } = await getConnectionDetails(credentials, connection)
+      const { orgId, remainingDailyRequests } = await getConnectionDetails(credentials, API_VERSION, connection)
       expect(orgId).toEqual('')
       expect(remainingDailyRequests).toEqual(10000)
     })
@@ -748,10 +745,12 @@ describe('salesforce client', () => {
 
   describe('validateCredentials', () => {
     it('should throw ApiLimitsTooLowError exception', async () => {
-      await expect(validateCredentials(credentials, 100000, connection)).rejects.toThrow(ApiLimitsTooLowError)
+      await expect(validateCredentials(credentials, API_VERSION, 100000, connection)).rejects.toThrow(
+        ApiLimitsTooLowError,
+      )
     })
     it('should return empty string as accountId and no values for accountType and isProduction', async () => {
-      expect(await validateCredentials(credentials, 3, connection)).toEqual({
+      expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
         accountId: '',
         isProduction: undefined,
         accountType: undefined,
@@ -780,7 +779,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(sandboxCredentials, 3, connection)).toEqual({
+            expect(await validateCredentials(sandboxCredentials, API_VERSION, 3, connection)).toEqual({
               accountId: 'https://url.com/',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -797,7 +796,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(sandboxCredentials, 3, connection)).toEqual({
+            expect(await validateCredentials(sandboxCredentials, API_VERSION, 3, connection)).toEqual({
               accountId: 'https://url.com/',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -808,7 +807,7 @@ describe('salesforce client', () => {
           it('should throw an error when there is no instanceUrl', async () => {
             const mockConnection = mockClient().connection
             _.set(mockConnection, 'instanceUrl', undefined)
-            await expect(validateCredentials(sandboxCredentials, 3, mockConnection)).rejects.toThrow(
+            await expect(validateCredentials(sandboxCredentials, API_VERSION, 3, mockConnection)).rejects.toThrow(
               'Expected Salesforce organization URL to exist in the connection',
             )
           })
@@ -823,7 +822,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction true and correct accountType', async () => {
-            expect(await validateCredentials(credentials, 3, connection)).toEqual({
+            expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
               accountId: '',
               accountUrl: 'https://url.com/',
               isProduction: true,
@@ -840,7 +839,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(credentials, 3, connection)).toEqual({
+            expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
               accountId: '',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -1075,7 +1074,7 @@ describe('salesforce client', () => {
       clientId: 'clientId',
     })
     it('should return empty orgId for oauth credentials', async () => {
-      const { orgId, remainingDailyRequests } = await getConnectionDetails(oauthCredentials, connection)
+      const { orgId, remainingDailyRequests } = await getConnectionDetails(oauthCredentials, API_VERSION, connection)
       expect(orgId).toEqual('')
       expect(remainingDailyRequests).toEqual(10000)
     })
@@ -1113,7 +1112,8 @@ describe('salesforce client', () => {
             password: '',
             isSandbox: false,
           }),
-          connection: testConnection,
+          apiVersion: API_VERSION,
+          connectionCreator: () => testConnection,
           config: {
             polling: { interval: 100, fetchTimeout: 1000, deployTimeout: 2000 },
           },
@@ -1144,7 +1144,8 @@ describe('salesforce client', () => {
             password: '',
             isSandbox: false,
           }),
-          connection: testConnection,
+          apiVersion: API_VERSION,
+          connectionCreator: () => testConnection,
           config: {
             deploy: { rollbackOnError: false, testLevel: 'NoTestRun' },
             polling: {
@@ -1235,7 +1236,8 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            connection: testConnection,
+            apiVersion: API_VERSION,
+            connectionCreator: () => testConnection,
             config: {
               maxConcurrentApiRequests: {
                 total: 5,
@@ -1308,7 +1310,8 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            connection: testConnection,
+            apiVersion: API_VERSION,
+            connectionCreator: () => testConnection,
             config: {
               maxConcurrentApiRequests: {
                 retrieve: 100,
@@ -1366,7 +1369,8 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            connection: testConnection,
+            apiVersion: API_VERSION,
+            connectionCreator: () => testConnection,
           })
           mockRetrieve = testConnection.metadata.retrieve as jest.MockedFunction<
             typeof testConnection.metadata.retrieve
@@ -1407,6 +1411,7 @@ describe('salesforce client', () => {
         password: '',
         isSandbox: false,
       }),
+      apiVersion: API_VERSION,
     })
     it('should return true when sandbox true', () => {
       expect(client.isSandbox()).toBeTruthy()

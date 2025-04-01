@@ -10,12 +10,12 @@ import { logger } from '@salto-io/logging'
 import { CancelServiceAsyncTaskResult, ChangeGroup, StaticFile, toChange } from '@salto-io/adapter-api'
 import { UsernamePasswordCredentials } from '../src/config/types'
 import { createInstanceElement, MetadataInstanceElement } from '../src/transformers/transformer'
-import { API_VERSION } from '../src/client/client'
 // eslint-disable-next-line no-restricted-imports
 import { mockTypes } from '../test/mock_elements'
 import { testHelpers } from './jest_environment'
 import realAdapter from './adapter'
 import { nullProgressReporter } from './utils'
+import { API_VERSION } from '../src/config/context/flags'
 
 const log = logger(module)
 

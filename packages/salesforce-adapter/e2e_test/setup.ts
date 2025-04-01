@@ -16,6 +16,7 @@ import SalesforceClient from '../src/client/client'
 // eslint-disable-next-line no-restricted-imports
 import { mockTypes, mockDefaultValues } from '../test/mock_elements'
 import { removeMetadataIfAlreadyExists } from './utils'
+import { API_VERSION } from '../src/config/context/flags'
 
 export const gvsName = 'TestGlobalValueSet'
 export const accountApiName = 'Account'
@@ -54,7 +55,7 @@ export const CUSTOM_FIELD_NAMES = {
 }
 
 export const removeCustomObjectsWithVariousFields = async (client: SalesforceClient): Promise<void> => {
-  const deployPkg = createDeployPackage()
+  const deployPkg = createDeployPackage(API_VERSION)
   deployPkg.delete(mockTypes.CustomObject, customObjectWithFieldsName)
   deployPkg.delete(mockTypes.CustomObject, customObjectAddFieldsName)
   await client.deploy(await deployPkg.getZip())
@@ -832,7 +833,7 @@ export const verifyElementsExist = async (client: SalesforceClient): Promise<voi
       [mockDefaultValues.LightningComponentBundle, mockTypes.LightningComponentBundle],
       [mockDefaultValues.StaticResource, mockTypes.StaticResource],
     ]
-    const pkg = createDeployPackage()
+    const pkg = createDeployPackage(API_VERSION)
     await awu(instances).forEach(async ([values, type]) => {
       await pkg.add(createInstanceElement(values, type))
     })

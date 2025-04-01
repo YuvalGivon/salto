@@ -22,6 +22,7 @@ import {
 import { METADATA_DEPLOY_PENDING_STATUS, RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS } from '../src/constants'
 import { createMockProgressReporter, MockDeployProgressReporter } from './utils'
 import createMockClient from './client'
+import { API_VERSION } from '../src/config/context/flags'
 
 jest.mock('../src/client/client')
 jest.mock('../src/adapter')
@@ -83,6 +84,7 @@ describe('SalesforceAdapter creator', () => {
           isSandbox: false,
           apiToken: 'myToken',
         }),
+        API_VERSION,
       )
     })
   })
@@ -102,6 +104,7 @@ describe('SalesforceAdapter creator', () => {
           clientSecret: oauthConfigObj.clientSecret,
           clientId: oauthConfigObj.clientId,
         }),
+        API_VERSION,
       )
     })
   })
@@ -173,6 +176,7 @@ describe('SalesforceAdapter creator', () => {
             total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
           },
         },
+        apiVersion: API_VERSION,
       })
     })
 

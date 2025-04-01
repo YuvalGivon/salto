@@ -15,6 +15,8 @@ const log = logger(module)
 
 const CURRENT_FLAGS_ITERATION = 0
 
+export const API_VERSION = '62.0'
+
 type FlagsIterations = {
   [FlagName in keyof Flags]: number
 }

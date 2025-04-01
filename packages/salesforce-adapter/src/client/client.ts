@@ -72,7 +72,6 @@ const { logDecorator, throttle, requiresLogin, createRateLimitersFromConfig } = 
 
 type DeployOptions = Pick<JSForceDeployOptions, 'checkOnly'>
 
-export const API_VERSION = '62.0'
 const METADATA_NAMESPACE = 'http://soap.sforce.com/2006/04/metadata'
 
 // Salesforce limitation of maximum number of items per create/update/delete call
@@ -196,9 +195,12 @@ const validateCRUDResult = (isDelete: boolean): decorators.InstanceMethodDecorat
 const validateDeleteResult = validateCRUDResult(true)
 const validateSaveResult = validateCRUDResult(false)
 
+type ConnectionCreator = (credentials: Credentials, options: RequestRetryOptions, apiVersion: string) => Connection
+
 type SalesforceClientOpts = {
   credentials: Credentials
-  connection?: Connection
+  apiVersion: string
+  connectionCreator?: ConnectionCreator
   config?: SalesforceClientConfig
 }
 
@@ -238,7 +240,7 @@ type OauthConnectionParams = {
   isSandbox: boolean
 }
 
-const oauthConnection = (params: OauthConnectionParams): Connection => {
+const oauthConnection = (params: OauthConnectionParams, apiVersion: string): Connection => {
   log.debug('creating OAuth connection', {
     instanceUrl: params.instanceUrl,
     accessToken: toMD5(params.accessToken),
@@ -251,7 +253,7 @@ const oauthConnection = (params: OauthConnectionParams): Connection => {
       clientSecret: params.clientSecret,
       loginUrl: params.isSandbox ? 'https://test.salesforce.com' : 'https://login.salesforce.com',
     },
-    version: API_VERSION,
+    version: apiVersion,
     instanceUrl: params.instanceUrl,
     accessToken: params.accessToken,
     refreshToken: params.refreshToken,
@@ -271,9 +273,9 @@ const oauthConnection = (params: OauthConnectionParams): Connection => {
   return conn
 }
 
-const realConnection = (isSandbox: boolean, retryOptions: RequestRetryOptions): Connection =>
+const realConnection = (isSandbox: boolean, retryOptions: RequestRetryOptions, apiVersion: string): Connection =>
   new RealConnection({
-    version: API_VERSION,
+    version: apiVersion,
     loginUrl: `https://${isSandbox ? 'test' : 'login'}.salesforce.com/`,
     requestModule: createRequestModuleFunction(retryOptions),
   })
@@ -383,23 +385,30 @@ const createRetryOptions = (retryOptions: Required<ClientRetryConfig>): RequestR
   },
 })
 
-const createConnectionFromCredentials = (credentials: Credentials, options: RequestRetryOptions): Connection => {
+const createConnectionFromCredentials = (
+  credentials: Credentials,
+  options: RequestRetryOptions,
+  apiVersion: string,
+): Connection => {
   if (credentials instanceof OauthAccessTokenCredentials) {
     try {
-      return oauthConnection({
-        instanceUrl: credentials.instanceUrl,
-        accessToken: credentials.accessToken,
-        refreshToken: credentials.refreshToken,
-        retryOptions: options,
-        clientId: credentials.clientId,
-        clientSecret: credentials.clientSecret,
-        isSandbox: credentials.isSandbox,
-      })
+      return oauthConnection(
+        {
+          instanceUrl: credentials.instanceUrl,
+          accessToken: credentials.accessToken,
+          refreshToken: credentials.refreshToken,
+          retryOptions: options,
+          clientId: credentials.clientId,
+          clientSecret: credentials.clientSecret,
+          isSandbox: credentials.isSandbox,
+        },
+        apiVersion,
+      )
     } catch (error) {
       throw new CredentialError(error.message)
     }
   }
-  return realConnection(credentials.isSandbox, options)
+  return realConnection(credentials.isSandbox, options, apiVersion)
 }
 
 const retryOnBadResponse = async <T extends object>(
@@ -495,6 +504,7 @@ const PRODUCTION_ACCOUNT_TYPES = [
 
 export const getConnectionDetails = async (
   credentials: Credentials,
+  apiVersion: string,
   connection?: Connection,
 ): Promise<{
   remainingDailyRequests: number
@@ -507,7 +517,7 @@ export const getConnectionDetails = async (
     maxAttempts: 2,
     retryStrategy: RetryStrategies.HTTPOrNetworkError,
   }
-  const conn = connection || createConnectionFromCredentials(credentials, options)
+  const conn = connection || createConnectionFromCredentials(credentials, options, apiVersion)
   const orgId = await loginFromCredentialsAndReturnOrgId(conn, credentials)
   const limits = await conn.limits()
   const organizationRecord = await queryOrganization(conn, orgId)
@@ -539,11 +549,13 @@ const getAccountID = (credentials: Credentials, orgId: string, instanceUrl?: str
 
 export const validateCredentials = async (
   credentials: Credentials,
+  apiVersion: string,
   minApiRequestsRemaining = 0,
   connection?: Connection,
 ): Promise<AccountInfo> => {
   const { remainingDailyRequests, orgId, accountType, isProduction, instanceUrl } = await getConnectionDetails(
     credentials,
+    apiVersion,
     connection,
   )
   if (remainingDailyRequests < minApiRequestsRemaining) {
@@ -603,11 +615,14 @@ const isCancelDeployResult = (result: unknown): result is CanceledDeployResult =
 
 export default class SalesforceClient implements ISalesforceClient {
   private readonly retryOptions: RequestRetryOptions
-  private readonly conn: Connection
+  private readonly connectionCreator: ConnectionCreator
+  private conn!: Connection
   private isLoggedIn = false
   orgNamespace?: string
   private readonly credentials: Credentials
   private readonly config?: SalesforceClientConfig
+  private readonly pollingConfig: Required<ClientPollingConfig>
+  private apiVersion!: string
   private readonly setFetchPollingTimeout: () => void
   private readonly setDeployPollingTimeout: () => void
   readonly rateLimiters: Record<RateLimitBucketName, clientUtils.RateLimiter>
@@ -620,24 +635,24 @@ export default class SalesforceClient implements ISalesforceClient {
   private readonly fullListPromisesByType: Record<string, ListMetadataObjectsResult>
   private customListFuncDefByType: Record<string, CustomListFuncDef>
 
-  constructor({ credentials, connection, config }: SalesforceClientOpts) {
+  constructor({ credentials, apiVersion, connectionCreator, config }: SalesforceClientOpts) {
     this.customListFuncDefByType = {}
     this.credentials = credentials
     this.config = config
     this.retryOptions = createRetryOptions(_.defaults({}, config?.retry, DEFAULT_RETRY_OPTS))
-    this.conn = connection ?? createConnectionFromCredentials(credentials, this.retryOptions)
-    const pollingConfig = _.defaults({}, config?.polling, DEFAULT_POLLING_CONFIG)
+
+    this.connectionCreator = connectionCreator ?? createConnectionFromCredentials
+    this.pollingConfig = _.defaults({}, config?.polling, DEFAULT_POLLING_CONFIG)
     this.setFetchPollingTimeout = () => {
-      this.conn.metadata.pollTimeout = pollingConfig.fetchTimeout
-      this.conn.bulk.pollTimeout = pollingConfig.fetchTimeout
+      this.conn.metadata.pollTimeout = this.pollingConfig.fetchTimeout
+      this.conn.bulk.pollTimeout = this.pollingConfig.fetchTimeout
     }
     this.setDeployPollingTimeout = () => {
-      this.conn.metadata.pollTimeout = pollingConfig.deployTimeout
-      this.conn.bulk.pollTimeout = pollingConfig.deployTimeout
+      this.conn.metadata.pollTimeout = this.pollingConfig.deployTimeout
+      this.conn.bulk.pollTimeout = this.pollingConfig.deployTimeout
     }
+    this.updateConnection(apiVersion)
 
-    setPollIntervalForConnection(this.conn, pollingConfig)
-    this.setFetchPollingTimeout()
     this.rateLimiters = createRateLimitersFromConfig({
       rateLimit: _.defaults({}, config?.maxConcurrentApiRequests, DEFAULT_MAX_CONCURRENT_API_REQUESTS),
       clientName: SALESFORCE,
@@ -648,6 +663,14 @@ export default class SalesforceClient implements ISalesforceClient {
     this.listMetadataObjectsOfTypePromises = {}
     this.fullListPromisesByType = {}
     this.listedInstancesByType = new collections.map.DefaultMap(() => new Set())
+  }
+
+  public updateConnection(apiVersion: string): void {
+    this.isLoggedIn = false
+    this.conn = this.connectionCreator(this.credentials, this.retryOptions, apiVersion)
+    this.apiVersion = apiVersion
+    this.setFetchPollingTimeout()
+    setPollIntervalForConnection(this.conn, this.pollingConfig)
   }
 
   public setCustomListFuncDefByType(customListFuncDefByType: typeof this.customListFuncDefByType): void {
@@ -979,8 +1002,18 @@ export default class SalesforceClient implements ISalesforceClient {
       return { instancesErrors, newRetrieveRequest }
     }
 
+    const request = {
+      ...retrieveRequest,
+      apiVersion: this.apiVersion,
+      unpackaged: retrieveRequest.unpackaged
+        ? {
+            ...retrieveRequest.unpackaged,
+            version: this.apiVersion,
+          }
+        : undefined,
+    }
     const result = flatValues(
-      await this.retryOnBadResponse(() => this.conn.metadata.retrieve(retrieveRequest).complete()),
+      await this.retryOnBadResponse(() => this.conn.metadata.retrieve(request).complete()),
     ) as RetrieveResult
     if (_.isString(result.zipFile)) return result
     const errorMessage = result.errorMessage ?? ''
@@ -1110,7 +1143,7 @@ export default class SalesforceClient implements ISalesforceClient {
       }
       const cancelDeployResult = await this.conn.request({
         method: 'PATCH',
-        url: `/services/data/v${API_VERSION}/metadata/deployRequest/${taskId}`,
+        url: `/services/data/v${this.apiVersion}/metadata/deployRequest/${taskId}`,
         body: inspectValue({
           deployResult: {
             status: 'Canceling',
