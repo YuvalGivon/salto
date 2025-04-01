@@ -570,7 +570,7 @@ export default class SuiteAppClient {
       return await this.callsLimiter(() => this.axiosClient.post(href, data, { headers }))
     } catch (e) {
       log.warn(
-        'Received error from SuiteApp request to %s (postParams: %s) with status %s: %s',
+        'Received error from SuiteApp request to %s (postParams: %o) with status %s: %s',
         href,
         data,
         e.response?.status ?? e.code,
