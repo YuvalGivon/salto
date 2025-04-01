@@ -8,7 +8,12 @@
 import { ElemID, InstanceElement, ObjectType } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { SALESFORCE } from '../../../src/constants'
-import { getIteration, isFlagEnabled, createFlagsIterationInstance } from '../../../src/config/context/flags'
+import {
+  getIteration,
+  isFlagEnabled,
+  createFlagsIterationInstance,
+  getApiVersion,
+} from '../../../src/config/context/flags'
 import { FlagsSettings } from '../../../src/config/types'
 
 describe('flags', () => {
@@ -74,12 +79,12 @@ describe('flags', () => {
 
   describe('isFlagEnabled', () => {
     it('should return true when flag iteration is greater than or equal to current iteration', () => {
-      const result = isFlagEnabled('testFlag', 1, undefined)
+      const result = isFlagEnabled({ flag: 'testFlag', iteration: 1, flagsSettings: undefined })
       expect(result).toBe(true)
     })
 
     it('should return false when flag iteration is less than current iteration', () => {
-      const result = isFlagEnabled('testFlag', 0, undefined)
+      const result = isFlagEnabled({ flag: 'testFlag', iteration: 0, flagsSettings: undefined })
       expect(result).toBe(false)
     })
 
@@ -89,7 +94,7 @@ describe('flags', () => {
           testFlag: true,
         },
       }
-      const result = isFlagEnabled('testFlag', 0, flagsSettings)
+      const result = isFlagEnabled({ flag: 'testFlag', iteration: 0, flagsSettings })
       expect(result).toBe(true)
     })
 
@@ -97,7 +102,7 @@ describe('flags', () => {
       const flagsSettings: FlagsSettings = {
         iterationOverride: 1,
       }
-      const result = isFlagEnabled('testFlag', 0, flagsSettings)
+      const result = isFlagEnabled({ flag: 'testFlag', iteration: 0, flagsSettings })
       expect(result).toBe(true)
     })
   })
@@ -109,6 +114,39 @@ describe('flags', () => {
 
       expect(instance.elemID).toEqual(new ElemID(SALESFORCE, 'FlagsIteration', 'instance', ElemID.CONFIG_NAME))
       expect(instance.value.iteration).toBe(iteration)
+    })
+  })
+
+  describe('getApiVersion', () => {
+    it('should return apiVersionOverride when provided', () => {
+      const flagsSettings: FlagsSettings = {
+        apiVersionOverride: '60.0',
+      }
+      const result = getApiVersion({ iteration: 1, flagsSettings })
+      expect(result).toBe('60.0')
+    })
+
+    it('should return current API version when iteration is greater than or equal to the API bump iteration', () => {
+      const result = getApiVersion({ iteration: 1, flagsSettings: undefined })
+      expect(result).toBe('63.0')
+    })
+
+    it('should return previous API version when iteration is less than the API bump iteration', () => {
+      const result = getApiVersion({ iteration: 0, flagsSettings: undefined })
+      expect(result).toBe('62.0')
+    })
+
+    it('should use the version corresponding to the default iteration when no iteration is provided', () => {
+      const result = getApiVersion({ iteration: undefined, flagsSettings: undefined })
+      expect(result).toBe('62.0')
+    })
+
+    it('should respect iterationOverride when provided', () => {
+      const flagsSettings: FlagsSettings = {
+        iterationOverride: 1,
+      }
+      const result = getApiVersion({ iteration: 0, flagsSettings })
+      expect(result).toBe('63.0')
     })
   })
 })

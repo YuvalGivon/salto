@@ -560,7 +560,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       flagsSettings,
       preferDefault: !baseQuery.isPartialFetch(),
     })
-    const apiVersion = getApiVersion(flagsIteration, flagsSettings)
+    const apiVersion = getApiVersion({ iteration: flagsIteration, flagsSettings })
     this.client.updateConnection(apiVersion)
 
     this.initializeCustomListFunctions(withChangesDetection)

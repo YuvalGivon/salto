@@ -57,7 +57,7 @@ export const createProject: InitFolderFunc = async ({ baseDir }) => {
     template: 'empty',
     ns: '',
     defaultpackagedir: 'force-app',
-    apiversion: getApiVersion(undefined, undefined),
+    apiversion: getApiVersion({ iteration: undefined, flagsSettings: undefined }),
   }
 
   try {

@@ -287,7 +287,7 @@ export const adapter: Adapter = {
     const credentials = credentialsFromConfig(context.credentials)
     const client = new SalesforceClient({
       credentials,
-      apiVersion: getApiVersion(undefined, config[FLAGS_CONFIG]),
+      apiVersion: getApiVersion({ iteration: undefined, flagsSettings: config[FLAGS_CONFIG] }),
       config: config[CLIENT_CONFIG],
     })
     let deployProgressReporterPromise: Promise<DeployProgressReporter> | undefined
@@ -367,7 +367,10 @@ export const adapter: Adapter = {
     }
   },
   validateCredentials: async config =>
-    validateCredentials(credentialsFromConfig(config), getApiVersion(undefined, undefined)),
+    validateCredentials(
+      credentialsFromConfig(config),
+      getApiVersion({ iteration: undefined, flagsSettings: undefined }),
+    ),
   authenticationMethods: {
     basic: {
       credentialsType: usernamePasswordCredentialsType,

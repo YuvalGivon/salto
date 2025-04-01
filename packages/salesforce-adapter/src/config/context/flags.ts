@@ -18,6 +18,7 @@ const DEFAULT_FLAGS_ITERATION = 0
 // To bump the API set API_VERSION to the new version,
 // set PREVIOUS_API_VERSION to the old version,
 // and set the API_BUMP_ITERATION to the iteration you want to bump in.
+// You will also need to update the flags UT.
 // Also consider changing the E2E API version in the e2e_test/adapter.ts file.
 const API_VERSION = '63.0'
 const PREVIOUS_API_VERSION = '62.0'
@@ -60,19 +61,35 @@ export const getIteration = async ({
   return flagsIteration
 }
 
-export const isFlagEnabled = (
-  flag: keyof Flags,
-  iteration: number | undefined,
-  flagsSettings: FlagsSettings | undefined,
-): boolean =>
+export const isFlagEnabled = ({
+  flag,
+  iteration,
+  flagsSettings,
+}: {
+  flag: keyof Flags
+  iteration: number | undefined
+  flagsSettings: FlagsSettings | undefined
+}): boolean =>
   flagsSettings?.flagOverrides?.[flag] ??
   FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration ?? DEFAULT_FLAGS_ITERATION)
 
-export const getApiVersion = (iteration: number | undefined, flagsSettings: FlagsSettings | undefined): string =>
-  flagsSettings?.apiVersionOverride ??
-  ((flagsSettings?.iterationOverride ?? iteration ?? DEFAULT_FLAGS_ITERATION) >= API_BUMP_ITERATION
-    ? API_VERSION
-    : PREVIOUS_API_VERSION)
+export const getApiVersion = ({
+  iteration,
+  flagsSettings,
+}: {
+  iteration: number | undefined
+  flagsSettings: FlagsSettings | undefined
+}): string => {
+  const override = flagsSettings?.apiVersionOverride
+  if (override) {
+    log.debug(`Using API version override: ${override}`)
+    return override
+  }
+  const effectiveIteration = flagsSettings?.iterationOverride ?? iteration ?? DEFAULT_FLAGS_ITERATION
+  const version = effectiveIteration >= API_BUMP_ITERATION ? API_VERSION : PREVIOUS_API_VERSION
+  log.debug(`Using API version: ${version} for effective iteration: ${effectiveIteration}`)
+  return version
+}
 
 export const createFlagsIterationInstance = (iteration: number): InstanceElement =>
   new InstanceElement(ElemID.CONFIG_NAME, ArtificialTypes[FLAGS_ITERATION_TYPE_NAME], {

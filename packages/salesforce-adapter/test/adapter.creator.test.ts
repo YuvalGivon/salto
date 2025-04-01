@@ -88,7 +88,7 @@ describe('SalesforceAdapter creator', () => {
           isSandbox: false,
           apiToken: 'myToken',
         }),
-        getApiVersion(undefined, undefined),
+        getApiVersion({ iteration: undefined, flagsSettings: undefined }),
       )
     })
   })
@@ -108,7 +108,7 @@ describe('SalesforceAdapter creator', () => {
           clientSecret: oauthConfigObj.clientSecret,
           clientId: oauthConfigObj.clientId,
         }),
-        getApiVersion(undefined, undefined),
+        getApiVersion({ iteration: undefined, flagsSettings: undefined }),
       )
     })
   })

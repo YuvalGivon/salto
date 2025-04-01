@@ -59,8 +59,8 @@ export const buildContext = ({
   return {
     dataManagement: data && buildDataManagement(data),
     isFeatureEnabled: name => isFeatureEnabled(name, optionalFeatures),
-    isFlagEnabled: (flag: keyof Flags) => isFlagEnabled(flag, flagsIteration, flagsSettings),
-    apiVersion: getApiVersion(flagsIteration, flagsSettings),
+    isFlagEnabled: (flag: keyof Flags) => isFlagEnabled({ flag, iteration: flagsIteration, flagsSettings }),
+    apiVersion: getApiVersion({ iteration: flagsIteration, flagsSettings }),
     isCustomReferencesHandlerEnabled: name => enabledCustomReferencesHandlers[name] ?? false,
     shouldFetchAllCustomSettings: () => fetchAllCustomSettings ?? true,
     maxInstancesPerType: maxInstancesPerType ?? DEFAULT_MAX_INSTANCES_PER_TYPE,
