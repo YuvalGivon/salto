@@ -15,6 +15,7 @@ import SalesforceAdapter, {
 import {
   testHelpers as salesforceTestHelpers,
   testTypes as salesforceTestTypes,
+  E2E_API_VERSION as SF_E2E_API_VERSION,
 } from '@salto-io/salesforce-adapter/dist/e2e_test/jest_environment'
 import _ from 'lodash'
 import {
@@ -28,9 +29,6 @@ import {
   isSaltoElementError,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
-
-// Bumping the API version in the adapter and in the E2E tests doesn't have to happen at the same time.
-const API_VERSION = '62.0'
 
 export const naclNameToSFName = (objName: string): string => `${objName}__c`
 export const objectExists = async (
@@ -85,7 +83,7 @@ export const getSalesforceCredsInstance = (creds: UsernamePasswordCredentials): 
 export const getSalesforceClient = (credentials: UsernamePasswordCredentials): SalesforceClient =>
   new SalesforceClient({
     credentials: new UsernamePasswordCredentials(credentials),
-    apiVersion: API_VERSION,
+    apiVersion: SF_E2E_API_VERSION,
     // Default to purge on delete to avoid leaving definitions in the recycle bin
     config: { deploy: { purgeOnDelete: true } },
   })

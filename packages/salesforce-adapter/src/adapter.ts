@@ -185,7 +185,7 @@ import { fixElementsFunc } from './custom_references/handlers'
 import { createListApexClassesDef, createListMissingWaveDataflowsDef } from './client/custom_list_funcs'
 import { SalesforceAdapterDeployOptions } from './adapter_creator'
 import { enrichSaltoDeployErrors, getUserFriendlyDeployErrorMessage } from './client/user_facing_errors'
-import { createFlagsIterationInstance, getIteration } from './config/context/flags'
+import { createFlagsIterationInstance, getApiVersion, getIteration } from './config/context/flags'
 
 const { awu } = collections.asynciterable
 const { concatObjects } = objects
@@ -549,6 +549,16 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
   }: FetchOptions): Promise<FetchResult> {
     const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
     const flagsSettings = this.userConfig[FLAGS_CONFIG]
+
+    const targets = partialFetchTargets?.map(t => t.name) ?? fetchParams.target
+    const flagsIteration = await getIteration(
+      this.elementsSource,
+      flagsSettings,
+      !withChangesDetection && !targets && !fetchParams.target,
+    )
+    const apiVersion = getApiVersion(flagsIteration, flagsSettings)
+    this.client.updateConnection(apiVersion)
+
     this.initializeCustomListFunctions(withChangesDetection)
     const baseQuery = buildMetadataQuery({ fetchParams })
     const metadataTypeInfos = await this.client.listMetadataTypes()
@@ -557,7 +567,6 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
       metadataQuery: buildFilePropsMetadataQuery(baseQuery),
       metadataTypeInfos,
     })
-    const targets = partialFetchTargets?.map(t => t.name) ?? fetchParams.target
     const targetedFetchInclude = targets
       ? await getMetadataIncludeFromFetchTargets(targets, this.elementsSource)
       : undefined
@@ -570,7 +579,6 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
           customObjectsWithDeletedFields: await this.getCustomObjectsWithDeletedFields(),
         })
       : buildMetadataQuery({ fetchParams, targetedFetchInclude })
-    const flagsIteration = await getIteration(this.elementsSource, flagsSettings, !metadataQuery.isPartialFetch())
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
@@ -688,12 +696,15 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     checkOnly: boolean,
   ): Promise<DeployResult> {
     const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
+    const flagsSettings = this.userConfig[FLAGS_CONFIG]
+    const flagsIteration = await getIteration(this.elementsSource, flagsSettings)
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],
-      flagsSettings: this.userConfig[FLAGS_CONFIG],
-      flagsIteration: await getIteration(this.elementsSource, this.userConfig[FLAGS_CONFIG]),
+      flagsSettings,
+      flagsIteration,
     })
+    this.client.updateConnection(context.apiVersion)
     log.debug(
       `about to ${checkOnly ? 'validate' : 'deploy'} group ${changeGroup.groupID} with scope (first 100): ${safeJsonStringify(
         changeGroup.changes

@@ -15,7 +15,13 @@ const log = logger(module)
 
 const CURRENT_FLAGS_ITERATION = 0
 
-export const API_VERSION = '62.0'
+// To bump the API set API_VERSION to the new version,
+// set PREVIOUS_API_VERSION to the old version,
+// and set the API_BUMP_ITERATION to the iteration you want to bump in.
+// Also consider changing the E2E API version in the e2e_test/adapter.ts file.
+const API_VERSION = '63.0'
+const PREVIOUS_API_VERSION = '62.0'
+const API_BUMP_ITERATION = 1
 
 type FlagsIterations = {
   [FlagName in keyof Flags]: number
@@ -50,9 +56,19 @@ export const getIteration = async (
   return flagsIteration
 }
 
-export const isFlagEnabled = (flag: keyof Flags, iteration?: number, flagsSettings?: FlagsSettings): boolean =>
+export const isFlagEnabled = (
+  flag: keyof Flags,
+  iteration: number | undefined,
+  flagsSettings: FlagsSettings | undefined,
+): boolean =>
   flagsSettings?.flagOverrides?.[flag] ??
   FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration ?? CURRENT_FLAGS_ITERATION)
+
+export const getApiVersion = (iteration: number | undefined, flagsSettings: FlagsSettings | undefined): string =>
+  flagsSettings?.apiVersionOverride ??
+  ((flagsSettings?.iterationOverride ?? iteration ?? CURRENT_FLAGS_ITERATION) >= API_BUMP_ITERATION
+    ? API_VERSION
+    : PREVIOUS_API_VERSION)
 
 export const createFlagsIterationInstance = (iteration: number): InstanceElement =>
   new InstanceElement(ElemID.CONFIG_NAME, ArtificialTypes[FLAGS_ITERATION_TYPE_NAME], {

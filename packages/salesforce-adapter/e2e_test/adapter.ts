@@ -11,7 +11,9 @@ import { ElemID, ServiceIds } from '@salto-io/adapter-api'
 import SalesforceClient from '../src/client/client'
 import SalesforceAdapter, { SalesforceAdapterParams } from '../src/adapter'
 import { SalesforceConfig, Credentials } from '../src/config/types'
-import { API_VERSION } from '../src/config/context/flags'
+
+// Bumping the API version in the adapter and in the E2E tests doesn't have to happen at the same time.
+export const E2E_API_VERSION = '62.0'
 
 type Reals = {
   client: SalesforceClient
@@ -29,7 +31,7 @@ const realAdapter = ({ adapterParams, credentials }: Opts, config?: SalesforceCo
   // Default to purge on delete to avoid leaving definitions in the recycle bin
   const clientConfig = _.merge({ deploy: { purgeOnDelete: true } }, config?.client)
   const client =
-    adapterParams?.client || new SalesforceClient({ credentials, config: clientConfig, apiVersion: API_VERSION })
+    adapterParams?.client || new SalesforceClient({ credentials, config: clientConfig, apiVersion: E2E_API_VERSION })
   const adapter = new SalesforceAdapter({
     client,
     // to be changed at https://salto-io.atlassian.net/browse/SALTO-7121

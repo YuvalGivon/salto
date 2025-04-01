@@ -10,7 +10,7 @@ import path from 'path'
 import { inspectValue } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
 import { AdapterFormat } from '@salto-io/adapter-api'
-import { API_VERSION } from '../config/context/flags'
+import { getApiVersion } from '../config/context/flags'
 import { SfProject, SfError, TemplateService, TemplateType, ProjectOptions } from './salesforce_imports'
 import { detailedMessageFromSfError } from './errors'
 
@@ -57,7 +57,7 @@ export const createProject: InitFolderFunc = async ({ baseDir }) => {
     template: 'empty',
     ns: '',
     defaultpackagedir: 'force-app',
-    apiversion: API_VERSION,
+    apiversion: getApiVersion(undefined, undefined),
   }
 
   try {

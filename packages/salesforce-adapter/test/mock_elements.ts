@@ -70,7 +70,8 @@ import { allMissingSubTypes } from '../src/transformers/salesforce_types'
 import { WORKFLOW_FIELD_TO_TYPE } from '../src/filters/workflow'
 import { createCustomObjectType } from './utils'
 import { SORT_ORDER } from '../src/change_validators/duplicate_rules_sort_order'
-import { API_VERSION } from '../src/config/context/flags'
+
+const apiVersion = '60.0'
 
 const SBAA_APPROVAL_RULE_TYPE = createCustomObjectType(SBAA_APPROVAL_RULE, {
   fields: {
@@ -920,13 +921,13 @@ export const lwcHtmlResourceContent = Buffer.from(
 export const mockDefaultValues = {
   ApexClass: {
     [INSTANCE_FULL_NAME_FIELD]: 'ApexClassForProfile',
-    apiVersion: API_VERSION,
+    apiVersion,
     content:
       "public class ApexClassForProfile {\n    public void printLog() {\n        System.debug('Created');\n    }\n}",
   },
   ApexPage: {
     [INSTANCE_FULL_NAME_FIELD]: 'ApexPageForProfile',
-    apiVersion: API_VERSION,
+    apiVersion,
     content: '<apex:page>Created by e2e test for profile test!</apex:page>',
     label: 'ApexPageForProfile',
     internalId: 'ApexPageId',

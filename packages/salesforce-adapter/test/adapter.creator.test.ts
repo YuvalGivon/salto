@@ -22,7 +22,7 @@ import {
 import { METADATA_DEPLOY_PENDING_STATUS, RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS } from '../src/constants'
 import { createMockProgressReporter, MockDeployProgressReporter } from './utils'
 import createMockClient from './client'
-import { API_VERSION } from '../src/config/context/flags'
+import { getApiVersion } from '../src/config/context/flags'
 
 jest.mock('../src/client/client')
 jest.mock('../src/adapter')
@@ -45,6 +45,7 @@ describe('SalesforceAdapter creator', () => {
     authType: 'oauth',
   }
   const oauthCredentials = new InstanceElement(ElemID.CONFIG_NAME, accessTokenCredentialsType, oauthConfigObj)
+  const apiVersion = '60.0'
   const config = new InstanceElement(ElemID.CONFIG_NAME, adapter.configType as ObjectType, {
     fetch: {
       metadata: {
@@ -59,6 +60,9 @@ describe('SalesforceAdapter creator', () => {
         retrieve: 3,
         total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
       },
+    },
+    flags: {
+      apiVersionOverride: apiVersion,
     },
   })
 
@@ -84,7 +88,7 @@ describe('SalesforceAdapter creator', () => {
           isSandbox: false,
           apiToken: 'myToken',
         }),
-        API_VERSION,
+        getApiVersion(undefined, undefined),
       )
     })
   })
@@ -104,7 +108,7 @@ describe('SalesforceAdapter creator', () => {
           clientSecret: oauthConfigObj.clientSecret,
           clientId: oauthConfigObj.clientId,
         }),
-        API_VERSION,
+        getApiVersion(undefined, undefined),
       )
     })
   })
@@ -176,7 +180,7 @@ describe('SalesforceAdapter creator', () => {
             total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
           },
         },
-        apiVersion: API_VERSION,
+        apiVersion,
       })
     })
 
@@ -202,6 +206,9 @@ describe('SalesforceAdapter creator', () => {
               retrieve: 3,
               total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
             },
+          },
+          flags: {
+            apiVersionOverride: apiVersion,
           },
         },
         client: expect.any(Object),
@@ -645,6 +652,9 @@ describe('SalesforceAdapter creator', () => {
               retrieve: 3,
               total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
             },
+          },
+          flags: {
+            apiVersionOverride: apiVersion,
           },
         },
         client: expect.any(Object),

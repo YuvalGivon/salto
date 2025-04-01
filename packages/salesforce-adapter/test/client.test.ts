@@ -56,7 +56,6 @@ import {
   enrichSaltoDeployErrors,
 } from '../src/client/user_facing_errors'
 import { createInstanceElement, createMetadataObjectType } from '../src/transformers/transformer'
-import { API_VERSION } from '../src/config/context/flags'
 
 const { array, asynciterable } = collections
 const { makeArray } = array
@@ -67,6 +66,7 @@ const logging = logger('salesforce-adapter/src/client/client')
 
 describe('salesforce client', () => {
   let client: SalesforceClient
+  const apiVersion = '60.0'
   beforeEach(() => {
     nock.cleanAll()
     nock('https://test.salesforce.com').persist().post(/.*/).reply(200, '<serverUrl>http://dodo22</serverUrl>/')
@@ -88,7 +88,7 @@ describe('salesforce client', () => {
           list: undefined,
         },
       },
-      apiVersion: API_VERSION,
+      apiVersion,
     })
   })
   const credentials = new UsernamePasswordCredentials({
@@ -287,7 +287,7 @@ describe('salesforce client', () => {
     })
 
     it('continue in case of error in chunk - run on each element separately', async () => {
-      const dodoScope = nock(`http://dodo22/services/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/services/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(2)
         .reply(200, workingReadReplay, headers)
@@ -307,7 +307,7 @@ describe('salesforce client', () => {
     })
 
     it('should fail in case of unhandled error', async () => {
-      const dodoScope = nock(`http://dodo22/services/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/services/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(22)
         .reply(500, 'server error')
@@ -322,7 +322,7 @@ describe('salesforce client', () => {
     })
 
     it('should return errors in case of handled error', async () => {
-      const dodoScope = nock(`http://dodo22/services/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/services/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(1)
         .reply(500, 'server error')
@@ -339,7 +339,7 @@ describe('salesforce client', () => {
     })
 
     it('should return error when response is a non transient salesforce error', async () => {
-      const dodoScope = nock(`http://dodo22/services/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/services/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(1)
         .reply(
@@ -371,7 +371,7 @@ describe('salesforce client', () => {
 
   describe('with suppressed errors', () => {
     it('should not fail if all errors are suppressed', async () => {
-      const dodoScope = nock(`http://dodo22/servies/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/servies/Soap/m/${apiVersion}`)
         .post(/.*/)
         .reply(500, 'targetObject is invalid')
 
@@ -380,7 +380,7 @@ describe('salesforce client', () => {
     })
 
     it('should return non error responses for QuickAction targetObject', async () => {
-      const dodoScope = nock(`http://dodo22/servies/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/servies/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(2) // Once for the chunk and once for SendEmail
         .reply(500, 'targetObject is invalid')
@@ -394,7 +394,7 @@ describe('salesforce client', () => {
     })
 
     it('should return non error responses for insufficient access', async () => {
-      const dodoScope = nock(`http://dodo22/servies/Soap/m/${API_VERSION}`)
+      const dodoScope = nock(`http://dodo22/servies/Soap/m/${apiVersion}`)
         .post(/.*/)
         .times(2) // Once for the chunk and once for item
         .reply(
@@ -737,7 +737,7 @@ describe('salesforce client', () => {
 
   describe('getConnectionDetails', () => {
     it('should return empty orgId', async () => {
-      const { orgId, remainingDailyRequests } = await getConnectionDetails(credentials, API_VERSION, connection)
+      const { orgId, remainingDailyRequests } = await getConnectionDetails(credentials, apiVersion, connection)
       expect(orgId).toEqual('')
       expect(remainingDailyRequests).toEqual(10000)
     })
@@ -745,12 +745,12 @@ describe('salesforce client', () => {
 
   describe('validateCredentials', () => {
     it('should throw ApiLimitsTooLowError exception', async () => {
-      await expect(validateCredentials(credentials, API_VERSION, 100000, connection)).rejects.toThrow(
+      await expect(validateCredentials(credentials, apiVersion, 100000, connection)).rejects.toThrow(
         ApiLimitsTooLowError,
       )
     })
     it('should return empty string as accountId and no values for accountType and isProduction', async () => {
-      expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
+      expect(await validateCredentials(credentials, apiVersion, 3, connection)).toEqual({
         accountId: '',
         isProduction: undefined,
         accountType: undefined,
@@ -779,7 +779,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(sandboxCredentials, API_VERSION, 3, connection)).toEqual({
+            expect(await validateCredentials(sandboxCredentials, apiVersion, 3, connection)).toEqual({
               accountId: 'https://url.com/',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -796,7 +796,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(sandboxCredentials, API_VERSION, 3, connection)).toEqual({
+            expect(await validateCredentials(sandboxCredentials, apiVersion, 3, connection)).toEqual({
               accountId: 'https://url.com/',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -807,7 +807,7 @@ describe('salesforce client', () => {
           it('should throw an error when there is no instanceUrl', async () => {
             const mockConnection = mockClient().connection
             _.set(mockConnection, 'instanceUrl', undefined)
-            await expect(validateCredentials(sandboxCredentials, API_VERSION, 3, mockConnection)).rejects.toThrow(
+            await expect(validateCredentials(sandboxCredentials, apiVersion, 3, mockConnection)).rejects.toThrow(
               'Expected Salesforce organization URL to exist in the connection',
             )
           })
@@ -822,7 +822,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction true and correct accountType', async () => {
-            expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
+            expect(await validateCredentials(credentials, apiVersion, 3, connection)).toEqual({
               accountId: '',
               accountUrl: 'https://url.com/',
               isProduction: true,
@@ -839,7 +839,7 @@ describe('salesforce client', () => {
             })
           })
           it('should return isProduction false and correct accountType', async () => {
-            expect(await validateCredentials(credentials, API_VERSION, 3, connection)).toEqual({
+            expect(await validateCredentials(credentials, apiVersion, 3, connection)).toEqual({
               accountId: '',
               accountUrl: 'https://url.com/',
               isProduction: false,
@@ -861,7 +861,7 @@ describe('salesforce client', () => {
 
     describe('when all results are in a single query', () => {
       beforeEach(async () => {
-        dodoScope = nock(`http://dodo22/services/data/v${API_VERSION}/query/`)
+        dodoScope = nock(`http://dodo22/services/data/v${apiVersion}/query/`)
           .get(/.*/)
           .times(1)
           .reply(200, {
@@ -885,7 +885,7 @@ describe('salesforce client', () => {
 
     describe('when all results are in a single query from tooling api', () => {
       beforeEach(async () => {
-        dodoScope = nock(`http://dodo22/services/data/v${API_VERSION}/tooling/query/`)
+        dodoScope = nock(`http://dodo22/services/data/v${apiVersion}/tooling/query/`)
           .get(/.*tooling.*/)
           .times(1)
           .reply(200, {
@@ -908,7 +908,7 @@ describe('salesforce client', () => {
 
     describe('when results are returned in more than one query', () => {
       beforeEach(async () => {
-        dodoScope = nock(`http://dodo22/services/data/v${API_VERSION}/query`)
+        dodoScope = nock(`http://dodo22/services/data/v${apiVersion}/query`)
           .persist()
           .get(/.*queryString/)
           .times(1)
@@ -940,7 +940,7 @@ describe('salesforce client', () => {
     })
     describe('when result records are undefined / missing in the first query', () => {
       beforeEach(async () => {
-        dodoScope = nock(`http://dodo22/services/data/v${API_VERSION}/query`)
+        dodoScope = nock(`http://dodo22/services/data/v${apiVersion}/query`)
           .persist()
           .get(/.*queryString/)
           .times(1)
@@ -964,7 +964,7 @@ describe('salesforce client', () => {
     })
     describe('when result records are undefined in the second query', () => {
       beforeEach(async () => {
-        dodoScope = nock(`http://dodo22/services/data/v${API_VERSION}/query`)
+        dodoScope = nock(`http://dodo22/services/data/v${apiVersion}/query`)
           .persist()
           .get(/.*queryString/)
           .times(1)
@@ -998,7 +998,7 @@ describe('salesforce client', () => {
   describe('bulkLoadOperation', () => {
     let dodoScope: nock.Scope
     beforeEach(() => {
-      dodoScope = nock(`http://dodo22/services/async/${API_VERSION}/job`)
+      dodoScope = nock(`http://dodo22/services/async/${apiVersion}/job`)
         .post(/.*/)
         .reply(
           200,
@@ -1074,7 +1074,7 @@ describe('salesforce client', () => {
       clientId: 'clientId',
     })
     it('should return empty orgId for oauth credentials', async () => {
-      const { orgId, remainingDailyRequests } = await getConnectionDetails(oauthCredentials, API_VERSION, connection)
+      const { orgId, remainingDailyRequests } = await getConnectionDetails(oauthCredentials, apiVersion, connection)
       expect(orgId).toEqual('')
       expect(remainingDailyRequests).toEqual(10000)
     })
@@ -1112,7 +1112,7 @@ describe('salesforce client', () => {
             password: '',
             isSandbox: false,
           }),
-          apiVersion: API_VERSION,
+          apiVersion,
           connectionCreator: () => testConnection,
           config: {
             polling: { interval: 100, fetchTimeout: 1000, deployTimeout: 2000 },
@@ -1144,7 +1144,7 @@ describe('salesforce client', () => {
             password: '',
             isSandbox: false,
           }),
-          apiVersion: API_VERSION,
+          apiVersion,
           connectionCreator: () => testConnection,
           config: {
             deploy: { rollbackOnError: false, testLevel: 'NoTestRun' },
@@ -1236,7 +1236,7 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            apiVersion: API_VERSION,
+            apiVersion,
             connectionCreator: () => testConnection,
             config: {
               maxConcurrentApiRequests: {
@@ -1260,10 +1260,10 @@ describe('salesforce client', () => {
           _.times(retrieves.length, i => mockRetrieve.mockReturnValueOnce(mockRetrieveLocator(retrieves[i].promise)))
           retrieveRequests = _.times(retrieves.length, i =>
             testClient.retrieve({
-              apiVersion: API_VERSION,
+              apiVersion,
               singlePackage: false,
               unpackaged: {
-                version: API_VERSION,
+                version: apiVersion,
                 types: [{ name: `n${i}`, members: ['x', 'y'] }],
               },
             }),
@@ -1310,7 +1310,7 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            apiVersion: API_VERSION,
+            apiVersion,
             connectionCreator: () => testConnection,
             config: {
               maxConcurrentApiRequests: {
@@ -1330,10 +1330,10 @@ describe('salesforce client', () => {
           _.times(retrieves.length, i => mockRetrieve.mockReturnValueOnce(mockRetrieveLocator(retrieves[i].promise)))
           retrieveRequests = _.times(retrieves.length, i =>
             testClient.retrieve({
-              apiVersion: API_VERSION,
+              apiVersion,
               singlePackage: false,
               unpackaged: {
-                version: API_VERSION,
+                version: apiVersion,
                 types: [{ name: `n${i}`, members: ['x', 'y'] }],
               },
             }),
@@ -1369,7 +1369,7 @@ describe('salesforce client', () => {
               password: '',
               isSandbox: false,
             }),
-            apiVersion: API_VERSION,
+            apiVersion,
             connectionCreator: () => testConnection,
           })
           mockRetrieve = testConnection.metadata.retrieve as jest.MockedFunction<
@@ -1380,10 +1380,10 @@ describe('salesforce client', () => {
           _.times(retrieves.length, i => mockRetrieve.mockReturnValueOnce(mockRetrieveLocator(retrieves[i].promise)))
           retrieveRequests = _.times(retrieves.length, i =>
             testClient.retrieve({
-              apiVersion: API_VERSION,
+              apiVersion,
               singlePackage: false,
               unpackaged: {
-                version: API_VERSION,
+                version: apiVersion,
                 types: [{ name: `n${i}`, members: ['x', 'y'] }],
               },
             }),
@@ -1411,7 +1411,7 @@ describe('salesforce client', () => {
         password: '',
         isSandbox: false,
       }),
-      apiVersion: API_VERSION,
+      apiVersion,
     })
     it('should return true when sandbox true', () => {
       expect(client.isSandbox()).toBeTruthy()

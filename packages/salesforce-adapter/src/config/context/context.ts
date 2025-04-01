@@ -21,7 +21,7 @@ import { buildMetadataQuery, validateMetadataParams } from './metadata_query'
 import { DEFAULT_MAX_INSTANCES_PER_TYPE, DEFAULT_MAX_ITEMS_IN_RETRIEVE_REQUEST } from '../../constants'
 import { mergeWithDefaultImportantValues } from './important_values'
 import { customReferencesConfiguration } from '../../custom_references/handlers'
-import { isFlagEnabled } from './flags'
+import { getApiVersion, isFlagEnabled } from './flags'
 import { isFeatureEnabled } from './optional_features'
 
 const PREFER_ACTIVE_FLOW_VERSIONS_DEFAULT = false
@@ -60,6 +60,7 @@ export const buildContext = ({
     dataManagement: data && buildDataManagement(data),
     isFeatureEnabled: name => isFeatureEnabled(name, optionalFeatures),
     isFlagEnabled: (flag: keyof Flags) => isFlagEnabled(flag, flagsIteration, flagsSettings),
+    apiVersion: getApiVersion(flagsIteration, flagsSettings),
     isCustomReferencesHandlerEnabled: name => enabledCustomReferencesHandlers[name] ?? false,
     shouldFetchAllCustomSettings: () => fetchAllCustomSettings ?? true,
     maxInstancesPerType: maxInstancesPerType ?? DEFAULT_MAX_INSTANCES_PER_TYPE,

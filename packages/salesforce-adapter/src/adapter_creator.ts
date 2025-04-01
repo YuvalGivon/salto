@@ -56,7 +56,7 @@ import { getCustomReferences } from './custom_references/handlers'
 import { dependencyChanger } from './dependency_changer'
 import { METADATA_DEPLOY_PENDING_STATUS } from './constants'
 import { getAllTargets, getTargetsForElements } from './fetch_targets'
-import { API_VERSION } from './config/context/flags'
+import { getApiVersion } from './config/context/flags'
 
 type ValidatorsActivationConfig = deployment.changeValidators.ValidatorsActivationConfig
 
@@ -287,7 +287,7 @@ export const adapter: Adapter = {
     const credentials = credentialsFromConfig(context.credentials)
     const client = new SalesforceClient({
       credentials,
-      apiVersion: API_VERSION,
+      apiVersion: getApiVersion(undefined, config[FLAGS_CONFIG]),
       config: config[CLIENT_CONFIG],
     })
     let deployProgressReporterPromise: Promise<DeployProgressReporter> | undefined
@@ -366,7 +366,8 @@ export const adapter: Adapter = {
       },
     }
   },
-  validateCredentials: async config => validateCredentials(credentialsFromConfig(config), API_VERSION),
+  validateCredentials: async config =>
+    validateCredentials(credentialsFromConfig(config), getApiVersion(undefined, undefined)),
   authenticationMethods: {
     basic: {
       credentialsType: usernamePasswordCredentialsType,

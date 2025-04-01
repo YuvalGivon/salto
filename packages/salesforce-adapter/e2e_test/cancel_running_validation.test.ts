@@ -13,9 +13,8 @@ import { createInstanceElement, MetadataInstanceElement } from '../src/transform
 // eslint-disable-next-line no-restricted-imports
 import { mockTypes } from '../test/mock_elements'
 import { testHelpers } from './jest_environment'
-import realAdapter from './adapter'
+import realAdapter, { E2E_API_VERSION } from './adapter'
 import { nullProgressReporter } from './utils'
-import { API_VERSION } from '../src/config/context/flags'
 
 const log = logger(module)
 
@@ -34,7 +33,7 @@ describe('Salesforce cancel running validation', () => {
     apexClassInstance = createInstanceElement(
       {
         fullName: 'MyApexClass',
-        apiVersion: API_VERSION,
+        apiVersion: E2E_API_VERSION,
         content: new StaticFile({
           filepath: 'MyApexClass.cls',
           content: Buffer.from(
@@ -47,7 +46,7 @@ describe('Salesforce cancel running validation', () => {
     longRunningTestInstance = createInstanceElement(
       {
         fullName: 'LongRunningTest',
-        apiVersion: API_VERSION,
+        apiVersion: E2E_API_VERSION,
         content: new StaticFile({
           filepath: 'LongRunningTest.cls',
           content: Buffer.from(

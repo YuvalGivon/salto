@@ -50,7 +50,6 @@ import {
   SalesforceArtifacts,
 } from './constants'
 import { DeployMessage, RunTestsResult } from './client/jsforce'
-import { API_VERSION } from './config/context/flags'
 import { Context, QuickDeployParams } from './config/types'
 import { GLOBAL_VALUE_SET } from './filters/global_value_sets'
 import { DeployProgressReporter } from './adapter_creator'
@@ -541,7 +540,7 @@ export const deployMetadata = async (
     })
   }
 
-  const pkg = createDeployPackage(API_VERSION, deleteBeforeUpdate)
+  const pkg = createDeployPackage(context.apiVersion, deleteBeforeUpdate)
 
   const { validChanges, errors: validationErrors } = await validateChanges(changes)
   if (validChanges.length === 0) {

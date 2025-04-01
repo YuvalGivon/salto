@@ -215,6 +215,7 @@ export type FlagsSettings = {
   iterationOverride?: number
   currentIterationOverride?: number
   flagOverrides?: Partial<Flags>
+  apiVersionOverride?: string
 }
 
 const objectIdSettings = new ObjectType({
@@ -348,6 +349,7 @@ const flagsConfigType = new ObjectType({
     iterationOverride: { refType: BuiltinTypes.NUMBER },
     currentIterationOverride: { refType: BuiltinTypes.NUMBER },
     flagOverrides: { refType: flagOverridesType },
+    apiVersionOverride: { refType: BuiltinTypes.STRING },
   },
 })
 
@@ -1023,6 +1025,7 @@ export type Context = {
   readonly dataManagement?: DataManagement
   readonly isFeatureEnabled: (name: keyof OptionalFeatures) => boolean
   readonly isFlagEnabled: (flag: keyof Flags) => boolean
+  readonly apiVersion: string
   readonly isCustomReferencesHandlerEnabled: (name: CustomReferencesHandlers) => boolean
   readonly shouldFetchAllCustomSettings: () => boolean
   readonly maxInstancesPerType: number

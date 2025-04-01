@@ -65,7 +65,7 @@ import {
   createInstanceElement,
   assertMetadataObjectType,
 } from '../src/transformers/transformer'
-import realAdapter from './adapter'
+import realAdapter, { E2E_API_VERSION } from './adapter'
 // eslint-disable-next-line no-restricted-imports
 import {
   findElements,
@@ -106,7 +106,6 @@ import {
 import { testHelpers } from './jest_environment'
 import { buildContext } from '../src/config/context/context'
 import { ORDERED_MAP_VALUES_FIELD } from '../src/filters/convert_maps'
-import { API_VERSION } from '../src/config/context/flags'
 
 const { awu } = collections.asynciterable
 const log = logger(module)
@@ -2652,10 +2651,10 @@ describe('Salesforce adapter E2E with real account', () => {
         const packageName = 'unpackaged'
         const retrieve = async (type: string, member: string): Promise<RetrieveResult> => {
           const retrieveRequest = {
-            apiVersion: API_VERSION,
+            apiVersion: E2E_API_VERSION,
             singlePackage: false,
             [packageName]: {
-              version: API_VERSION,
+              version: E2E_API_VERSION,
               types: [{ name: type, members: [member] }],
             },
           }
@@ -2688,7 +2687,7 @@ describe('Salesforce adapter E2E with real account', () => {
 
         const removeIfAlreadyExists = async (instance: MetadataInstanceElement): Promise<void> => {
           if (await findInstance(instance)) {
-            const pkg = createDeployPackage(API_VERSION)
+            const pkg = createDeployPackage(E2E_API_VERSION)
             pkg.delete(assertMetadataObjectType(await instance.getType()), await apiName(instance))
             await client.deploy(await pkg.getZip())
           }
@@ -2741,7 +2740,7 @@ describe('Salesforce adapter E2E with real account', () => {
           type: MetadataObjectType,
           fullName: string,
           content: Value,
-        ): MetadataInstanceElement => createInstanceElement({ fullName, apiVersion: API_VERSION, content }, type)
+        ): MetadataInstanceElement => createInstanceElement({ fullName, apiVersion: E2E_API_VERSION, content }, type)
 
         describe('apex class manipulation', () => {
           const apexClassInstance = createApexInstance(

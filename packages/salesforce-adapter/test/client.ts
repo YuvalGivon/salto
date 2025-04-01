@@ -11,9 +11,9 @@ import Connection from '../src/client/jsforce'
 import SalesforceClient from '../src/client/client'
 import { mockJsforce } from './connection'
 import { MAX_TOTAL_CONCURRENT_API_REQUEST, RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS } from '../src/constants'
-import { API_VERSION } from '../src/config/context/flags'
 
 const mockClient = (values?: Values): { connection: MockInterface<Connection>; client: SalesforceClient } => {
+  const apiVersion = '62.0'
   const connection = mockJsforce()
   const client = new SalesforceClient({
     credentials: {
@@ -22,7 +22,7 @@ const mockClient = (values?: Values): { connection: MockInterface<Connection>; c
       isSandbox: false,
     },
     connectionCreator: () => connection,
-    apiVersion: API_VERSION,
+    apiVersion,
     config: {
       maxConcurrentApiRequests: {
         total: MAX_TOTAL_CONCURRENT_API_REQUEST,

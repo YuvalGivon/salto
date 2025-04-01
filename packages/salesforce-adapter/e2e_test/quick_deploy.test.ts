@@ -9,9 +9,8 @@ import { ChangeGroup, StaticFile, toChange } from '@salto-io/adapter-api'
 import { CredsLease } from '@salto-io/e2e-credentials-store'
 import { logger } from '@salto-io/logging'
 import SalesforceAdapter from '../index'
-import realAdapter from './adapter'
+import realAdapter, { E2E_API_VERSION } from './adapter'
 import { SalesforceConfig, UsernamePasswordCredentials } from '../src/config/types'
-import { API_VERSION } from '../src/config/context/flags'
 import { testHelpers } from './jest_environment'
 // eslint-disable-next-line no-restricted-imports
 import { mockTypes } from '../test/mock_elements'
@@ -37,7 +36,7 @@ describe('validation and quick deploy e2e', () => {
     apexClassInstance = createInstanceElement(
       {
         fullName: 'MyApexClass',
-        apiVersion: API_VERSION,
+        apiVersion: E2E_API_VERSION,
         content: new StaticFile({
           filepath: 'MyApexClass.cls',
           content: Buffer.from(
@@ -51,7 +50,7 @@ describe('validation and quick deploy e2e', () => {
     apexTestInstance = createInstanceElement(
       {
         fullName: 'MyApexTest',
-        apiVersion: API_VERSION,
+        apiVersion: E2E_API_VERSION,
         content: new StaticFile({
           filepath: 'ApexTest.cls',
           content: Buffer.from(

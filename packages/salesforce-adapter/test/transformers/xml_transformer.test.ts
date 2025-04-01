@@ -29,10 +29,11 @@ import {
 } from '../../src/constants'
 import { Context } from '../../src/config/types'
 import { buildContext } from '../../src/config/context/context'
-import { API_VERSION } from '../../src/config/context/flags'
 
 describe('XML Transformer', () => {
   let context: Context
+  const apiVersion = '60.0'
+
   beforeEach(() => {
     context = buildContext({
       fetchParams: {},
@@ -53,20 +54,20 @@ describe('XML Transformer', () => {
 
     describe('getDeletionsPackageName', () => {
       it('get the right package name when deleteBeforeUpdate is true', () => {
-        expect(createDeployPackage(API_VERSION, true).getDeletionsPackageName()).toBe('destructiveChanges.xml')
+        expect(createDeployPackage(apiVersion, true).getDeletionsPackageName()).toBe('destructiveChanges.xml')
       })
 
       it('get the right package name when deleteBeforeUpdate is false', () => {
-        expect(createDeployPackage(API_VERSION, false).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
+        expect(createDeployPackage(apiVersion, false).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
       })
 
       it('get the right package name when deleteBeforeUpdate is undefined', () => {
-        expect(createDeployPackage(API_VERSION).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
+        expect(createDeployPackage(apiVersion).getDeletionsPackageName()).toBe('destructiveChangesPost.xml')
       })
     })
 
     beforeEach(() => {
-      pkg = createDeployPackage(API_VERSION)
+      pkg = createDeployPackage(apiVersion)
     })
 
     describe('empty package', () => {
@@ -78,7 +79,7 @@ describe('XML Transformer', () => {
           [addManifestPath],
           `<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
-    <version>${API_VERSION}</version>
+    <version>${apiVersion}</version>
 </Package>
 `,
         )
@@ -221,7 +222,7 @@ describe('XML Transformer', () => {
         })
         describe('when a field is missing', () => {
           beforeEach(async () => {
-            pkg = createDeployPackage(API_VERSION)
+            pkg = createDeployPackage(apiVersion)
             await pkg.add(
               createInstanceElement(
                 _.omit(mockDefaultValues.AuraDefinitionBundle, 'designContent'),

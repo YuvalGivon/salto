@@ -74,12 +74,12 @@ describe('flags', () => {
 
   describe('isFlagEnabled', () => {
     it('should return true when flag iteration is greater than or equal to current iteration', () => {
-      const result = isFlagEnabled('testFlag', 1)
+      const result = isFlagEnabled('testFlag', 1, undefined)
       expect(result).toBe(true)
     })
 
     it('should return false when flag iteration is less than current iteration', () => {
-      const result = isFlagEnabled('testFlag', 0)
+      const result = isFlagEnabled('testFlag', 0, undefined)
       expect(result).toBe(false)
     })
 
