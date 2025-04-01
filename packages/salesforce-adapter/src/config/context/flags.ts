@@ -13,7 +13,7 @@ import { Flags, FlagsSettings } from '../types'
 
 const log = logger(module)
 
-const CURRENT_FLAGS_ITERATION = 0
+const DEFAULT_FLAGS_ITERATION = 0
 
 // To bump the API set API_VERSION to the new version,
 // set PREVIOUS_API_VERSION to the old version,
@@ -34,23 +34,27 @@ const FLAGS_ITERATIONS: FlagsIterations = {
   retrieveAllTypes: 1,
 }
 
-export const getIteration = async (
-  elementsSource: ReadOnlyElementsSource | undefined,
-  flagsSettings: FlagsSettings | undefined,
-  preferCurrent = false,
-): Promise<number> => {
-  const currentIteration = flagsSettings?.currentIterationOverride ?? CURRENT_FLAGS_ITERATION
-  if (!elementsSource || preferCurrent) {
-    log.debug(`Using current flags iteration: ${currentIteration}`)
-    return currentIteration
+export const getIteration = async ({
+  elementSource,
+  flagsSettings,
+  preferDefault = false,
+}: {
+  elementSource: ReadOnlyElementsSource | undefined
+  flagsSettings: FlagsSettings | undefined
+  preferDefault?: boolean
+}): Promise<number> => {
+  const defaultIteration = flagsSettings?.defaultIterationOverride ?? DEFAULT_FLAGS_ITERATION
+  if (!elementSource || preferDefault) {
+    log.debug(`Using default flags iteration: ${defaultIteration}`)
+    return defaultIteration
   }
-  const flagsIteration = await elementsSource.get(
+  const flagsIteration = await elementSource.get(
     new ElemID(SALESFORCE, FLAGS_ITERATION_TYPE_NAME, 'instance', ElemID.CONFIG_NAME, FLAGS_ITERATION_FIELD_NAME),
   )
   if (!_.isNumber(flagsIteration)) {
     log.warn(`Flags iteration is not a number: ${flagsIteration}`)
-    log.debug(`Using current flags iteration: ${currentIteration}`)
-    return currentIteration
+    log.debug(`Using current flags iteration: ${defaultIteration}`)
+    return defaultIteration
   }
   log.debug(`Using flags iteration from elements source: ${flagsIteration}`)
   return flagsIteration
@@ -62,11 +66,11 @@ export const isFlagEnabled = (
   flagsSettings: FlagsSettings | undefined,
 ): boolean =>
   flagsSettings?.flagOverrides?.[flag] ??
-  FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration ?? CURRENT_FLAGS_ITERATION)
+  FLAGS_ITERATIONS[flag] <= (flagsSettings?.iterationOverride ?? iteration ?? DEFAULT_FLAGS_ITERATION)
 
 export const getApiVersion = (iteration: number | undefined, flagsSettings: FlagsSettings | undefined): string =>
   flagsSettings?.apiVersionOverride ??
-  ((flagsSettings?.iterationOverride ?? iteration ?? CURRENT_FLAGS_ITERATION) >= API_BUMP_ITERATION
+  ((flagsSettings?.iterationOverride ?? iteration ?? DEFAULT_FLAGS_ITERATION) >= API_BUMP_ITERATION
     ? API_VERSION
     : PREVIOUS_API_VERSION)
 

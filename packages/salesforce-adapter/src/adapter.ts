@@ -551,25 +551,25 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     const flagsSettings = this.userConfig[FLAGS_CONFIG]
 
     const targets = partialFetchTargets?.map(t => t.name) ?? fetchParams.target
-    const flagsIteration = await getIteration(
-      this.elementsSource,
+    const targetedFetchInclude = targets
+      ? await getMetadataIncludeFromFetchTargets(targets, this.elementsSource)
+      : undefined
+    const baseQuery = buildMetadataQuery({ fetchParams, targetedFetchInclude })
+    const flagsIteration = await getIteration({
+      elementSource: this.elementsSource,
       flagsSettings,
-      !withChangesDetection && !targets && !fetchParams.target,
-    )
+      preferDefault: !baseQuery.isPartialFetch(),
+    })
     const apiVersion = getApiVersion(flagsIteration, flagsSettings)
     this.client.updateConnection(apiVersion)
 
     this.initializeCustomListFunctions(withChangesDetection)
-    const baseQuery = buildMetadataQuery({ fetchParams })
     const metadataTypeInfos = await this.client.listMetadataTypes()
     const lastChangeDateOfTypesWithNestedInstances = await getLastChangeDateOfTypesWithNestedInstances({
       client: this.client,
       metadataQuery: buildFilePropsMetadataQuery(baseQuery),
       metadataTypeInfos,
     })
-    const targetedFetchInclude = targets
-      ? await getMetadataIncludeFromFetchTargets(targets, this.elementsSource)
-      : undefined
     const metadataQuery = withChangesDetection
       ? await buildMetadataQueryForFetchWithChangesDetection({
           fetchParams,
@@ -697,7 +697,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
   ): Promise<DeployResult> {
     const fetchParams = this.userConfig[FETCH_CONFIG] ?? {}
     const flagsSettings = this.userConfig[FLAGS_CONFIG]
-    const flagsIteration = await getIteration(this.elementsSource, flagsSettings)
+    const flagsIteration = await getIteration({ elementSource: this.elementsSource, flagsSettings })
     const context = buildContext({
       fetchParams,
       customReferencesSettings: this.userConfig[CUSTOM_REFS_CONFIG],

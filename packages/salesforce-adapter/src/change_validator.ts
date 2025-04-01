@@ -145,7 +145,7 @@ const createSalesforceChangeValidator = ({
   // Returns a change validator with elementsSource that lazily resolves types using resolveTypeShallow
   // upon usage. This is relevant to Change Validators that get instances from the elementsSource.
   return async (changes, elementSource) => {
-    const flagsIteration = await getIteration(elementSource, config[FLAGS_CONFIG])
+    const flagsIteration = await getIteration({ elementSource, flagsSettings: config[FLAGS_CONFIG] })
     const context = buildContext({
       fetchParams: config.fetch ?? {},
       flagsSettings: config[FLAGS_CONFIG],

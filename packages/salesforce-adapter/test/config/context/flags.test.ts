@@ -14,22 +14,22 @@ import { FlagsSettings } from '../../../src/config/types'
 describe('flags', () => {
   describe('getIteration', () => {
     it('should return CURRENT_FLAGS_ITERATION when elementsSource and flagsSettings are undefined', async () => {
-      const result = await getIteration(undefined, undefined)
+      const result = await getIteration({ elementSource: undefined, flagsSettings: undefined })
       expect(result).toBe(0)
     })
 
     it('should return iteration from elementsSource when available and not overridden', async () => {
       const iteration = 5
-      const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(iteration)])
+      const elementSource = buildElementsSourceFromElements([createFlagsIterationInstance(iteration)])
 
-      const result = await getIteration(elementsSource, undefined)
+      const result = await getIteration({ elementSource, flagsSettings: undefined })
       expect(result).toBe(iteration)
     })
 
     it('should return CURRENT_FLAGS_ITERATION when the flags iteration instance is missing and not overridden', async () => {
-      const elementsSource = buildElementsSourceFromElements([])
+      const elementSource = buildElementsSourceFromElements([])
 
-      const result = await getIteration(elementsSource, undefined)
+      const result = await getIteration({ elementSource, flagsSettings: undefined })
       expect(result).toBe(0)
     })
 
@@ -39,35 +39,35 @@ describe('flags', () => {
         new ObjectType({ elemID: new ElemID(SALESFORCE, 'FlagsIteration') }),
         { iteration: 'not a number' },
       )
-      const elementsSource = buildElementsSourceFromElements([nonNumberInstance])
+      const elementSource = buildElementsSourceFromElements([nonNumberInstance])
 
-      const result = await getIteration(elementsSource, undefined)
+      const result = await getIteration({ elementSource, flagsSettings: undefined })
       expect(result).toBe(0)
     })
 
-    it('should return currentIterationOverride when provided', async () => {
+    it('should return defaultIterationOverride when provided', async () => {
       const iteration = 5
       const flagsSettings: FlagsSettings = {
-        currentIterationOverride: iteration,
+        defaultIterationOverride: iteration,
       }
-      const result = await getIteration(undefined, flagsSettings)
+      const result = await getIteration({ elementSource: undefined, flagsSettings })
       expect(result).toBe(iteration)
     })
 
-    it('should prefer current iteration when requested', async () => {
-      const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(5)])
+    it('should prefer default iteration when requested', async () => {
+      const elementSource = buildElementsSourceFromElements([createFlagsIterationInstance(5)])
 
-      const result = await getIteration(elementsSource, undefined, true)
+      const result = await getIteration({ elementSource, flagsSettings: undefined, preferDefault: true })
       expect(result).toBe(0)
     })
 
-    it('should prefer currentIterationOverride when provided and requested', async () => {
+    it('should prefer defaultIterationOverride when provided and requested', async () => {
       const iteration = 5
       const flagsSettings: FlagsSettings = {
-        currentIterationOverride: iteration,
+        defaultIterationOverride: iteration,
       }
-      const elementsSource = buildElementsSourceFromElements([createFlagsIterationInstance(3)])
-      const result = await getIteration(elementsSource, flagsSettings, true)
+      const elementSource = buildElementsSourceFromElements([createFlagsIterationInstance(3)])
+      const result = await getIteration({ elementSource, flagsSettings, preferDefault: true })
       expect(result).toBe(iteration)
     })
   })

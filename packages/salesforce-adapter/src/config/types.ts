@@ -213,7 +213,7 @@ export type FixElementsSettings = Partial<Record<CustomReferencesHandlers, boole
 
 export type FlagsSettings = {
   iterationOverride?: number
-  currentIterationOverride?: number
+  defaultIterationOverride?: number
   flagOverrides?: Partial<Flags>
   apiVersionOverride?: string
 }
@@ -347,7 +347,7 @@ const flagsConfigType = new ObjectType({
   elemID: new ElemID(constants.SALESFORCE, 'adapterFlagsSettings'),
   fields: {
     iterationOverride: { refType: BuiltinTypes.NUMBER },
-    currentIterationOverride: { refType: BuiltinTypes.NUMBER },
+    defaultIterationOverride: { refType: BuiltinTypes.NUMBER },
     flagOverrides: { refType: flagOverridesType },
     apiVersionOverride: { refType: BuiltinTypes.STRING },
   },
