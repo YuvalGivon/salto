@@ -5,17 +5,26 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
+import _ from 'lodash'
 import { definitions } from '@salto-io/adapter-components'
 import { validatePlainObject } from '@salto-io/adapter-utils'
 
 /**
- * Convert a list of group summaries to a list of IDs, to be converted to references.
+ * Convert a list of "item" summaries to a list of IDs, to be converted to references.
  *
+ * For example:
  * Several endpoints return group summaries, which are partial representation of the HostGroup element. We want these
  * to be references instead, so we extract the ID and flatten the list. Later, IDs will be converted to references.
  */
-export const convertGroupSummaryToIdList: definitions.AdjustFunctionSingle = async ({ typeName, value }) => {
-  validatePlainObject(value, typeName)
-  const groups = Array.isArray(value?.groups) ? value?.groups.map(group => group?.id) : value?.groups
-  return { value: { ...value, groups } }
-}
+export const convertSummaryToIdList =
+  (key: string): definitions.AdjustFunctionSingle =>
+  async ({ typeName, value }) => {
+    validatePlainObject(value, typeName)
+    const items = _.get(value, key)
+    return {
+      value: {
+        ...value,
+        [key]: Array.isArray(items) ? items.map(item => item?.id) : items,
+      },
+    }
+  }

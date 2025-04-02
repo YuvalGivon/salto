@@ -18,7 +18,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     target: { type: 'FirewallRule' },
   },
   {
-    src: { field: 'policy_ids', parentTypes: ['FirewallRuleGroup'] },
+    src: { field: 'policy_ids', parentTypes: ['FirewallRuleGroup', 'FirewallRule__rule_group'] },
     serializationStrategy: 'id',
     target: { type: 'FirewallPolicy' },
   },
@@ -49,13 +49,14 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
         'FirewallPolicy',
         'SensorUpdatePolicy',
         'PreventionPolicy',
+        'ResponsePolicy',
       ],
     },
     serializationStrategy: 'id',
     target: { type: 'HostGroup' },
   },
   {
-    src: { field: 'host_groups', parentTypes: ['CertBasedExclusion'] },
+    src: { field: 'host_groups', parentTypes: ['CertBasedExclusion', 'FileVantagePolicy'] },
     serializationStrategy: 'id',
     target: { type: 'HostGroup' },
   },
@@ -68,6 +69,105 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     src: { field: 'rule_ids', parentTypes: ['CustomIoaRuleGroup'] },
     serializationStrategy: 'id',
     target: { type: 'CustomIoaRule' },
+  },
+  {
+    serializationStrategy: 'account_id',
+    src: {
+      field: 'account_id',
+      instanceTypes: ['CspmPolicySettings'],
+      parentTypes: ['CspmPolicySettings__policy_settings'],
+    },
+    target: {
+      type: 'CloudConnectAwsAccount',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'action',
+      instanceTypes: ['IocIndicator'],
+      parentTypes: ['IocIndicator'],
+    },
+    target: {
+      type: 'Action',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'id',
+      instanceTypes: ['FirewallRule'],
+      parentTypes: ['FirewallRule__rule_group'],
+    },
+    target: {
+      type: 'FirewallRuleGroup',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'rulegroup_id',
+      instanceTypes: ['IoaRule'],
+      parentTypes: ['IoaRule'],
+    },
+    target: {
+      type: 'CustomIoaRuleGroup',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'ruletype_id',
+      instanceTypes: ['IoaRule'],
+      parentTypes: ['IoaRule'],
+    },
+    target: {
+      type: 'IoaRuleType',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'id',
+      instanceTypes: ['DefaultDeviceControlPolicy'],
+      parentTypes: ['DefaultDeviceControlPolicy'],
+    },
+    target: {
+      type: 'DeviceControlPolicy',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'policy_assignments',
+      instanceTypes: ['FileVantageRuleGroup'],
+      parentTypes: ['FileVantageRuleGroup'],
+    },
+    target: {
+      type: 'FileVantagePolicy',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'rule_groups',
+      instanceTypes: ['FileVantagePolicy'],
+      parentTypes: ['FileVantagePolicy'],
+    },
+    target: {
+      type: 'FileVantageRuleGroup',
+    },
+  },
+  {
+    serializationStrategy: 'id',
+    src: {
+      field: 'ioa_rule_groups',
+      instanceTypes: ['PreventionPolicy'],
+      parentTypes: ['FileVantagePolicy'],
+    },
+    target: {
+      type: 'CustomIoaRuleGroup',
+    },
   },
 ]
 
@@ -84,8 +184,13 @@ export const REFERENCES: definitions.ApiDefinitions<Options>['references'] = {
       lookup: referenceUtils.basicLookUp,
       lookupIndexName: 'device_id',
     },
+    account_id: {
+      serialize: ({ ref }) => ref.value.value.account_id,
+      lookup: referenceUtils.basicLookUp,
+      lookupIndexName: 'account_id',
+    },
   },
-  fieldsToGroupBy: ['id', 'name', 'family', 'device_id'],
+  fieldsToGroupBy: ['id', 'name', 'family', 'device_id', 'account_id'],
   contextStrategyLookup: {
     fieldName: referenceUtils.neighborContextGetter({
       contextFieldName: 'name',

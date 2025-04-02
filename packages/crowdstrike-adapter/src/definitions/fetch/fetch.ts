@@ -5,12 +5,12 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { definitions } from '@salto-io/adapter-components'
+import { concatAdjustFunctions, definitions } from '@salto-io/adapter-components'
 import { validatePlainObject } from '@salto-io/adapter-utils'
 import { UserFetchConfig } from '../../config'
 import { Options } from '../types'
 import { Credentials } from '../../auth'
-import { convertIdListToObject, convertGroupSummaryToIdList } from './transforms'
+import { convertSummaryToIdList } from './transforms'
 
 const NAME_ID_FIELD: definitions.fetch.FieldIDPart = { fieldName: 'name' }
 const DEFAULT_ID_PARTS = [NAME_ID_FIELD]
@@ -39,6 +39,7 @@ const COMMON_FIELD_CUSTOMIZATIONS: Record<string, definitions.fetch.ElementField
     'UpdatedAt',
     'last_modified',
     'last_seen',
+    'last_updated_on',
   ].reduce((acc: Record<string, definitions.fetch.ElementFieldCustomization>, fieldName: string) => {
     acc[fieldName] = { omit: true }
     return acc
@@ -54,7 +55,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: concatAdjustFunctions(convertSummaryToIdList('groups'), convertSummaryToIdList('ioa_rule_groups')),
         },
       },
     ],
@@ -84,7 +85,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: convertSummaryToIdList('groups'),
         },
       },
     ],
@@ -112,7 +113,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/policy/queries/firewall/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -122,7 +122,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'FirewallPolicy',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
             },
           },
         },
@@ -158,9 +158,10 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: convertSummaryToIdList('groups'),
         },
       },
+      // TODO check if still needed
       {
         endpoint: {
           path: '/fwmgr/entities/policies/v1',
@@ -230,7 +231,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/fwmgr/queries/rule-groups/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -240,7 +240,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'FirewallRuleGroup',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
             },
           },
         },
@@ -446,7 +446,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/policy/queries/ml-exclusions/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -456,7 +455,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'MachineLearningExclusion',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
             },
           },
         },
@@ -492,7 +491,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: convertSummaryToIdList('groups'),
         },
       },
     ],
@@ -519,7 +518,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/exclusions/queries/cert-based-exclusions/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -529,7 +527,15 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'CertBasedExclusion',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
+            },
+          },
+        },
+        ExclusionCertificate: {
+          typeName: 'ExclusionCertificate',
+          context: {
+            args: {
+              ids: { root: 'resources' },
             },
           },
         },
@@ -545,6 +551,14 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         CertBasedExclusion: {
           standalone: {
             typeName: 'CertBasedExclusion',
+            addParentAnnotation: false,
+            referenceFromParent: false,
+            nestPathUnderParent: false,
+          },
+        },
+        ExclusionCertificate: {
+          standalone: {
+            typeName: 'ExclusionCertificate',
             addParentAnnotation: false,
             referenceFromParent: false,
             nestPathUnderParent: false,
@@ -574,7 +588,16 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
-        elemID: { parts: [{ fieldName: 'id' }] },
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+            {
+              fieldName: 'status',
+            },
+          ],
+        },
         serviceUrl: {
           path: '/configuration-v2/exclusions/certificates/{id}/summary',
         },
@@ -591,7 +614,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/policy/queries/sv-exclusions/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -601,7 +623,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'SensorVisibilityExclusion',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
             },
           },
         },
@@ -637,7 +659,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: convertSummaryToIdList('groups'),
         },
       },
     ],
@@ -665,7 +687,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
-          adjust: convertGroupSummaryToIdList,
+          adjust: convertSummaryToIdList('groups'),
         },
       },
     ],
@@ -785,7 +807,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         endpoint: {
           path: '/ioarules/queries/rule-groups/v1',
         },
-        transformation: convertIdListToObject,
       },
     ],
     resource: {
@@ -795,7 +816,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           typeName: 'CustomIoaRuleGroup',
           context: {
             args: {
-              ids: { root: 'ids' },
+              ids: { root: 'resources' },
             },
           },
         },
@@ -824,11 +845,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     requests: [
       {
         endpoint: {
-          // Note: this endpoint is not covered by the Swagger spec, deduced from the UI.
-          path: '/ioarules/entities/rule-groups/v1',
-          queryArgs: {
-            ids: '{ids}',
-          },
+          path: '/ioarules/queries/rule-groups-full/v1',
         },
         transformation: {
           root: 'resources',
@@ -907,7 +924,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     requests: [
       {
         endpoint: {
-          path: '/cloud-connect-cspm-aws/entities/account/v1',
+          path: '/cloud-connect-aws/entities/account/v2',
         },
         transformation: {
           root: 'resources',
@@ -987,6 +1004,1371 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+    },
+  },
+  Action: {
+    element: {
+      fieldCustomizations: {},
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'id',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/iocs/entities/actions/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  CspmPolicySettings: {
+    element: {
+      fieldCustomizations: {
+        created_at: {
+          omit: true,
+        },
+        policy_id: {
+          hide: true,
+        },
+        policy_timestamp: {
+          omit: true,
+        },
+        updated_at: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+            {
+              fieldName: 'cloud_provider',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/settings/entities/policy/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+      serviceIDFields: ['policy_id'],
+    },
+  },
+  ContentUpdatePolicy: {
+    element: {
+      fieldCustomizations: {
+        cid: {
+          omit: true,
+        },
+        created_by: {
+          omit: true,
+        },
+        created_timestamp: {
+          omit: true,
+        },
+        id: {
+          hide: true,
+        },
+        modified_by: {
+          omit: true,
+        },
+        modified_timestamp: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/combined/content-update/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  CorrelationRuleIds: {
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/correlation-rules/queries/rules/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  CorrelationRule: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/correlation-rules/entities/rules/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'CorrelationRuleIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+  },
+  CorrelationRule__notifications__config: {
+    element: {
+      fieldCustomizations: {
+        cid: {
+          omit: true,
+        },
+      },
+    },
+  },
+  DefaultDeviceControlPolicy: {
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        singleton: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/entities/default-device-control/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+      mergeAndTransform: {
+        pick: ['id'],
+      },
+      serviceIDFields: [],
+    },
+  },
+  DeliverySettings: {
+    element: {
+      fieldCustomizations: {
+        cid: {
+          omit: true,
+        },
+        created_at: {
+          omit: true,
+        },
+        created_by: {
+          omit: true,
+        },
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'delivery_type',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/delivery-settings/entities/delivery-settings/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  ExclusionCertificate: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/exclusions/entities/certificates/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  FirewallFieldIds: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        hide: true,
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/fwmgr/queries/firewall-fields/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  FirewallField: {
+    requests: [
+      {
+        endpoint: {
+          path: '/fwmgr/entities/firewall-fields/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'FirewallFieldIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+      topLevel: {
+        isTopLevel: true,
+        elemID: {
+          parts: [{ fieldName: 'platform' }],
+        },
+      },
+    },
+  },
+  HorizonScript: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/settings-discover/entities/gen/scripts/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  IoaRuleIds: {
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/queries/rules/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  IoaRule: {
+    element: {
+      fieldCustomizations: {
+        committed_on: {
+          omit: true,
+        },
+        instance_id: {
+          hide: true,
+        },
+        version_ids: {
+          omit: true,
+        },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/entities/rules/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'IoaRuleIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+      serviceIDFields: ['instance_id'],
+    },
+  },
+
+  IoaRuleTypeIds: {
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/queries/rule-types/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  IoaRuleType: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        ruletype_name: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+            {
+              fieldName: 'platform',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/entities/rule-types/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'IoaRuleTypeIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+  },
+
+  IdentityProtectionPolicyRuleIds: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/identity-protection/queries/policy-rules/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  IdentityProtectionPolicyRule: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/identity-protection/entities/policy-rules/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'IdentityProtectionPolicyRuleIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+  },
+  ImageAssessmentPolicy: {
+    element: {
+      fieldCustomizations: {
+        created_at: {
+          omit: true,
+        },
+        policy_id: {
+          hide: true,
+        },
+        updated_at: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/container-security/entities/image-assessment-policies/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+      serviceIDFields: ['policy_id'],
+    },
+  },
+  ImageAssessmentPolicyExclusion: {
+    element: {
+      fieldCustomizations: {
+        created_at: {
+          omit: true,
+        },
+        id: {
+          hide: true,
+        },
+        updated_at: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/container-security/entities/image-assessment-policy-exclusions/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  IocIndicatorIds: {
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/iocs/queries/indicators/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  IocIndicator: {
+    element: {
+      fieldCustomizations: {
+        created_by: {
+          omit: true,
+        },
+        created_on: {
+          omit: true,
+        },
+        id: {
+          hide: true,
+        },
+        modified_by: {
+          omit: true,
+        },
+        modified_on: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'type',
+            },
+            {
+              fieldName: 'value',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/iocs/entities/indicators/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'IocIndicatorIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+  },
+  IoAExclusionPolicy: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/queries/ioa-exclusions/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  PatternSeverityIds: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/queries/pattern-severities/v1',
+        },
+        transformation: {
+          pick: ['resources'],
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  PatternSeverity: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/ioarules/entities/pattern-severities/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'PatternSeverityIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      serviceIDFields: ['name'],
+      directFetch: true,
+    },
+  },
+  Platform: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'label',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/fwmgr/entities/platforms/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  ResponsePolicy: {
+    element: {
+      fieldCustomizations: {
+        cid: {
+          omit: true,
+        },
+        created_by: {
+          omit: true,
+        },
+        created_timestamp: {
+          omit: true,
+        },
+        id: {
+          hide: true,
+        },
+        modified_by: {
+          omit: true,
+        },
+        modified_timestamp: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'platform_name',
+            },
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/combined/response/v1',
+        },
+        transformation: {
+          root: 'resources',
+          adjust: convertSummaryToIdList('groups'),
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  SensorInstallerV1: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/sensors/combined/installers/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  SensorInstallerV2: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/sensors/combined/installers/v2',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  SensorUpdatePolicyBuild: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'platform',
+            },
+            {
+              fieldName: 'stage',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/policy/combined/sensor-update-builds/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  SensorUpdatePolicy__groups: {
+    element: {
+      fieldCustomizations: {
+        created_by: {
+          omit: true,
+        },
+        created_timestamp: {
+          omit: true,
+        },
+        modified_by: {
+          omit: true,
+        },
+        modified_timestamp: {
+          omit: true,
+        },
+      },
+    },
+  },
+  SensorVisibilityExclusion__groups: {
+    element: {
+      fieldCustomizations: {
+        created_by: {
+          omit: true,
+        },
+        created_timestamp: {
+          omit: true,
+        },
+        modified_by: {
+          omit: true,
+        },
+        modified_timestamp: {
+          omit: true,
+        },
+      },
+    },
+  },
+  UserRole: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/user-management/combined/user-roles/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+  WorkflowDefinition: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        last_modified_timestamp: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+      // TODO see if can add references, e.g. to actions.<name>.id and to entities inside the template language
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/workflows/combined/definitions/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  PluginConfig: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+      topLevel: {
+        elemID: {
+          parts: [
+            {
+              fieldName: 'config.name',
+            },
+          ],
+        },
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/plugins/combined/configs/v1',
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+  },
+
+  // in the UI, also called File Integrity policies
+  // TODO expand to additional types once we are able to test these properly
+
+  FileVantagePolicyIds: {
+    requests: [
+      {
+        endpoint: {
+          path: '/filevantage/queries/policies/v1',
+          queryArgs: {
+            type: '{type}',
+          },
+        },
+      },
+    ],
+    resource: {
+      context: {
+        fixed: {
+          type: ['Windows', 'Linux', 'Mac'],
+        },
+      },
+      directFetch: true,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+  },
+  // TODO check how to retrieve and manage precedence - there's /filevantage/entities/policies-precedence/v1 PATCH for adjusting
+  FileVantagePolicy: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+      },
+      topLevel: {
+        isTopLevel: true,
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/filevantage/entities/policies/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+          adjust: concatAdjustFunctions(convertSummaryToIdList('host_groups'), convertSummaryToIdList('rule_groups')),
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'FileVantagePolicyIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+    },
+  },
+
+  FileVantageRuleGroupIds: {
+    requests: [
+      {
+        endpoint: {
+          path: '/filevantage/queries/rule-groups/v1',
+          queryArgs: {
+            type: '{type}',
+          },
+        },
+      },
+    ],
+    resource: {
+      context: {
+        fixed: {
+          type: ['WindowsFiles', 'WindowsRegistry', 'LinuxFiles', 'MacFiles'],
+        },
+      },
+      directFetch: true,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        hide: true,
+      },
+    },
+  },
+  FileVantageRuleGroup: {
+    element: {
+      fieldCustomizations: {
+        id: {
+          hide: true,
+        },
+        FileVantageRule: {
+          standalone: {
+            typeName: 'FileVantageRule',
+            addParentAnnotation: true,
+            referenceFromParent: false,
+            nestPathUnderParent: true,
+          },
+        },
+        // already covered by parent annotation from rules
+        assigned_rules: {
+          omit: true,
+        },
+      },
+      topLevel: {
+        isTopLevel: true,
+        elemID: {
+          parts: [
+            NAME_ID_FIELD,
+            {
+              fieldName: 'type',
+            },
+          ],
+        },
+      },
+    },
+    requests: [
+      {
+        endpoint: {
+          path: '/filevantage/entities/rule-groups/v1',
+          queryArgs: {
+            ids: '{ids}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+          adjust: concatAdjustFunctions(
+            convertSummaryToIdList('policy_assignments'),
+            convertSummaryToIdList('assigned_rules'),
+          ),
+        },
+      },
+    ],
+    resource: {
+      context: {
+        dependsOn: {
+          ids: {
+            parentTypeName: 'FileVantageRuleGroupIds',
+            transformation: {
+              root: 'resources',
+            },
+          },
+        },
+      },
+      directFetch: true,
+      recurseInto: {
+        FileVantageRule: {
+          typeName: 'FileVantageRule',
+          context: {
+            args: {
+              rule_group_id: { root: 'id' },
+              assigned_rules: { root: 'assigned_rules' },
+            },
+          },
+        },
+      },
+    },
+  },
+  // TODO check how to retrieve and manage precedence - there's /filevantage/entities/rule-groups-rule-precedence/v1 PATCH for adjusting
+  FileVantageRule: {
+    requests: [
+      {
+        endpoint: {
+          path: '/filevantage/entities/rule-groups-rules/v1',
+          queryArgs: {
+            rule_group_id: '{rule_group_id}',
+            ids: '{assigned_rules}',
+          },
+        },
+        transformation: {
+          root: 'resources',
+        },
+      },
+    ],
+    resource: {
+      directFetch: false,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+      },
+      fieldCustomizations: {
+        id: { hide: true },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
+        // already covered by parent annotation
+        rule_group_id: { omit: true },
       },
     },
   },

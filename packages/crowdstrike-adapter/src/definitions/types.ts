@@ -13,7 +13,7 @@ export type AdditionalAction = never
 export type ClientOptions = 'main'
 type PaginationOptions = 'offset'
 export type ReferenceContextStrategies = 'fieldName'
-export type CustomReferenceSerializationStrategyName = 'family' | 'device_id'
+export type CustomReferenceSerializationStrategyName = 'family' | 'device_id' | 'account_id'
 type CustomIndexField = CustomReferenceSerializationStrategyName
 
 export type Options = definitions.APIDefinitionsOptions & {
