@@ -558,7 +558,7 @@ export default class SalesforceAdapter implements SalesforceAdapterOperations {
     const flagsIteration = await getIteration({
       elementSource: this.elementsSource,
       flagsSettings,
-      preferDefault: !baseQuery.isPartialFetch(),
+      preferDefault: !baseQuery.isPartialFetch() && !withChangesDetection,
     })
     const apiVersion = getApiVersion({ iteration: flagsIteration, flagsSettings })
     this.client.updateConnection(apiVersion)
