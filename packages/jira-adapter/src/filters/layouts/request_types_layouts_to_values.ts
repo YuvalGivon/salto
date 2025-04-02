@@ -66,7 +66,7 @@ const filter: FilterCreator = ({ config }) => ({
     const layouts = _.remove(elements, e => LAYOUT_TYPES_TO_ADJUST.includes(e.elemID.typeName) && isInstanceElement(e))
     layouts.filter(isInstanceElement).forEach(layout => {
       const requestType = layout.value.extraDefinerId?.value
-      if (requestType.elemID.typeName !== REQUEST_TYPE_NAME) {
+      if (requestType?.elemID.typeName !== REQUEST_TYPE_NAME) {
         log.warn('requestType is not of type requestType')
         return
       }
