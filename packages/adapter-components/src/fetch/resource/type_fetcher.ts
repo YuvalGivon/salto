@@ -34,9 +34,12 @@ const calculateContextArgs = async ({
   initialRequestContext?: Record<string, unknown>
   contextResources: Record<string, ValueGeneratedItem[] | undefined>
 }): Promise<Record<string, unknown[]>> => {
-  const { dependsOn } = contextDef ?? {}
+  const { dependsOn, fixed } = contextDef ?? {}
   const predefinedArgs = _.mapValues(initialRequestContext, collections.array.makeArray)
-  const remainingDependsOnArgs: Record<string, DependsOnDefinition> = _.omit(dependsOn, Object.keys(predefinedArgs))
+  const remainingDependsOnArgs: Record<string, DependsOnDefinition> = _.omit(
+    dependsOn,
+    Object.keys(predefinedArgs).concat(Object.keys(fixed ?? {})),
+  )
   const dependsOnArgs = _(
     await mapValuesAsync(remainingDependsOnArgs, async arg =>
       _.flatten(
@@ -59,6 +62,7 @@ const calculateContextArgs = async ({
   return _.defaults(
     {},
     predefinedArgs,
+    fixed,
     _.mapValues(dependsOnArgs, array => _.map(array, 'value')),
   )
 }

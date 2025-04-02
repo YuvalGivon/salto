@@ -39,5 +39,7 @@ export type RecurseIntoDefinition = {
 export type ContextCombinationDefinition = {
   // each dependsOn combination provides a cartesian product of its possible arguments
   dependsOn?: Record<string, DependsOnDefinition>
+  // additional hard-coded context which is not returned from another endpoint
+  fixed?: Record<string, unknown[]>
   conditions?: Condition[]
 }
