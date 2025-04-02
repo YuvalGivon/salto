@@ -31,7 +31,7 @@ const TYPE_NAME_TO_READ_ONLY_FIELDS: Record<string, ReadOnlyFieldDefinition[]> =
   [entraConstants.TOP_LEVEL_TYPES.APPLICATION_TYPE_NAME]: [
     { fieldName: 'appId' },
     { fieldName: 'publisherDomain', verifyAdditionChanges: true },
-    { fieldName: 'applicationTemplateId', verifyAdditionChanges: true },
+    { fieldName: 'applicationTemplateId' },
   ],
   [entraConstants.TOP_LEVEL_TYPES.DIRECTORY_ROLE_TYPE_NAME]: [
     { fieldName: 'description' },
