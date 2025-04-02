@@ -110,13 +110,19 @@ const removeMissingAutomationProjects: WeakReferencesHandler['removeWeakReferenc
       .filter(values.isDefined)
       .toArray()
 
-    const errors = fixedElements.map(instance => ({
-      elemID: instance.elemID.createNestedID('projects'),
-      severity: 'Info' as const,
-      message: 'Deploying automation without all attached projects',
-      detailedMessage:
-        'This automation is attached to some projects that do not exist in the target environment. It will be deployed without referencing these projects.',
-    }))
+    const errors = fixedElements.map(instance => {
+      const hasNoProjectsLeft = instance.value.projects.length === 0
+      return {
+        elemID: instance.elemID.createNestedID('projects'),
+        severity: 'Info' as const,
+        message: hasNoProjectsLeft
+          ? 'Attached projects do not exist in the target environment'
+          : 'Some attached projects were removed from this automation',
+        detailedMessage: hasNoProjectsLeft
+          ? 'All projects attached to this automation do not exist in the target environment, and were removed during the deployment. The automation will not be able to be deployed until these projects are deployed to the target environment, or the automation is configured as global.'
+          : 'Some projects that were attached to this automation were removed, as they do not exist in the target environment.',
+      }
+    })
     return { fixedElements, errors }
   }
 
