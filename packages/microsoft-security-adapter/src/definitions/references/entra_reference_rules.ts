@@ -8,6 +8,7 @@
 import { references as referenceUtils, fetch as fetchUtils } from '@salto-io/adapter-components'
 import { entraConstants } from '../../constants'
 import { ReferenceContextStrategies, CustomReferenceSerializationStrategyName } from '../types'
+import { TOP_LEVEL_TYPES } from '../../constants/entra'
 
 const { recursiveNestedTypeName } = fetchUtils.element
 
@@ -162,7 +163,14 @@ export const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
   {
     src: {
       field: 'id',
-      parentTypes: [recursiveNestedTypeName(AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME, 'includeTargets')],
+      parentTypes: [
+        recursiveNestedTypeName(AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME, 'includeTargets'),
+        recursiveNestedTypeName(
+          TOP_LEVEL_TYPES.AUTHENTICATION_METHOD_POLICY_TYPE_NAME,
+          'reportSuspiciousActivitySettings',
+          'includeTarget',
+        ),
+      ],
     },
     target: { type: GROUP_TYPE_NAME },
     serializationStrategy: 'id',

@@ -841,7 +841,11 @@ const graphBetaCustomizations: FetchCustomizations = {
           path: '/policies/authenticationMethodsPolicy',
         },
         transformation: {
-          pick: ['registrationEnforcement', AUTHENTICATION_METHOD_CONFIGURATIONS_FIELD_NAME],
+          pick: [
+            'registrationEnforcement',
+            AUTHENTICATION_METHOD_CONFIGURATIONS_FIELD_NAME,
+            'reportSuspiciousActivitySettings',
+          ],
         },
       },
     ],
