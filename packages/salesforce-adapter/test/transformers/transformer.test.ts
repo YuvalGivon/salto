@@ -85,22 +85,64 @@ describe('transformer', () => {
     getLookupNameFunc = getLookUpName(defaultFilterContext.context)
   })
   describe('getAuthorAnnotations', () => {
-    const newChangeDateFileProperties = mockFileProperties({
-      lastModifiedDate: 'date that is new',
-      type: 'test',
-      fullName: 'test',
-      lastModifiedByName: 'changed_name',
+    it('should return full author annotations when available', () => {
+      const fileProperties = mockFileProperties({
+        type: 'test',
+        fullName: 'test',
+        createdByName: 'Jane Doe',
+        createdDate: '2025-01-01T10:00:00.000+0000',
+        lastModifiedByName: 'John Doe',
+        lastModifiedDate: '2025-02-01T10:00:00.000+0000',
+      })
+      expect(getAuthorAnnotations(fileProperties)).toEqual({
+        [CORE_ANNOTATIONS.CREATED_BY]: 'Jane Doe',
+        [CORE_ANNOTATIONS.CREATED_AT]: '2025-01-01T10:00:00.000+0000',
+        [CORE_ANNOTATIONS.CHANGED_BY]: 'John Doe',
+        [CORE_ANNOTATIONS.CHANGED_AT]: '2025-02-01T10:00:00.000+0000',
+      })
     })
-    const oldChangeDateFileProperties = mockFileProperties({
-      lastModifiedDate: SALESFORCE_DATE_PLACEHOLDER,
-      type: 'test',
-      fullName: 'test',
+    it('should return empty object when file properties are undefined', () => {
+      expect(getAuthorAnnotations(undefined)).toEqual({})
     })
-    it('get annotations with up to date change time will return full annotations', () => {
-      expect(getAuthorAnnotations(newChangeDateFileProperties)[CORE_ANNOTATIONS.CHANGED_BY]).toEqual('changed_name')
+    it('should return partial author annotations when some are missing', () => {
+      const fileProperties = mockFileProperties({
+        type: 'test',
+        fullName: 'test',
+        createdByName: 'Jane Doe',
+        createdDate: undefined,
+        lastModifiedDate: '2025-02-01T10:00:00.000+0000',
+        lastModifiedByName: undefined,
+      })
+      expect(getAuthorAnnotations(fileProperties)).toEqual({
+        [CORE_ANNOTATIONS.CREATED_BY]: 'Jane Doe',
+        [CORE_ANNOTATIONS.CHANGED_AT]: '2025-02-01T10:00:00.000+0000',
+      })
     })
-    it('file properties with old change will return no user name in changedBy', () => {
-      expect(getAuthorAnnotations(oldChangeDateFileProperties)[CORE_ANNOTATIONS.CHANGED_BY]).not.toBeDefined()
+    it('should drop changed by when last modified date is placeholder', () => {
+      const fileProperties = mockFileProperties({
+        type: 'test',
+        fullName: 'test',
+        createdByName: 'Jane Doe',
+        createdDate: '2025-01-01T10:00:00.000+0000',
+        lastModifiedByName: 'John Doe',
+        lastModifiedDate: SALESFORCE_DATE_PLACEHOLDER,
+      })
+      expect(getAuthorAnnotations(fileProperties)).toEqual({
+        [CORE_ANNOTATIONS.CREATED_BY]: 'Jane Doe',
+        [CORE_ANNOTATIONS.CREATED_AT]: '2025-01-01T10:00:00.000+0000',
+        [CORE_ANNOTATIONS.CHANGED_AT]: SALESFORCE_DATE_PLACEHOLDER,
+      })
+    })
+    it('should drop invalid values', () => {
+      const fileProperties = mockFileProperties({
+        type: 'test',
+        fullName: 'test',
+        createdByName: 12 as unknown as string,
+        createdDate: { $: { 'xsi:nil': true } } as unknown as string,
+        lastModifiedByName: null as unknown as string,
+        lastModifiedDate: NaN as unknown as string,
+      })
+      expect(getAuthorAnnotations(fileProperties)).toEqual({})
     })
   })
   describe('getValueTypeFieldElement', () => {

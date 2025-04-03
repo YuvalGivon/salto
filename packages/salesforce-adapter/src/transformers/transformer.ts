@@ -1581,18 +1581,16 @@ export const createInstanceElement = (
   ) as MetadataInstanceElement
 }
 
-export const getAuthorAnnotations = (fileProperties: FileProperties): Record<string, string> => {
+export const getAuthorAnnotations = (fileProperties: FileProperties | undefined): Record<string, string> => {
   const annotations = {
     [CORE_ANNOTATIONS.CREATED_BY]: fileProperties?.createdByName,
     [CORE_ANNOTATIONS.CREATED_AT]: fileProperties?.createdDate,
     [CORE_ANNOTATIONS.CHANGED_AT]: fileProperties?.lastModifiedDate,
   }
   if (fileProperties?.lastModifiedDate !== SALESFORCE_DATE_PLACEHOLDER) {
-    Object.assign(annotations, {
-      [CORE_ANNOTATIONS.CHANGED_BY]: fileProperties?.lastModifiedByName,
-    })
+    annotations[CORE_ANNOTATIONS.CHANGED_BY] = fileProperties?.lastModifiedByName
   }
-  return annotations
+  return _.pickBy(annotations, _.isString)
 }
 
 const createIdField = (parent: ObjectType): void => {
