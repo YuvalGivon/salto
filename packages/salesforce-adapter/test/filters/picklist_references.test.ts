@@ -833,24 +833,81 @@ describe('picklistReferences filter', () => {
         anotherField: 'val8',
       })
     })
-    it('should replace picklist field with reference to the picklist value', async () => {
-      const elements = [customObjectType, customMetadataType, customObjectInstance, customMetaDataTypeInstance]
-      await filter.onFetch(elements)
-      expect(customObjectInstance.value.fieldPicklist).toEqual(
-        new ReferenceExpression(
-          customObjectType.elemID.createNestedID('field', 'fieldPicklist', 'valueSet', 'values', 'val7', 'fullName'),
-          customObjectType.fields.fieldPicklist.annotations.valueSet.values.val7.fullName,
-        ),
-      )
-      expect(customObjectInstance.value.anotherField).toEqual('val7')
+    describe('when picklistAsMaps is enabled', () => {
+      it('should replace picklist field with reference to the picklist value', async () => {
+        const elements = [customObjectType, customMetadataType, customObjectInstance, customMetaDataTypeInstance]
+        await filter.onFetch(elements)
+        expect(customObjectInstance.value.fieldPicklist).toEqual(
+          new ReferenceExpression(
+            customObjectType.elemID.createNestedID('field', 'fieldPicklist', 'valueSet', 'values', 'val7', 'fullName'),
+            customObjectType.fields.fieldPicklist.annotations.valueSet.values.val7.fullName,
+          ),
+        )
+        expect(customObjectInstance.value.anotherField).toEqual('val7')
 
-      expect(customMetaDataTypeInstance.value.fieldPicklist).toEqual(
-        new ReferenceExpression(
-          customMetadataType.elemID.createNestedID('field', 'fieldPicklist', 'valueSet', 'values', 'val8', 'fullName'),
-          customMetadataType.fields.fieldPicklist.annotations.valueSet.values.val8.fullName,
-        ),
-      )
-      expect(customMetaDataTypeInstance.value.anotherField).toEqual('val8')
+        expect(customMetaDataTypeInstance.value.fieldPicklist).toEqual(
+          new ReferenceExpression(
+            customMetadataType.elemID.createNestedID(
+              'field',
+              'fieldPicklist',
+              'valueSet',
+              'values',
+              'val8',
+              'fullName',
+            ),
+            customMetadataType.fields.fieldPicklist.annotations.valueSet.values.val8.fullName,
+          ),
+        )
+        expect(customMetaDataTypeInstance.value.anotherField).toEqual('val8')
+      })
+
+      it('should keep original value when picklist value is not found in reference index', async () => {
+        const customObjectTypeWithPicklist = createCustomObjectType(CUSTOM_OBJECT, {
+          fields: {
+            fieldPicklist: {
+              refType: Types.primitiveDataTypes.Picklist,
+              annotations: {
+                valueSet: {
+                  values: {
+                    val1: { fullName: 'val1', default: true, label: 'val1' },
+                    val2: { fullName: 'val2', default: false, label: 'val2' },
+                  },
+                },
+              },
+            },
+          },
+        })
+
+        const customObjectInstanceWithUnknownValue = new InstanceElement('instance', customObjectTypeWithPicklist, {
+          fieldPicklist: 'unknown_value',
+        })
+
+        const elements = [customObjectTypeWithPicklist, customObjectInstanceWithUnknownValue]
+        await filter.onFetch(elements)
+
+        expect(customObjectInstanceWithUnknownValue.value.fieldPicklist).toEqual('unknown_value')
+      })
+    })
+    describe('when picklistAsMaps is disabled', () => {
+      beforeEach(() => {
+        filter = filterCreator({
+          config: {
+            ...defaultFilterContext,
+            context: buildContext({
+              fetchParams: { target: [] },
+              flagsSettings: { flagOverrides: { picklistsAsMaps: false } },
+            }),
+            elementsSource: buildElementsSourceFromElements([gvs, svs]),
+          },
+        }) as typeof filter
+      })
+
+      it('should keep the picklist field as is', async () => {
+        const elements = [customObjectType, customMetadataType, customObjectInstance, customMetaDataTypeInstance]
+        await filter.onFetch(elements)
+        expect(customObjectInstance.value.fieldPicklist).toEqual('val7')
+        expect(customMetaDataTypeInstance.value.fieldPicklist).toEqual('val8')
+      })
     })
   })
 })
