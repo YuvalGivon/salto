@@ -117,22 +117,18 @@ const parseSmartQuery = (value: Values, containers: SmartValueContainer[]): void
   }
 }
 
-const getPossibleSmartValues = (
-  automation: AutomationInstance,
-  parseAdditionalAutomationExpressions?: boolean,
-): SmartValueContainer[] => {
+const getPossibleSmartValues = (automation: AutomationInstance): SmartValueContainer[] => {
   const containers: SmartValueContainer[] = []
 
   const findSmartValues = (component: Component): void => {
     if (component.value !== undefined && !_.isBoolean(component.value)) {
       const { value } = component
-      if (parseAdditionalAutomationExpressions === true) {
-        parseSmartQuery(value, containers)
 
-        if (Array.isArray(value?.operations)) {
-          value.operations.forEach(findSmartValues)
-        }
+      parseSmartQuery(value, containers)
+      if (Array.isArray(value?.operations)) {
+        value.operations.forEach(findSmartValues)
       }
+
       Object.keys(value)
         .filter(key => _.isString(value[key]) || isTemplateExpression(value[key]))
         .map(key => ({ key, obj: value }))
@@ -143,11 +139,7 @@ const getPossibleSmartValues = (
       containers.push({ key: 'rawValue', obj: component })
     }
 
-    if (
-      parseAdditionalAutomationExpressions === true &&
-      Array.isArray(component.children) &&
-      component.children.length > 0
-    ) {
+    if (Array.isArray(component.children) && component.children.length > 0) {
       component.children.forEach(findSmartValues)
     }
   }
@@ -156,10 +148,7 @@ const getPossibleSmartValues = (
   return containers
 }
 
-const replaceFormulasWithTemplates = async (
-  instances: InstanceElement[],
-  parseAdditionalAutomationExpressions?: boolean,
-): Promise<SaltoError[]> => {
+const replaceFormulasWithTemplates = async (instances: InstanceElement[]): Promise<SaltoError[]> => {
   const fieldInstances = instances.filter(instance => instance.elemID.typeName === FIELD_TYPE_NAME)
   const fieldInstancesByName = _(fieldInstances)
     .filter(instance => _.isString(instance.value.name))
@@ -174,7 +163,7 @@ const replaceFormulasWithTemplates = async (
   const ambiguousTokensWarnings = filterAutomations(instances)
     .map(instance => {
       const allAmbiguousTokens = new Set<string>()
-      getPossibleSmartValues(instance, parseAdditionalAutomationExpressions)
+      getPossibleSmartValues(instance)
         .filter(({ obj, key }) => {
           if (!_.isString(obj[key])) {
             log.debug(`'${key}' in ${instance.elemID.getFullName()} key is not a string`)
@@ -231,15 +220,12 @@ const filterCreator: FilterCreator = ({ config }) => {
   return {
     name: 'smartValueReferenceFilter',
     onFetch: async (elements: Element[]) => {
-      const { parseTemplateExpressions, parseAdditionalAutomationExpressions } = config.fetch
+      const { parseTemplateExpressions } = config.fetch
       if (parseTemplateExpressions === false) {
         log.debug('Parsing smart values template expressions was disabled')
         return {}
       }
-      const warnings = await replaceFormulasWithTemplates(
-        elements.filter(isInstanceElement),
-        parseAdditionalAutomationExpressions,
-      )
+      const warnings = await replaceFormulasWithTemplates(elements.filter(isInstanceElement))
       return {
         errors: warnings,
       }
@@ -249,15 +235,13 @@ const filterCreator: FilterCreator = ({ config }) => {
       filterAutomations(changes.map(getChangeData))
         .filter(isInstanceElement)
         .forEach(instance =>
-          getPossibleSmartValues(instance, config.fetch.parseAdditionalAutomationExpressions).forEach(
-            ({ obj, key }) => {
-              try {
-                replaceTemplatesWithValues({ values: [obj], fieldName: key }, deployTemplateMapping, prepRef)
-              } catch (e) {
-                log.error('Error parsing templates in deployment', e)
-              }
-            },
-          ),
+          getPossibleSmartValues(instance).forEach(({ obj, key }) => {
+            try {
+              replaceTemplatesWithValues({ values: [obj], fieldName: key }, deployTemplateMapping, prepRef)
+            } catch (e) {
+              log.error('Error parsing templates in deployment', e)
+            }
+          }),
         )
     },
 
@@ -265,15 +249,13 @@ const filterCreator: FilterCreator = ({ config }) => {
       filterAutomations(changes.map(getChangeData))
         .filter(isInstanceElement)
         .forEach(instance =>
-          getPossibleSmartValues(instance, config.fetch.parseAdditionalAutomationExpressions).forEach(
-            ({ obj, key }) => {
-              try {
-                resolveTemplates({ values: [obj], fieldName: key }, deployTemplateMapping)
-              } catch (e) {
-                log.error('Error restoring templates in deployment', e)
-              }
-            },
-          ),
+          getPossibleSmartValues(instance).forEach(({ obj, key }) => {
+            try {
+              resolveTemplates({ values: [obj], fieldName: key }, deployTemplateMapping)
+            } catch (e) {
+              log.error('Error restoring templates in deployment', e)
+            }
+          }),
         )
     },
   }
