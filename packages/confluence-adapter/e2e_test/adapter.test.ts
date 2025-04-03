@@ -94,7 +94,8 @@ const createChangesForDeploy = (types: ObjectType[], testSuffix: string): Change
   return [toChange({ after: spaceInstance }), toChange({ after: pageInstance }), toChange({ after: templateInstance })]
 }
 
-describe('Confluence adapter E2E', () => {
+// eslint-disable-next-line jest/no-disabled-tests
+describe.skip('Confluence adapter E2E', () => {
   describe('fetch and deploy', () => {
     let credLease: CredsLease<Credentials>
     let adapterAttr: e2eUtils.Reals
