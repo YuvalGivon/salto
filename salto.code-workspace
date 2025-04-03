@@ -25,12 +25,20 @@
       "path": "packages/cli",
     },
     {
+      "name": "cloudflare-adapter",
+      "path": "packages/cloudflare-adapter",
+    },
+    {
       "name": "confluence-adapter",
       "path": "packages/confluence-adapter",
     },
     {
       "name": "core",
       "path": "packages/core",
+    },
+    {
+      "name": "crowdstrike-adapter",
+      "path": "packages/crowdstrike-adapter",
     },
     {
       "name": "dag",
