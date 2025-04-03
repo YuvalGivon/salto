@@ -12,7 +12,7 @@ import { createSchemeGuard, ERROR_MESSAGES } from '@salto-io/adapter-utils'
 import { FilterCreator } from '../../filter'
 
 const log = logger(module)
-export const PLUGIN_VERSION_NUMBER = '1.0.8'
+export const PLUGIN_VERSION_NUMBER = '1.0.9'
 
 type InfoResponse = {
   version: string
