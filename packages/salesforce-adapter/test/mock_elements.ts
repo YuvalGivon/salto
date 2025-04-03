@@ -455,6 +455,14 @@ export const mockTypes = {
       metadataType: 'Report',
     },
   }),
+  ReportType: createMetadataObjectType({
+    annotations: {
+      folderType: 'ReportFolder',
+      suffix: 'reportType',
+      dirName: 'reports',
+      metadataType: 'ReportType',
+    },
+  }),
   Document: createMetadataObjectType({
     annotations: {
       hasMetaFile: true,

@@ -17,9 +17,9 @@ import {
   CORE_ANNOTATIONS,
   isInstanceElement,
   Field,
-  isObjectType,
   ListType,
   TypeElement,
+  isReferenceExpression,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { collections, values } from '@salto-io/lowerdash'
@@ -275,14 +275,6 @@ describe('FieldReferences filter', () => {
         fieldName: 'authorizationRequiredPage',
         fieldValue: 'page1',
       }),
-      // report53.reportType should point to Account
-      ...generateObjectAndInstance({
-        type: 'Report',
-        objType: 'Report',
-        instanceName: 'report53',
-        fieldName: 'reportType',
-        fieldValue: 'Account',
-      }),
       // filterItem643.field should point to Account.name (default strategy)
       ...generateObjectAndInstance({
         type: 'FilterItem',
@@ -414,15 +406,6 @@ describe('FieldReferences filter', () => {
       )) as InstanceElement
       expect(inst.value.authorizationRequiredPage).toBeInstanceOf(ReferenceExpression)
       expect(inst.value.authorizationRequiredPage?.elemID.getFullName()).toEqual('salesforce.ApexPage.instance.page1')
-    })
-
-    it('should resolve custom object instances', async () => {
-      const inst = (await awu(elements).find(
-        async e => isInstanceElement(e) && (await metadataType(e)) === 'Report',
-      )) as InstanceElement
-      const account = await awu(elements).find(async e => isObjectType(e) && (await apiName(e)) === 'Account')
-      expect(inst.value.reportType).toBeInstanceOf(ReferenceExpression)
-      expect(inst.value.reportType?.elemID.getFullName()).toEqual(account && account.elemID.getFullName())
     })
 
     it('should resolve field with relative value using instance parent', async () => {
@@ -1183,6 +1166,56 @@ describe('Serialization Strategies', () => {
         expect(itemComponentInstanceValue).toBeString()
         expect(fieldInstanceValue).toBeString()
       })
+    })
+  })
+
+  describe('reportType', () => {
+    const RESOLVED_VALUE = 'TestReportType__c'
+    let filter: FilterWith<'onFetch'>
+    let reportInstance: InstanceElement
+    let reportTypeInstance: InstanceElement
+
+    beforeEach(() => {
+      reportInstance = createInstanceElement(
+        {
+          fullName: 'TestReport',
+          reportType: 'TestReportType__c',
+        },
+        mockTypes.Report,
+      )
+
+      reportTypeInstance = createInstanceElement(
+        {
+          fullName: 'TestReportType',
+        },
+        mockTypes.ReportType,
+      )
+      filter = filterCreator({
+        config: defaultFilterContext,
+      }) as FilterWith<'onFetch'>
+    })
+
+    it('should create reference to the ReportType and deserialize it to the original value', async () => {
+      await filter.onFetch([reportInstance, reportTypeInstance])
+      const createdReference = reportInstance.value.reportType as ReferenceExpression
+      expect(createdReference).toSatisfy(isReferenceExpression)
+      expect(createdReference.elemID).toEqual(
+        new ElemID(SALESFORCE, 'ReportType', 'instance', RESOLVED_VALUE.replace('__c', '')),
+      )
+      expect(
+        await ReferenceSerializationStrategyLookup.reportType.serialize({
+          ref: createdReference,
+          element: reportInstance,
+        }),
+      ).toEqual('TestReportType__c')
+    })
+
+    it('should not create reference for standard report types', async () => {
+      reportInstance.value.reportType = 'AccountList'
+      await filter.onFetch([reportInstance, reportTypeInstance])
+      const reportTypeValue = reportInstance.value.reportType as ReferenceExpression
+      expect(reportTypeValue).not.toSatisfy(isReferenceExpression)
+      expect(reportTypeValue).toEqual('AccountList')
     })
   })
 })

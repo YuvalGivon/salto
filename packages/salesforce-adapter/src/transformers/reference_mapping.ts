@@ -74,6 +74,7 @@ type ReferenceSerializationStrategyName =
   | 'recordField'
   | 'recordFieldDollarPrefix'
   | 'flexiPageleftValueField'
+  | 'reportType'
 export const ReferenceSerializationStrategyLookup: Record<
   ReferenceSerializationStrategyName,
   ReferenceSerializationStrategy
@@ -155,6 +156,10 @@ export const ReferenceSerializationStrategyLookup: Record<
       }
       return val
     },
+  },
+  reportType: {
+    serialize: async ({ ref, path }) => `${await safeApiName({ ref, path })}__c`,
+    lookup: val => (val.endsWith('__c') ? val.replace('__c', '') : val),
   },
 }
 
@@ -703,13 +708,14 @@ export const referenceMappingDefs: Record<string, FieldReferenceDefinition> = {
       type: 'Report',
     },
   },
-  'Report.reportType:CustomObject': {
+  'Report.reportType:ReportType': {
     src: {
       field: 'reportType',
       parentTypes: ['Report'],
     },
+    serializationStrategy: 'reportType',
     target: {
-      type: 'CustomObject',
+      type: 'ReportType',
     },
   },
   'EntitlementProcess.entryStartDateField:CustomField': {
