@@ -19,6 +19,7 @@ const optionalFeaturesDefaultValues: OptionalFeaturesDefaultValues = {
   shouldPopulateInternalIdAfterDeploy: true,
   omitStandardFieldsNonDeployableValues: true,
   shuffleRetrieveInstances: false,
+  fieldReferencesFilter: true,
 }
 
 export const isFeatureEnabled = (name: keyof OptionalFeatures, optionalFeatures?: OptionalFeatures): boolean =>

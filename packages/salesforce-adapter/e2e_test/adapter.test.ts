@@ -29,6 +29,8 @@ import {
   Change,
   FetchOptions,
   ProgressReporter,
+  isElement,
+  isField,
 } from '@salto-io/adapter-api'
 import { logger } from '@salto-io/logging'
 import { naclCase } from '@salto-io/adapter-utils'
@@ -77,7 +79,7 @@ import {
 import SalesforceClient from '../src/client/client'
 import SalesforceAdapter from '../src/adapter'
 import { fromRetrieveResult, createDeployPackage } from '../src/transformers/xml_transformer'
-import { addDefaults } from '../src/filters/utils'
+import { addDefaults, apiNameSync } from '../src/filters/utils'
 // eslint-disable-next-line no-restricted-imports
 import { mockTypes, lwcJsResourceContent, lwcHtmlResourceContent, mockDefaultValues } from '../test/mock_elements'
 import {
@@ -1153,9 +1155,15 @@ describe('Salesforce adapter E2E with real account', () => {
           sorted ? _.sortBy(expectedValueSet, constants.CUSTOM_VALUE.FULL_NAME) : expectedValueSet,
         )
         const fieldDependency = annotations[constants.FIELD_ANNOTATIONS.FIELD_DEPENDENCY]
-        expect(fieldDependency[constants.FIELD_DEPENDENCY_FIELDS.CONTROLLING_FIELD]).toEqual(
-          CUSTOM_FIELD_NAMES.PICKLIST,
+        expect(fieldDependency[constants.FIELD_DEPENDENCY_FIELDS.CONTROLLING_FIELD]).toSatisfy(
+          value =>
+            (isReferenceExpression(value) &&
+              isField(value.value) &&
+              apiNameSync(value.value, true) === CUSTOM_FIELD_NAMES.PICKLIST) ||
+            value === CUSTOM_FIELD_NAMES.PICKLIST,
         )
+        fieldDependency[constants.FIELD_DEPENDENCY_FIELDS.CONTROLLING_FIELD] = CUSTOM_FIELD_NAMES.PICKLIST
+
         expect(fieldDependency[constants.FIELD_DEPENDENCY_FIELDS.VALUE_SETTINGS]).toEqual([
           {
             [constants.VALUE_SETTINGS_FIELDS.CONTROLLING_FIELD_VALUE]: ['NEW', 'OLD'],
@@ -1512,8 +1520,8 @@ describe('Salesforce adapter E2E with real account', () => {
             ref: ReferenceExpression | string | undefined,
           ): Promise<string | undefined> => {
             if (isReferenceExpression(ref)) {
-              const elem = result.find(element => element.elemID.isEqual(ref.elemID))
-              return elem
+              const elem: unknown = result.find(element => element.elemID.isEqual(ref.elemID)) ?? ref.value
+              return isElement(elem)
                 ? // adding fallback for partially-resolved elements
                   (await apiName(elem)) || elem.elemID.typeName
                 : undefined

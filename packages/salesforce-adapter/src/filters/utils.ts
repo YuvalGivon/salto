@@ -100,7 +100,7 @@ import {
   DESCRIPTION,
   CUSTOM_OBJECT_ALIASES_FIELD,
 } from '../constants'
-import { CustomField, CustomObject, JSONBool, SalesforceRecord } from '../client/types'
+import { CustomField, CustomObject, FieldWithFieldDependency, JSONBool, SalesforceRecord } from '../client/types'
 import * as transformer from '../transformers/transformer'
 import {
   apiName,
@@ -1110,3 +1110,27 @@ export const getMetadataIncludeFromFetchTargets = async (
 }
 export const isOrderedMapTypeOrRefType = (typeRef: TypeElement | TypeReference): typeRef is ObjectType =>
   typeRef.elemID.name.startsWith(ORDERED_MAP_PREFIX)
+
+const isReferenceExpressionOrString = (val: unknown): val is ReferenceExpression | string =>
+  isReferenceExpression(val) || _.isString(val)
+
+const isResolvedReferenceToField = (ref: unknown): ref is ReferenceExpression<Field> =>
+  isReferenceExpression(ref) && isField(ref.value)
+
+export const isFieldWithFieldDependency = (field: Field): field is FieldWithFieldDependency => {
+  const isValidValueSettings = (valueSettings: unknown): boolean =>
+    _.isPlainObject(valueSettings) &&
+    isReferenceExpressionOrString(_.get(valueSettings, 'valueName')) &&
+    Array.isArray(_.get(valueSettings, 'controllingFieldValue')) &&
+    _.get(valueSettings, 'controllingFieldValue').every(isReferenceExpressionOrString)
+
+  const controllingField: unknown = _.get(field.annotations, 'fieldDependency.controllingField')
+  const valueSettings: unknown = _.get(field.annotations, 'fieldDependency.valueSettings')
+  const isCustomFieldDependency = (fieldDependency: unknown): boolean =>
+    _.isPlainObject(fieldDependency) &&
+    (_.isString(controllingField) || isResolvedReferenceToField(controllingField)) &&
+    Array.isArray(valueSettings) &&
+    valueSettings.every(isValidValueSettings)
+
+  return isCustomFieldDependency(_.get(field.annotations, 'fieldDependency'))
+}

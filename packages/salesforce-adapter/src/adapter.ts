@@ -142,6 +142,7 @@ import picklistReferences from './filters/picklist_references'
 import addParentToInstancesWithinFolderFilter from './filters/add_parent_to_instances_within_folder'
 import addParentToRecordTriggeredFlows from './filters/add_parent_to_record_triggered_flows'
 import addParentToApprovalProcess from './filters/add_parent_to_approval_process'
+import controllingFieldReference from './filters/controlling_field_reference'
 import { getConfigFromConfigChanges } from './config/config_change'
 import { Filter, FilterContext, FilterCreator, FilterResult } from './filter'
 import {
@@ -280,6 +281,7 @@ export const allFilters: Array<FilterCreator> = [
   omitStandardFieldsNonDeployableValuesFilter,
   // picklistReferences should run after convertMapsFilter, fieldReferencesFilter and omitStandardFieldsNonDeployableValuesFilter
   picklistReferences,
+  controllingFieldReference,
   // taskAndEventCustomFields should run before customTypeSplit
   taskAndEventCustomFields,
   mergeProfilesWithSourceValuesFilter,

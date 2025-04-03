@@ -65,6 +65,7 @@ const OPTIONAL_FEATURES = [
   'shouldPopulateInternalIdAfterDeploy',
   'omitStandardFieldsNonDeployableValues',
   'shuffleRetrieveInstances',
+  'fieldReferencesFilter',
 ] as const
 const DEPRECATED_OPTIONAL_FEATURES = [
   'addMissingIds',
