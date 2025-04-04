@@ -2286,6 +2286,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         assigned_rules: {
           omit: true,
         },
+        ...COMMON_FIELD_CUSTOMIZATIONS,
       },
       topLevel: {
         isTopLevel: true,
@@ -2363,6 +2364,16 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
+        elemID: {
+          parts: [
+            {
+              fieldName: 'path',
+            },
+            {
+              fieldName: 'include',
+            },
+          ],
+        },
       },
       fieldCustomizations: {
         id: { hide: true },
