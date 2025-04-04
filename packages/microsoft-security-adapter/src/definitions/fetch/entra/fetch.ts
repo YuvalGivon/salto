@@ -29,6 +29,7 @@ const {
     AUTHENTICATION_STRENGTH_POLICY_TYPE_NAME,
     ADMINISTRATIVE_UNIT_TYPE_NAME,
     CONDITIONAL_ACCESS_POLICY_NAMED_LOCATION_TYPE_NAME,
+    SECURITY_DEFAULTS_TYPE_NAME,
     DIRECTORY_ROLE_TYPE_NAME,
     DIRECTORY_ROLE_TEMPLATE_TYPE_NAME,
     CUSTOM_SECURITY_ATTRIBUTE_DEFINITION_TYPE_NAME,
@@ -940,6 +941,25 @@ const graphBetaCustomizations: FetchCustomizations = {
         },
       },
       fieldCustomizations: ID_FIELD_TO_HIDE,
+    },
+  },
+  [SECURITY_DEFAULTS_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/policies/identitySecurityDefaultsEnforcementPolicy',
+        },
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        singleton: true,
+      },
+      fieldCustomizations: { ...ID_FIELD_TO_HIDE, securityDefaultsUpsell: { omit: true } },
     },
   },
 }

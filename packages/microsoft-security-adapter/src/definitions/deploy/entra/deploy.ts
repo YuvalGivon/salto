@@ -41,6 +41,7 @@ const {
     APP_ROLE_TYPE_NAME,
     OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
     AUTHORIZATION_POLICY_TYPE_NAME,
+    SECURITY_DEFAULTS_TYPE_NAME,
   },
   AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME,
   DELEGATED_PERMISSION_CLASSIFICATION_TYPE_NAME,
@@ -901,6 +902,25 @@ const graphBetaCustomDefinitions: DeployCustomDefinitions = {
               endpoint: {
                 path: '/identity/conditionalAccess/namedLocations/{id}',
                 method: 'delete',
+              },
+            },
+          },
+        ],
+      },
+    },
+  },
+  [SECURITY_DEFAULTS_TYPE_NAME]: {
+    requestsByAction: {
+      customizations: {
+        modify: [
+          {
+            request: {
+              endpoint: {
+                path: '/policies/identitySecurityDefaultsEnforcementPolicy',
+                method: 'patch',
+              },
+              transformation: {
+                pick: ['isEnabled'],
               },
             },
           },

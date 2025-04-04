@@ -72,6 +72,7 @@ export const TOP_LEVEL_TYPES = {
   PERMISSION_GRANT_POLICY_TYPE_NAME: 'EntraPermissionGrantPolicy',
   ROLE_DEFINITION_TYPE_NAME: 'EntraRoleDefinition',
   SERVICE_PRINCIPAL_TYPE_NAME: 'EntraServicePrincipal',
+  SECURITY_DEFAULTS_TYPE_NAME: 'EntraSecurityDefaults',
 } as const
 
 // This anonymous function is only used for compile time validation.

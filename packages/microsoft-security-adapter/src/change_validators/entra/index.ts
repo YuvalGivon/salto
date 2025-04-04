@@ -10,9 +10,11 @@ import { ChangeValidator } from '@salto-io/adapter-api'
 import { applicationSetupValidator } from './application_setup_validator'
 import { onPremGroupAdditionValidator } from './on_prem_group_addition_validator'
 import { templateApplicationAdditionValidator } from './template_application_addition_validator'
+import { securityDefaultsEnabledValidator } from './security_defaults_validator'
 
 export default (): Record<string, ChangeValidator> => ({
   applicationSetup: applicationSetupValidator,
   onPremGroupAddition: onPremGroupAdditionValidator,
   templateApplicationAddition: templateApplicationAdditionValidator,
+  securityDefaults: securityDefaultsEnabledValidator,
 })
