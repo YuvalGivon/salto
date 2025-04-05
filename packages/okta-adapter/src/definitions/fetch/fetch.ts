@@ -716,6 +716,7 @@ const createCustomizations = ({
     ],
     resource: {
       directFetch: false,
+      serviceIDFields: ['scopeId'],
     },
     element: {
       fieldCustomizations: {
