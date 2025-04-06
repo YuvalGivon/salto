@@ -13,7 +13,8 @@ interface BaseDiffNode {
   originalId: NodeId
 }
 
-export type ActionName = 'add' | 'remove' | 'modify'
+export const ACTION_NAMES = ['add', 'remove', 'modify'] as const
+export type ActionName = (typeof ACTION_NAMES)[number]
 
 interface Diff {
   action: ActionName

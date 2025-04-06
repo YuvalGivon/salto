@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { AdditionDiff, ModificationDiff, RemovalDiff, ActionName } from '@salto-io/dag'
+import { AdditionDiff, ModificationDiff, RemovalDiff, ActionName, ACTION_NAMES } from '@salto-io/dag'
 import { values as lowerDashValues } from '@salto-io/lowerdash'
 import {
   ObjectType,
@@ -22,7 +22,7 @@ import { Values, Value } from './values'
 
 const { isDefined } = lowerDashValues
 
-export { ActionName }
+export { ActionName, ACTION_NAMES }
 
 export type ChangeDataType = TopLevelElement | Field
 export type AdditionChange<T> = AdditionDiff<T>

@@ -58,6 +58,7 @@ import liveChatButtonRoutingType from './change_validators/live_chat_button_rout
 import flexiPageUnusedOrMissingFacets from './change_validators/flexi_page_unused_or_missing_facets'
 import uniqueFlowElementName from './change_validators/unique_flow_element_name'
 import accessToSendEmail from './change_validators/access_to_send_email'
+import triggersPrePostAction from './change_validators/triggers_pre_post_action'
 import { getIteration } from './config/context/flags'
 
 const { createChangeValidator, getDefaultChangeValidators } = deployment.changeValidators
@@ -123,6 +124,7 @@ export const changeValidators: Record<ChangeValidatorName, ChangeValidatorCreato
   flexiPageUnusedOrMissingFacets: () => flexiPageUnusedOrMissingFacets,
   uniqueFlowElementName: () => uniqueFlowElementName,
   accessToSendEmail: () => accessToSendEmail,
+  triggersPrePostAction: () => triggersPrePostAction,
   ..._.mapValues(getDefaultChangeValidators(), validator => () => validator),
 }
 
