@@ -6,7 +6,8 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import { elements, definitions } from '@salto-io/adapter-components'
-import { BuiltinTypes, CORE_ANNOTATIONS, createRestriction } from '@salto-io/adapter-api'
+import { createMatchingObjectType } from '@salto-io/adapter-utils'
+import { BuiltinTypes, CORE_ANNOTATIONS, createRestriction, ElemID } from '@salto-io/adapter-api'
 import { JWK_TYPE_NAME, OKTA, USER_ROLES_TYPE_NAME, USER_TYPE_NAME } from './constants'
 
 type GetUsersStrategy = 'searchQuery' | 'allUsers'
@@ -116,11 +117,30 @@ const additionalFetchConfigFields = {
   enableBrandReferences: { refType: BuiltinTypes.BOOLEAN },
 }
 
+type OktaFetchCriteria = {
+  name?: string
+  status?: string
+  type?: string
+}
+
+const oktaFetchCriteriaType = createMatchingObjectType<OktaFetchCriteria>({
+  elemID: new ElemID(OKTA, 'FetchFilters'),
+  fields: {
+    name: { refType: BuiltinTypes.STRING },
+    status: { refType: BuiltinTypes.STRING },
+    type: { refType: BuiltinTypes.STRING },
+  },
+  annotations: {
+    [CORE_ANNOTATIONS.ADDITIONAL_PROPERTIES]: false,
+  },
+})
+
 export const configType = definitions.createUserConfigType({
   adapterName: OKTA,
   defaultConfig: DEFAULT_CONFIG,
   changeValidatorNames: [...changeValidatorNames],
   additionalFetchFields: additionalFetchConfigFields,
+  fetchCriteriaType: oktaFetchCriteriaType,
   additionalDeployFields: { omitMissingUsers: { refType: BuiltinTypes.BOOLEAN } },
   additionRateLimitFields: { rateLimitBuffer: { refType: BuiltinTypes.NUMBER } },
   additionalClientFields: {

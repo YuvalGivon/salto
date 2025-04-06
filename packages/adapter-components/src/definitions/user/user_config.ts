@@ -34,6 +34,7 @@ type ConfigTypeCreatorParams<TCustomNameMappingOptions extends string = never> =
   defaultConfig?: Partial<UserConfig<TCustomNameMappingOptions>>
   additionalFields?: Record<string, FieldDefinition>
   additionalFetchFields?: Record<string, FieldDefinition>
+  fetchCriteriaType?: ObjectType
   additionalDeployFields?: Record<string, FieldDefinition>
   additionRateLimitFields?: Record<string, FieldDefinition>
   additionalClientFields?: Record<string, FieldDefinition>
@@ -52,6 +53,7 @@ export const createUserConfigType = <TCustomNameMappingOptions extends string = 
   changeValidatorNames = [],
   additionalFields,
   additionalFetchFields,
+  fetchCriteriaType,
   additionalDeployFields,
   additionRateLimitFields,
   additionalClientFields,
@@ -72,6 +74,7 @@ export const createUserConfigType = <TCustomNameMappingOptions extends string = 
         refType: createUserFetchConfigType({
           adapterName,
           additionalFields: additionalFetchFields,
+          fetchCriteriaType,
           omitElemID,
         }),
       },
