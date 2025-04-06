@@ -27,7 +27,7 @@ import AsyncLock from 'async-lock'
 import { MergeError, MergeResult } from '../../merger'
 import { ElementsSource } from '../elements_source'
 import { RemoteMap, RemoteMapEntry, RemoteMapCreator } from '../remote_map'
-import { resolveChanges } from '../../expressions'
+import { resolve, resolveChanges } from '../../expressions'
 
 const { awu } = collections.asynciterable
 const log = logger(module)
@@ -151,6 +151,7 @@ const calculateMergedChanges = async (
 
 const createFreshChangeSet = async (
   mergeResult: MergeResult,
+  elementsSource: ElementsSource,
   preChangeHash: string | undefined,
   postChangeHash: string | undefined,
   cacheValid = false,
@@ -160,11 +161,11 @@ const createFreshChangeSet = async (
   noErrorMergeIds: string[]
 }> => ({
   mergedChanges: {
-    changes: await Promise.all(
-      await awu(mergeResult.merged.values())
-        .map(async element => toChange({ after: element }) as Change)
-        .toArray(),
-    ),
+    changes: (
+      await resolve(await awu(mergeResult.merged.values()).toArray(), elementsSource, {
+        shouldResolveReferences: false,
+      })
+    ).map(element => toChange({ after: element }) as Change),
     preChangeHash,
     postChangeHash,
     cacheValid,
@@ -338,7 +339,7 @@ export const createMergeManager = async (
     const newMergedElementsResult = await mergeFunc(elementsToMerge.filter(values.isDefined))
     const hasCurrentElements = !(await awu(await currentElements.list()).isEmpty())
     if (!hasCurrentElements || !cacheValid) {
-      return createFreshChangeSet(newMergedElementsResult, preChangeHash, postChangeHash, cacheValid)
+      return createFreshChangeSet(newMergedElementsResult, currentElements, preChangeHash, postChangeHash, cacheValid)
     }
 
     const deleteChanges = await awu(potentialDeletedIds)

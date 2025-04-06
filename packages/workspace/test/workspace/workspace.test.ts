@@ -1042,8 +1042,11 @@ describe('workspace', () => {
       })
       it('should return the changes of secondary envs as well', async () => {
         const envChanges = await wsWithMultipleEnvs.setNaclFiles([changedNaclFile])
-        const change = { action: 'add', data: { after: afterObj } } as Change<ObjectType>
-        expect(envChanges[secondarySourceName].changes).toEqual([change])
+        expect(envChanges[secondarySourceName].changes).toHaveLength(1)
+        const envChange = envChanges[secondarySourceName].changes[0]
+        expect(envChange.action).toBe('add')
+        const envChangeData = getChangeData(envChange) as ObjectType
+        expect(envChangeData.isEqual(afterObj)).toBeTrue()
       })
       it('should include the new elements in the secondary env', async () => {
         expect(
