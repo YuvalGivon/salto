@@ -22,9 +22,10 @@ import { metadataType, apiName } from '../transformers/transformer'
 import { buildElementsSourceForFetch, extractFlatCustomObjectFields, hasApiName } from './utils'
 
 const { awu } = collections.asynciterable
-
 const { makeArray } = collections.array
 const { flatMapAsync } = collections.asynciterable
+
+const hiddenTypesToVisibleTypes = new Map<string, string>([['FlowDefinition', 'Flow']])
 
 /**
  * Resolve references using the mapping generated from the Salesforce DescribeValueType API.
@@ -43,7 +44,9 @@ const resolveReferences = async (
 
     const refTarget = makeArray(field.annotations[FOREIGN_KEY_DOMAIN])
       .filter(isReferenceExpression)
-      .map(ref => externalIDToElemIDs.get(ref.elemID.typeName, value))
+      .map(ref =>
+        externalIDToElemIDs.get(hiddenTypesToVisibleTypes.get(ref.elemID.typeName) ?? ref.elemID.typeName, value),
+      )
       .find(values.isDefined)
     return refTarget !== undefined ? new ReferenceExpression(refTarget) : value
   }

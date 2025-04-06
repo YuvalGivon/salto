@@ -12,6 +12,7 @@ import referenceAnnotationFilterCreator from '../../src/filters/reference_annota
 import filterCreator from '../../src/filters/foreign_key_references'
 import { defaultFilterContext, createMetadataTypeElement } from '../utils'
 import { FilterWith } from './mocks'
+import { mockTypes } from '../mock_elements'
 
 // Based on the instance_reference test scenarios
 describe('foreign_key_references filter', () => {
@@ -26,6 +27,8 @@ describe('foreign_key_references filter', () => {
   const parentObjFieldName = 'parentObj'
   const invalidRefFieldName = 'invalidRef'
   const objTypeID = new ElemID(SALESFORCE, 'obj')
+  const hiddenTypeFieldName = 'hiddenType'
+  const flowInstanceName = 'testFlow'
 
   let objType: ObjectType
   let nestedType: ObjectType
@@ -34,6 +37,8 @@ describe('foreign_key_references filter', () => {
   let instanceWithoutReferences: InstanceElement
   let objTypeElements: ObjectType[]
   let instanceElements: InstanceElement[]
+  let flowInstance: InstanceElement
+  let flowDefinitionInstance: InstanceElement
 
   const generateElements = (): void => {
     nestedType = createMetadataTypeElement('nested', {
@@ -67,6 +72,12 @@ describe('foreign_key_references filter', () => {
           },
           refType: BuiltinTypes.STRING,
         },
+        [hiddenTypeFieldName]: {
+          annotations: {
+            [FOREIGN_KEY_DOMAIN]: [mockTypes.FlowDefinition.elemID.typeName],
+          },
+          refType: BuiltinTypes.STRING,
+        },
         parentObjNested: { refType: nestedType },
         parentObjArr: {
           annotations: {
@@ -90,6 +101,7 @@ describe('foreign_key_references filter', () => {
       [INSTANCE_FULL_NAME_FIELD]: 'referrerInstance',
       [parentObjFieldName]: parentObjFullName,
       [invalidRefFieldName]: parentObjFullName,
+      [hiddenTypeFieldName]: flowInstanceName,
       reg: 'someRegularValue',
       parentObjNested: {
         [parentObjFieldName]: parentObjFullName,
@@ -101,12 +113,24 @@ describe('foreign_key_references filter', () => {
       reg: 'somevalue',
       [parentObjFieldName]: 'someRef',
     })
+    flowInstance = new InstanceElement('testFlow', mockTypes.Flow, {
+      [INSTANCE_FULL_NAME_FIELD]: flowInstanceName,
+    })
+    flowDefinitionInstance = new InstanceElement('testFlowDefinition', mockTypes.FlowDefinition, {
+      [INSTANCE_FULL_NAME_FIELD]: flowInstanceName,
+    })
   }
 
   beforeAll(async () => {
     generateElements()
-    objTypeElements = [nestedType, objType].map(elem => elem)
-    instanceElements = [parentInstance, referrerInstance, instanceWithoutReferences].map(elem => elem)
+    objTypeElements = [nestedType, objType, mockTypes.Flow, mockTypes.FlowDefinition].map(elem => elem)
+    instanceElements = [
+      parentInstance,
+      referrerInstance,
+      instanceWithoutReferences,
+      flowInstance,
+      flowDefinitionInstance,
+    ].map(elem => elem)
 
     const elements = [...objTypeElements, ...instanceElements]
 
@@ -139,11 +163,9 @@ describe('foreign_key_references filter', () => {
       expect(instanceElements[0].value.reg).toEqual(parentInstance.value.reg)
       expect(instanceElements[1].value.reg).toEqual(referrerInstance.value.reg)
     })
-
     it('should not replace a ref that has a foreign key annotation for a non-existing type', () => {
       expect(instanceElements[1].value[invalidRefFieldName]).toEqual(parentObjFullName)
     })
-
     it('should convert foreignKeyDomain annotations to references when valid', () => {
       expect(objTypeElements[0].fields[parentObjFieldName].annotations[FOREIGN_KEY_DOMAIN][0]).toBeInstanceOf(
         ReferenceExpression,
@@ -152,7 +174,10 @@ describe('foreign_key_references filter', () => {
         ReferenceExpression,
       )
     })
-
+    it('should convert foreignKeyDomain annotations of hidden types to visible type references', () => {
+      expect(instanceElements[1].value[hiddenTypeFieldName]).toBeInstanceOf(ReferenceExpression)
+      expect(instanceElements[1].value[hiddenTypeFieldName].elemID.typeName).toEqual(mockTypes.Flow.elemID.typeName)
+    })
     it('should not convert foreignKeyDomain annotations to references when not valid', () => {
       expect(objTypeElements[0].fields[invalidRefFieldName].annotations[FOREIGN_KEY_DOMAIN]).toEqual([
         'nonExistingType',
