@@ -286,6 +286,12 @@ describe('targeted fetch', () => {
       expect(query.isCustomRecordTypeMatch('customrecord_test2')).toBeFalsy()
     })
 
+    it('should handle file cabinet regexes', () => {
+      const targets = [{ group: 'fileCabinet', name: 'SuiteScripts/test [test]' }]
+      const query = targetedFetchQuery(targets)
+      expect(query.isFileMatch('/SuiteScripts/test [test]/file.txt')).toBeTruthy()
+    })
+
     it('should handle empty target groups', () => {
       const targets = [{ group: 'types', name: 'employee' }]
       const query = targetedFetchQuery(targets)

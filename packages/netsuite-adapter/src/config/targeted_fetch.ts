@@ -168,7 +168,7 @@ export const targetedFetchQuery = (partialFetchTargets: PartialFetchTarget[]): N
 
   return buildNetsuiteQuery({
     types: types.map(type => ({ name: type.name })),
-    fileCabinet: fileCabinet.map(type => posix.join('^', type.name, '.*')),
+    fileCabinet: fileCabinet.map(type => posix.join('^', _.escapeRegExp(type.name), '.*')),
     customRecords: customRecords.map(type => ({ name: type.name })),
   })
 }
