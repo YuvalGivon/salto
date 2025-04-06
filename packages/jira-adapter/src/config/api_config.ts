@@ -1911,6 +1911,7 @@ const JSM_DUCKTYPE_TYPES: JiraDuckTypeConfig['types'] = {
         { fieldName: 'groupIds' },
         { fieldName: 'canCreateRequest' },
         { fieldName: 'restrictionStatus' },
+        { fieldName: 'defaultName' },
       ],
       fieldsToHide: [{ fieldName: 'id' }, { fieldName: 'icon' }, { fieldName: 'serviceDeskId' }],
       serviceIdField: 'id',
