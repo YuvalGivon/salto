@@ -11,7 +11,7 @@ import JSZip from 'jszip'
 import { filter } from '@salto-io/adapter-utils'
 import type { FileProperties } from '@salto-io/jsforce-types'
 import { logger } from '@salto-io/logging'
-import { collections } from '@salto-io/lowerdash'
+import { collections, values as lowerdashValues } from '@salto-io/lowerdash'
 import { AdapterFormat, BuiltinTypes } from '@salto-io/adapter-api'
 import { fromRetrieveResult, isComplexType, METADATA_XML_SUFFIX } from '../transformers/xml_transformer'
 import {
@@ -27,11 +27,15 @@ import { ComponentSet, ConvertResult, MetadataConverter, SourceComponent } from 
 import { UNSUPPORTED_TYPES } from './sfdx_dump'
 import { allFilters } from '../adapter'
 import { buildContext } from '../config/context/context'
-import { metadataTypeSync } from '../filters/utils'
+import { metadataTypeOrUndefined } from '../filters/utils'
 import { getTypesWithContent, getTypesWithMetaFile } from '../fetch'
 import { detailedMessageFromSfError } from './errors'
+import { CUSTOM_REFS_CONFIG, FETCH_CONFIG, FLAGS_CONFIG } from '../config/types'
+import { adapterConfigFromConfig } from '../adapter_creator'
+import { getIteration } from '../config/context/flags'
 
 const log = logger(module)
+const { isDefined } = lowerdashValues
 const { awu, keyByAsync } = collections.asynciterable
 
 const getXmlDestination = (component: SourceComponent): string | undefined => {
@@ -76,7 +80,7 @@ const getXmlDestination = (component: SourceComponent): string | undefined => {
 }
 
 type LoadElementsFromFolderFunc = NonNullable<AdapterFormat['loadElementsFromFolder']>
-export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseDir, elementsSource }) => {
+export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseDir, config, elementsSource }) => {
   try {
     // Load current SFDX project
     // SFDX code has some issues when working with relative paths (some custom object files may get the wrong path)
@@ -175,13 +179,23 @@ export const loadElementsFromFolder: LoadElementsFromFolderFunc = async ({ baseD
     const typesWithMetaFile = await getTypesWithMetaFile(allTypes)
     const typesWithContent = await getTypesWithContent(allTypes)
 
+    const adapterConfig = adapterConfigFromConfig(config)
+    const flagsSettings = adapterConfig[FLAGS_CONFIG]
+    const flagsIteration = await getIteration({
+      elementSource: elementsSource,
+      flagsSettings,
+    })
     const context = buildContext({
       fetchParams: {
+        ...(adapterConfig[FETCH_CONFIG] ?? {}),
         // We set a fetch target here to make the filters think we are in partial fetch
         // this should make the filters not assume all elements are in the elements list
         // this is needed because, for example, we want to search for references to elements outside of the folder elements
-        target: allTypes.map(metadataTypeSync),
+        target: allTypes.map(metadataTypeOrUndefined).filter(isDefined),
       },
+      customReferencesSettings: adapterConfig[CUSTOM_REFS_CONFIG],
+      flagsSettings,
+      flagsIteration,
     })
 
     const propsAndValues = await fromRetrieveResult({

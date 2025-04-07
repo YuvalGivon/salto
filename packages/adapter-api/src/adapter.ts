@@ -241,8 +241,7 @@ export type LoadElementsFromFolderArgs = {
 export type DumpElementsToFolderArgs = {
   baseDir: string
   changes: ReadonlyArray<Change>
-  elementsSource: ReadOnlyElementsSource
-}
+} & AdapterBaseContext
 
 export type DumpElementsResult = {
   unappliedChanges: ReadonlyArray<Change>

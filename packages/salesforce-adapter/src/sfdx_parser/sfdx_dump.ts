@@ -35,6 +35,9 @@ import {
 } from './salesforce_imports'
 import { SyncZipTreeContainer } from './tree_container'
 import { detailedMessageFromSfError } from './errors'
+import { adapterConfigFromConfig } from '../adapter_creator'
+import { FETCH_CONFIG, CUSTOM_REFS_CONFIG, FLAGS_CONFIG } from '../config/types'
+import { getIteration } from '../config/context/flags'
 
 const log = logger(module)
 const { withLimitedConcurrency } = promises.array
@@ -124,7 +127,7 @@ const compactPathList = (paths: string[]): string[] => {
 }
 
 type DumpElementsToFolderFunc = NonNullable<AdapterFormat['dumpElementsToFolder']>
-export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, changes, elementsSource }) => {
+export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, changes, config, elementsSource }) => {
   const [customObjectInstanceChanges, metadataAndTypeChanges] = _.partition(changes, isInstanceOfCustomObjectChangeSync)
   const [metadataChanges, typeChanges] = _.partition(metadataAndTypeChanges, change => {
     const data = getChangeData(change)
@@ -137,8 +140,17 @@ export const dumpElementsToFolder: DumpElementsToFolderFunc = async ({ baseDir, 
   const [supportedMetadataChanges, unsupportedMetadataChanges] = _.partition(metadataChanges, isSupportedMetadataChange)
   const unappliedChanges = typeChanges.concat(customObjectInstanceChanges).concat(unsupportedMetadataChanges)
 
+  const adapterConfig = adapterConfigFromConfig(config)
+  const flagsSettings = adapterConfig[FLAGS_CONFIG]
+  const flagsIteration = await getIteration({
+    elementSource: elementsSource,
+    flagsSettings,
+  })
   const context = buildContext({
-    fetchParams: {},
+    fetchParams: adapterConfig[FETCH_CONFIG] ?? {},
+    customReferencesSettings: adapterConfig[CUSTOM_REFS_CONFIG],
+    flagsSettings,
+    flagsIteration,
   })
 
   log.debug('Resolving %d changes for SFDX dump', supportedMetadataChanges.length)

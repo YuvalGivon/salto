@@ -271,7 +271,7 @@ export const calculatePatch = async ({
   const afterWorkspaceElements = toWorkspace ? await getResolvedWorkspaceElements(toWorkspace) : []
 
   const { changes } = await calcFetchChanges({
-    // We are passing the merged elements as accountElements, which will not propogate correctly
+    // We are passing the merged elements as accountElements, which will not propagate correctly
     // changes with elements in multiple files. To resolve that we need to calculate the non-merged changes
     // like in fetchFromWorkspace, but it is not a realistic use-case so we are skipping it for now.
     accountElements: afterElements.concat(afterWorkspaceElements),
@@ -416,7 +416,7 @@ export const syncWorkspaceToFolder = ({
       const { errors, unappliedChanges } = await dumpElementsToFolder({
         baseDir,
         changes: await filterHiddenChanges(changes, adapterContext.elementsSource),
-        elementsSource: adapterContext.elementsSource,
+        ...adapterContext,
       })
 
       await updateToWorkspace({ workspace, toWorkspace, changes: unappliedChanges })
@@ -477,7 +477,7 @@ export const updateElementFolder = ({
           }),
           adapterContext.elementsSource,
         ),
-        elementsSource: adapterContext.elementsSource,
+        ...adapterContext,
       })
 
       const finalUnappliedChanges = await updateToWorkspace({ workspace, toWorkspace, changes: unappliedChanges })

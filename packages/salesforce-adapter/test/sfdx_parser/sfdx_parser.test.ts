@@ -15,11 +15,14 @@ import {
   isObjectType,
   StaticFile,
   FetchResult,
+  ElemID,
 } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { loadElementsFromFolder } from '../../src/sfdx_parser/sfdx_parser'
 import {
+  ArtificialTypes,
   EMAIL_TEMPLATE_METADATA_TYPE,
+  FLAGS_ITERATION_TYPE_NAME,
   LAYOUT_TYPE_ID_METADATA_TYPE,
   LIGHTNING_COMPONENT_BUNDLE_METADATA_TYPE,
   METADATA_CONTENT_FIELD,
@@ -27,19 +30,52 @@ import {
 import { apiName } from '../../src/transformers/transformer'
 import { mockTypes } from '../mock_elements'
 import { TMP_PROJECT_PATH } from './utils'
+import * as contextModule from '../../src/config/context/context'
+import { adapter } from '../../src/adapter_creator'
+import { createFlagsIterationInstance } from '../../src/config/context/flags'
 
 describe('loadElementsFromFolder', () => {
   describe('when called with valid project folder', () => {
     let elements: Element[]
+    let contextSpy: jest.SpyInstance
+    const iteration = 1
+
     beforeAll(async () => {
+      contextSpy = jest.spyOn(contextModule, 'buildContext')
+      const config = new InstanceElement(ElemID.CONFIG_NAME, adapter.configType as ObjectType, {
+        fetch: {},
+        flags: {
+          flagsOverrides: {
+            testFlag: true,
+          },
+        },
+      })
       const elementsSource = buildElementsSourceFromElements(
-        Object.values(_.omit(mockTypes, 'EmailTemplate', 'EmailFolder', 'Role')),
+        (Object.values(_.omit(mockTypes, 'EmailTemplate', 'EmailFolder', 'Role')) as Element[]).concat([
+          ArtificialTypes[FLAGS_ITERATION_TYPE_NAME],
+          createFlagsIterationInstance(iteration),
+        ]),
       )
       const loadElementsRes = await loadElementsFromFolder({
         baseDir: TMP_PROJECT_PATH,
+        config,
         elementsSource,
       })
       elements = loadElementsRes.elements
+    })
+    describe('context', () => {
+      it('should be called with the correct parameters', () => {
+        expect(contextSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            flagsIteration: iteration,
+            flagsSettings: {
+              flagsOverrides: {
+                testFlag: true,
+              },
+            },
+          }),
+        )
+      })
     })
     describe('layout elements', () => {
       let layout: InstanceElement
@@ -132,6 +168,7 @@ describe('loadElementsFromFolder', () => {
       })
     })
   })
+
   describe('when called with a folder that does not contain a project', () => {
     let result: FetchResult
     beforeEach(async () => {

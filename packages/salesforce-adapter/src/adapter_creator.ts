@@ -82,7 +82,7 @@ const credentialsFromConfig = (config: Readonly<InstanceElement>): Credentials =
   })
 }
 
-const adapterConfigFromConfig = (config: Readonly<InstanceElement> | undefined): SalesforceConfig => {
+export const adapterConfigFromConfig = (config: Readonly<InstanceElement> | undefined): SalesforceConfig => {
   const validateClientConfig = (clientConfig: SalesforceClientConfig | undefined): void => {
     if (clientConfig?.maxConcurrentApiRequests !== undefined) {
       const invalidValues = Object.entries(clientConfig.maxConcurrentApiRequests).filter(

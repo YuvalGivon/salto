@@ -640,35 +640,45 @@ describe('syncWorkspaceToFolder', () => {
         expect(result.errors).toBeEmpty()
       })
       it('should apply deletion changes for elements that exist in the folder and not the workspace', () => {
-        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith({
-          baseDir: 'dir',
-          changes: expect.arrayContaining([expect.objectContaining(toChange({ before: separateInstanceInFolder }))]),
-          elementsSource: expect.anything(),
-        })
+        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith(
+          expect.objectContaining({
+            baseDir: 'dir',
+            changes: expect.arrayContaining([expect.objectContaining(toChange({ before: separateInstanceInFolder }))]),
+            elementsSource: expect.anything(),
+          }),
+        )
       })
       it('should apply modification changes for elements that exist in both the workspace and the folder', () => {
         // Note - we currently do not expect the function to filter out changes for elements that are identical
-        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith({
-          baseDir: 'dir',
-          changes: expect.arrayContaining([
-            expect.objectContaining(toChange({ before: sameInstanceInFolder, after: sameInstanceInWorkspace })),
-          ]),
-          elementsSource: expect.anything(),
-        })
+        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith(
+          expect.objectContaining({
+            baseDir: 'dir',
+            changes: expect.arrayContaining([
+              expect.objectContaining(toChange({ before: sameInstanceInFolder, after: sameInstanceInWorkspace })),
+            ]),
+            elementsSource: expect.anything(),
+          }),
+        )
       })
       it('should apply addition changes for elements that exist in the workspace and not the folder', () => {
-        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith({
-          baseDir: 'dir',
-          changes: expect.arrayContaining([expect.objectContaining(toChange({ after: separateInstanceInWorkspace }))]),
-          elementsSource: expect.anything(),
-        })
+        expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith(
+          expect.objectContaining({
+            baseDir: 'dir',
+            changes: expect.arrayContaining([
+              expect.objectContaining(toChange({ after: separateInstanceInWorkspace })),
+            ]),
+            elementsSource: expect.anything(),
+          }),
+        )
       })
       it('should not apply addition changes for hidden elements that exist in the workspace', () => {
-        expect(mockAdapter.adapterFormat.dumpElementsToFolder).not.toHaveBeenCalledWith({
-          baseDir: 'dir',
-          changes: expect.arrayContaining([expect.objectContaining(toChange({ after: hiddenElementInWorkspace }))]),
-          elementsSource: expect.anything(),
-        })
+        expect(mockAdapter.adapterFormat.dumpElementsToFolder).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            baseDir: 'dir',
+            changes: expect.arrayContaining([expect.objectContaining(toChange({ after: hiddenElementInWorkspace }))]),
+            elementsSource: expect.anything(),
+          }),
+        )
       })
     })
 
@@ -940,11 +950,13 @@ describe('updateElementFolder', () => {
     })
 
     it('should call dumpElementsToFolder with the correct parameters', async () => {
-      expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith({
-        baseDir: 'dir',
-        changes: visibleChanges,
-        elementsSource: expect.anything(),
-      })
+      expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseDir: 'dir',
+          changes: visibleChanges,
+          elementsSource: expect.anything(),
+        }),
+      )
     })
 
     it('should return no errors', () => {
@@ -973,11 +985,13 @@ describe('updateElementFolder', () => {
     })
 
     it('should call dumpElementsToFolder with the correct parameters', async () => {
-      expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith({
-        baseDir: 'dir',
-        changes: visibleChanges,
-        elementsSource: expect.anything(),
-      })
+      expect(mockAdapter.adapterFormat.dumpElementsToFolder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseDir: 'dir',
+          changes: visibleChanges,
+          elementsSource: expect.anything(),
+        }),
+      )
     })
 
     it('should call updateNaclFiles with the correct parameters', async () => {

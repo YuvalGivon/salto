@@ -27,6 +27,10 @@ import { createInstanceElement, Types } from '../../src/transformers/transformer
 import { createCustomMetadataType, createCustomObjectType } from '../utils'
 import { xmlToValues } from '../../src/transformers/xml_transformer'
 import { setupTmpProject } from './utils'
+import * as contextModule from '../../src/config/context/context'
+import { ArtificialTypes, FLAGS_ITERATION_TYPE_NAME } from '../../src/constants'
+import { adapter } from '../../src/adapter_creator'
+import { createFlagsIterationInstance } from '../../src/config/context/flags'
 
 describe('dumpElementsToFolder', () => {
   const getExistingCustomObject = (): ObjectType =>
@@ -523,6 +527,44 @@ describe('dumpElementsToFolder', () => {
       it('should return the change as unapplied', () => {
         expect(dumpResult.unappliedChanges).toContainAllValues(changes)
       })
+    })
+  })
+
+  describe('with config', () => {
+    const project = setupTmpProject()
+    let contextSpy: jest.SpyInstance
+    const iteration = 1
+
+    beforeAll(async () => {
+      contextSpy = jest.spyOn(contextModule, 'buildContext')
+      const config = new InstanceElement(ElemID.CONFIG_NAME, adapter.configType as ObjectType, {
+        fetch: {},
+        flags: {
+          flagsOverrides: {
+            testFlag: true,
+          },
+        },
+      })
+      const elementsSource = buildElementsSourceFromElements([
+        ArtificialTypes[FLAGS_ITERATION_TYPE_NAME],
+        createFlagsIterationInstance(iteration),
+      ])
+
+      await dumpElementsToFolder({
+        baseDir: project.name(),
+        changes: [],
+        config,
+        elementsSource,
+      })
+    })
+
+    it('should build the context with the correct flags', () => {
+      expect(contextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          flagsIteration: iteration,
+          flagsSettings: { flagsOverrides: { testFlag: true } },
+        }),
+      )
     })
   })
 })
