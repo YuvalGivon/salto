@@ -801,47 +801,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     },
   },
 
-  CustomIoaRuleGroupIds: {
-    requests: [
-      {
-        endpoint: {
-          path: '/ioarules/queries/rule-groups/v1',
-        },
-      },
-    ],
-    resource: {
-      directFetch: true,
-      recurseInto: {
-        CustomIoaRuleGroup: {
-          typeName: 'CustomIoaRuleGroup',
-          context: {
-            args: {
-              ids: { root: 'resources' },
-            },
-          },
-        },
-      },
-    },
-    element: {
-      topLevel: {
-        isTopLevel: true,
-        hide: true, // We just use this to get the group rule ID list.
-      },
-      fieldCustomizations: {
-        ids: { hide: true },
-        CustomIoaRuleGroup: {
-          standalone: {
-            typeName: 'CustomIoaRuleGroup',
-            addParentAnnotation: false,
-            referenceFromParent: false,
-            nestPathUnderParent: false,
-          },
-        },
-      },
-    },
-  },
-
-  CustomIoaRuleGroup: {
+  IoaRuleGroup: {
     requests: [
       {
         endpoint: {
@@ -850,7 +810,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         transformation: {
           root: 'resources',
           adjust: async ({ value }) => {
-            validatePlainObject(value, 'CustomIoaRuleGroup')
+            validatePlainObject(value, 'IoaRuleGroup')
             // rule_ids uses a relative ID (1, 2, 3...) that isn't globally unique. We concat it to the group ID to make
             // it unique and referenceable.
             const ruleIds = Array.isArray(value?.rule_ids)
@@ -866,10 +826,10 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
     ],
     resource: {
-      directFetch: false,
+      directFetch: true,
       recurseInto: {
-        CustomIoaRule: {
-          typeName: 'CustomIoaRule',
+        IoaRule: {
+          typeName: 'IoaRule',
           context: {
             args: {
               ids: { root: 'rule_ids' },
@@ -889,7 +849,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         ...COMMON_FIELD_CUSTOMIZATIONS,
         rules: {
           standalone: {
-            typeName: 'CustomIoaRule',
+            typeName: 'IoaRule',
             addParentAnnotation: true,
             referenceFromParent: false,
             nestPathUnderParent: true,
@@ -899,7 +859,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     },
   },
 
-  CustomIoaRule: {
+  IoaRule: {
     resource: {
       directFetch: false,
       serviceIDFields: ['rulegroup_id', 'instance_id'],
@@ -1390,81 +1350,6 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     ],
     resource: {
       directFetch: true,
-    },
-  },
-
-  IoaRuleIds: {
-    element: {
-      topLevel: {
-        isTopLevel: true,
-        hide: true,
-      },
-    },
-    requests: [
-      {
-        endpoint: {
-          path: '/ioarules/queries/rules/v1',
-        },
-        transformation: {
-          pick: ['resources'],
-        },
-      },
-    ],
-    resource: {
-      directFetch: true,
-    },
-  },
-  IoaRule: {
-    element: {
-      fieldCustomizations: {
-        committed_on: {
-          omit: true,
-        },
-        instance_id: {
-          hide: true,
-        },
-        version_ids: {
-          omit: true,
-        },
-        ...COMMON_FIELD_CUSTOMIZATIONS,
-      },
-      topLevel: {
-        elemID: {
-          parts: [
-            {
-              fieldName: 'name',
-            },
-          ],
-        },
-        isTopLevel: true,
-      },
-    },
-    requests: [
-      {
-        endpoint: {
-          path: '/ioarules/entities/rules/v1',
-          queryArgs: {
-            ids: '{ids}',
-          },
-        },
-        transformation: {
-          root: 'resources',
-        },
-      },
-    ],
-    resource: {
-      context: {
-        dependsOn: {
-          ids: {
-            parentTypeName: 'IoaRuleIds',
-            transformation: {
-              root: 'resources',
-            },
-          },
-        },
-      },
-      directFetch: true,
-      serviceIDFields: ['instance_id'],
     },
   },
 

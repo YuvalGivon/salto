@@ -66,9 +66,9 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     target: { type: 'Device' },
   },
   {
-    src: { field: 'rule_ids', parentTypes: ['CustomIoaRuleGroup'] },
+    src: { field: 'rule_ids', parentTypes: ['IoaRuleGroup'] },
     serializationStrategy: 'id',
-    target: { type: 'CustomIoaRule' },
+    target: { type: 'IoaRule' },
   },
   {
     serializationStrategy: 'account_id',
@@ -101,17 +101,6 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     },
     target: {
       type: 'FirewallRuleGroup',
-    },
-  },
-  {
-    serializationStrategy: 'id',
-    src: {
-      field: 'rulegroup_id',
-      instanceTypes: ['IoaRule'],
-      parentTypes: ['IoaRule'],
-    },
-    target: {
-      type: 'CustomIoaRuleGroup',
     },
   },
   {
@@ -166,7 +155,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
       parentTypes: ['FileVantagePolicy'],
     },
     target: {
-      type: 'CustomIoaRuleGroup',
+      type: 'IoaRuleGroup',
     },
   },
 ]
