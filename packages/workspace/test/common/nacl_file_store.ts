@@ -224,6 +224,13 @@ type salesforce.lead {
     }
   }
 
+  type salesforce.InnerPrimitive is string {
+    annotations {
+      string valueToHide {
+      }
+    }
+  }
+
   type salesforce.FieldTypeWithChangingHidden {
     annotations {
       hidden_string hiddenSwitchType {
@@ -260,6 +267,10 @@ type salesforce.lead {
     salesforce.FieldTypeWithChangingHidden fieldWithChangingHidden {
       visibleSwitchType = "asd"
       visibleChangeType = "asd"
+    }
+
+    "List<salesforce.InnerPrimitive>" containerFieldWithChangingHidden {
+      valueToHide = "asd"
     }
   }
   `,

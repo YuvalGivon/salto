@@ -532,8 +532,11 @@ const getHiddenFieldAndAnnotationValueChanges = async (
         // Handle annotation values that now have a different type
         // Note we have to do this first because when transforming fields the "field" we get here
         // is undefined
-        const annotationsToHide = annotationTypesToHide[value.refType.elemID.getFullName()]
-        const annotationsToUnHide = annotationTypesToUnHide[value.refType.elemID.getFullName()]
+        const refTypeElemId = value.refType.elemID
+        const innerTypeElemId =
+          refTypeElemId.getContainerPrefixAndInnerType()?.innerTypeName ?? refTypeElemId.getFullName()
+        const annotationsToHide = annotationTypesToHide[innerTypeElemId]
+        const annotationsToUnHide = annotationTypesToUnHide[innerTypeElemId]
         if (annotationsToHide !== undefined || annotationsToUnHide !== undefined) {
           Object.entries(value.annotations).forEach(([name, attrValue]) => {
             if (annotationsToHide?.has(name)) {
