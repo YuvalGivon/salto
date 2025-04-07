@@ -21,6 +21,7 @@ import {
   transformQueueItem,
   transformSectionItem,
   transformTriggerItem,
+  transformSupportAddress,
 } from './transforms'
 import { flowsQuery } from './graphql_schemas'
 
@@ -834,7 +835,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     requests: [
       {
         endpoint: { path: '/api/v2/recipient_addresses' },
-        transformation: { root: 'recipient_addresses' },
+        transformation: { root: 'recipient_addresses', adjust: transformSupportAddress },
       },
     ],
     resource: {
@@ -885,6 +886,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           },
         },
         username: { fieldType: 'string', hide: true },
+        production_email: { fieldType: 'string', hide: true },
       },
     },
   },

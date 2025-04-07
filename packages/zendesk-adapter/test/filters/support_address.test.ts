@@ -41,6 +41,13 @@ describe('support address filter', () => {
         '.zendesk.com',
       ],
     }),
+    production_email: new TemplateExpression({
+      parts: [
+        'support.1@',
+        new ReferenceExpression(brand1.elemID.createNestedID('subdomain'), brand1.value.subdomain),
+        '.zendesk.com',
+      ],
+    }),
   })
   const supportAddressOther = new InstanceElement('address2', supportAddressType, {
     email: 'support1@gmail.com',
@@ -48,6 +55,9 @@ describe('support address filter', () => {
   const supportAddressUndefined = new InstanceElement('address3', supportAddressType, {})
   const supportAddressInvalid = new InstanceElement('address4', supportAddressType, {
     email: 'invalidEmail',
+  })
+  const sandboxAddress = new InstanceElement('address5', supportAddressType, {
+    email: 'help-at-yourbusiness-com@one.zendesk.com',
   })
 
   beforeAll(() => {
@@ -61,10 +71,12 @@ describe('support address filter', () => {
       supportAddressZendeskAfterFetchCloned.value.username = 'support.1'
       const supportAddressOtherCloned = supportAddressOther.clone()
       supportAddressOtherCloned.value.username = 'support1'
+      supportAddressOtherCloned.value.production_email = 'support1@gmail.com'
       const supportAddressUndefinedCloned = supportAddressUndefined.clone()
       supportAddressUndefinedCloned.value.username = INVALID_USERNAME
       const supportAddressInvalidCloned = supportAddressInvalid.clone()
       supportAddressInvalidCloned.value.username = 'invalidEmail'
+      supportAddressInvalidCloned.value.production_email = 'invalidEmail'
       const elements = [
         supportAddressZendesk,
         supportAddressOther,
@@ -95,6 +107,18 @@ describe('support address filter', () => {
       expect(undefinedAddress).toEqual(supportAddressUndefinedCloned)
       expect(invalidAddress).toEqual(supportAddressInvalidCloned)
     })
+    it('should create production_email from email', async () => {
+      const supportAddressZendeskCloned = supportAddressZendesk.clone()
+      const otherAddressCloned = supportAddressOther.clone()
+      const sandboxAddressCloned = sandboxAddress.clone()
+
+      const elements = [supportAddressZendeskCloned, otherAddressCloned, sandboxAddressCloned]
+      await filter.onFetch(elements)
+
+      expect(supportAddressZendeskCloned.value.production_email).toEqual(supportAddressZendeskCloned.value.email)
+      expect(otherAddressCloned.value.production_email).toEqual(otherAddressCloned.value.email)
+      expect(sandboxAddressCloned.value.production_email).toEqual('help@yourbusiness.com')
+    })
   })
   describe('preDeploy', () => {
     it('should turn zendesk emails from template expression to string', async () => {
@@ -121,7 +145,14 @@ describe('support address filter', () => {
     let elementsAfterOnDeploy: (InstanceElement | ObjectType)[]
 
     beforeAll(async () => {
-      const elementsBeforeFetch = [supportAddressZendesk, supportAddressOther, supportAddressUndefined, brand1, brand2]
+      const elementsBeforeFetch = [
+        supportAddressZendesk,
+        supportAddressOther,
+        supportAddressUndefined,
+        brand1,
+        brand2,
+        sandboxAddress,
+      ]
       elementsAfterFetch = elementsBeforeFetch.map(e => e.clone())
       await filter.onFetch(elementsAfterFetch)
       const elementsAfterPreDeploy = elementsAfterFetch.map(e => e.clone())
@@ -138,6 +169,7 @@ describe('support address filter', () => {
         email: 'support.1@one.zendesk.com',
       })
       const cloned = supportAddress.clone()
+      cloned.value.production_email = 'support.1@one.zendesk.com'
       await filter.preDeploy([toChange({ before: supportAddress, after: supportAddress })])
       await filter.onDeploy([toChange({ before: supportAddress, after: supportAddress })])
       expect(supportAddress).toEqual(cloned)

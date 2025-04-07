@@ -107,6 +107,36 @@ const extractUsernameFromEmail = (instance: InstanceElement): void => {
   instance.value.username = INVALID_USERNAME
 }
 
+// we need the production email for premium sandbox as the email looks like this: help-at-yourbusiness-com@sandboxsubdomain.zendesk.com
+// instead of help@yourbusiness.zendesk.com
+const extractProductionEmailFromEmail = (instance: InstanceElement): void => {
+  const stringEmail = isTemplateExpression(instance.value.email)
+    ? instance.value.email.parts.map(replaceIfReferenceExpression).join('')
+    : instance.value.email
+  const originalEmail = instance.value.email
+  instance.value.production_email = originalEmail
+
+  if (!_.isString(stringEmail)) {
+    log.error(`email of ${instance.elemID.getFullName()} is not a string`)
+    instance.value.production_email = originalEmail
+    return
+  }
+
+  if (stringEmail.endsWith('zendesk.com')) {
+    const localPart = stringEmail.split('@')[0]
+    if (localPart.includes('-at-')) {
+      instance.value.production_email = localPart.replace('-at-', '@').replace(/-/g, '.')
+      log.debug(
+        `production_email of ${instance.elemID.getFullName()} is ${instance.value.production_email} while email is ${stringEmail}`,
+      )
+    }
+  }
+}
+
+const removeProductionEmail = (instance: InstanceElement): void => {
+  delete instance.value.production_email
+}
+
 /**
  * 1. OnFetch and in onDeploy this filter turns the email in support_address to a template expression with a reference
  * to the brand's subdomain. only for zendesk emails. In preDeploy the template expressions are turned back to string.
@@ -131,13 +161,17 @@ const filterCreator: FilterCreator = () => {
           supportAddressInstance: supportInstance,
           brandList: brandBySubdomains,
         })
+        extractProductionEmailFromEmail(supportInstance)
       })
     },
     preDeploy: async (changes: Change<InstanceElement>[]): Promise<void> => {
       changes
         .filter(change => getChangeData(change).elemID.typeName === SUPPORT_ADDRESS_TYPE_NAME)
         .filter(isInstanceChange)
-        .forEach(change => templateToEmail(change, deployTemplateMapping))
+        .forEach(change => {
+          templateToEmail(change, deployTemplateMapping)
+          removeProductionEmail(getChangeData(change))
+        })
     },
     onDeploy: async (changes: Change<InstanceElement>[]): Promise<void> => {
       changes
@@ -147,6 +181,7 @@ const filterCreator: FilterCreator = () => {
         .map(getChangeData)
         .forEach(inst => {
           inst.value.email = deployTemplateMapping[inst.elemID.getFullName()]
+          extractProductionEmailFromEmail(inst)
         })
     },
   }
