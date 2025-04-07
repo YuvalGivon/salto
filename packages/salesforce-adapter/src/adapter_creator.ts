@@ -241,7 +241,9 @@ export const createDeployProgressReporter = async (
     if (deployResult) {
       const startTime = new Date(deployResult.createdDate).getTime()
       const currentTime = new Date().getTime()
-      const elapsedTime = humanizeDuration(currentTime - startTime)
+      const elapsedMilliseconds = currentTime - startTime
+      const elapsedTime =
+        elapsedMilliseconds >= 1000 ? humanizeDuration(elapsedMilliseconds, { round: true }) : 'less than 1 second'
       metadataProgress =
         deployResult.status === METADATA_DEPLOY_PENDING_STATUS
           ? `Metadata: Waiting on another deploy or automated process to finish in Salesforce. Elapsed Time: ${elapsedTime}.${baseUrl ? ` View deployments [in Salesforce](${baseUrl}lightning/setup/DeployStatus/home)` : ''}`

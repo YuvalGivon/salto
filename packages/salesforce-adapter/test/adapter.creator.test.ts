@@ -795,16 +795,68 @@ In order to complete the fetch operation, Salto needs to stop managing these ite
             'View deployment status [in Salesforce](https://example.com',
           )
         })
+
+        it('should show "less than 1 second" when elapsed time is under 1000ms', () => {
+          const now = new Date()
+          const startTime = new Date(now.getTime() - 500) // 500ms
+          mockDeployProgressReporter.reportMetadataProgress({
+            result: {
+              id: 'deployment_id',
+              checkOnly: false,
+              completedDate: '',
+              createdDate: startTime.toISOString(),
+              done: false,
+              lastModifiedDate: '',
+              numberComponentErrors: 0,
+              numberComponentsDeployed: 1,
+              numberComponentsTotal: 2,
+              numberTestErrors: 0,
+              numberTestsCompleted: 3,
+              numberTestsTotal: 4,
+              startDate: '',
+              status: 'Active',
+              success: false,
+            },
+          })
+          const messages = mockDeployProgressReporter.getReportedMessages()
+          expect(messages[messages.length - 1]).toInclude('less than 1 second')
+        })
+
+        it('should round up elapsed time to seconds', () => {
+          const now = new Date()
+          const startTime = new Date(now.getTime() - 1500) // 1.5 seconds
+          mockDeployProgressReporter.reportMetadataProgress({
+            result: {
+              id: 'deployment_id',
+              checkOnly: false,
+              completedDate: '',
+              createdDate: startTime.toISOString(),
+              done: false,
+              lastModifiedDate: '',
+              numberComponentErrors: 0,
+              numberComponentsDeployed: 1,
+              numberComponentsTotal: 2,
+              numberTestErrors: 0,
+              numberTestsCompleted: 3,
+              numberTestsTotal: 4,
+              startDate: '',
+              status: 'Active',
+              success: false,
+            },
+          })
+          const messages = mockDeployProgressReporter.getReportedMessages()
+          expect(messages[messages.length - 1]).toInclude('2 seconds')
+        })
       })
 
       describe('when reporting data progress', () => {
         it('should add data progress to the message', () => {
           mockDeployProgressReporter.reportDataProgress(10)
-          expect(mockDeployProgressReporter.getReportedMessages()[3]).toInclude('1/2 Metadata Components, 3/4 Tests.')
-          expect(mockDeployProgressReporter.getReportedMessages()[3]).toInclude(
-            'View deployment status [in Salesforce](https://example.com',
-          )
-          expect(mockDeployProgressReporter.getReportedMessages()[3]).toInclude('10 Data Instances')
+          const messages = mockDeployProgressReporter.getReportedMessages()
+          const lastMessage = messages[messages.length - 1]
+          expect(lastMessage).toInclude('1/2 Metadata Components, 3/4 Tests.')
+          expect(lastMessage).toInclude('View deployment status [in Salesforce](https://example.com')
+          expect(lastMessage).toInclude('10 Data Instances')
         })
       })
     })
