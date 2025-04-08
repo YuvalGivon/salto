@@ -1581,6 +1581,8 @@ export const createInstanceElement = (
   ) as MetadataInstanceElement
 }
 
+const isNonEmptyString = (val: unknown): val is string => _.isString(val) && val !== ''
+
 export const getAuthorAnnotations = (fileProperties: FileProperties | undefined): Record<string, string> => {
   const annotations = {
     [CORE_ANNOTATIONS.CREATED_BY]: fileProperties?.createdByName,
@@ -1590,7 +1592,7 @@ export const getAuthorAnnotations = (fileProperties: FileProperties | undefined)
   if (fileProperties?.lastModifiedDate !== SALESFORCE_DATE_PLACEHOLDER) {
     annotations[CORE_ANNOTATIONS.CHANGED_BY] = fileProperties?.lastModifiedByName
   }
-  return _.pickBy(annotations, _.isString)
+  return _.pickBy(annotations, isNonEmptyString)
 }
 
 const createIdField = (parent: ObjectType): void => {

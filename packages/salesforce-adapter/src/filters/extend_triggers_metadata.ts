@@ -179,10 +179,12 @@ const filterCreator: FilterCreator = ({ client, config }) => {
             triggersWithMissingRecord.push(apiNameSync(trigger) ?? '')
           }
         })
-        log.warn(
-          'Failed to extend the following Apex Triggers: %s',
-          inspectValue(triggersWithMissingRecord, { maxArrayLength: 100 }),
-        )
+        if (triggersWithMissingRecord.length > 0) {
+          log.warn(
+            'Failed to extend the following Apex Triggers: %s',
+            inspectValue(triggersWithMissingRecord, { maxArrayLength: 100 }),
+          )
+        }
       },
     }),
     preDeploy: async changes => {

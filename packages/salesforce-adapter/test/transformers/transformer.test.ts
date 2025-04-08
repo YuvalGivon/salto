@@ -140,7 +140,7 @@ describe('transformer', () => {
         createdByName: 12 as unknown as string,
         createdDate: { $: { 'xsi:nil': true } } as unknown as string,
         lastModifiedByName: null as unknown as string,
-        lastModifiedDate: NaN as unknown as string,
+        lastModifiedDate: '',
       })
       expect(getAuthorAnnotations(fileProperties)).toEqual({})
     })

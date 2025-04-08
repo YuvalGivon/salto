@@ -133,7 +133,6 @@ const permissionsEnumToObject = (
 const isValidFieldPermissions = (instance: InstanceElement): boolean => {
   const { fieldPermissions } = instance.value
   if (fieldPermissions === undefined) {
-    log.warn('Instance of type %s does not have fieldPermissions value (as expected)', instance.elemID.typeName)
     return false
   }
   if (!_.isPlainObject(fieldPermissions)) {

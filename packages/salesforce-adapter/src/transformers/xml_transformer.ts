@@ -441,8 +441,8 @@ export const fromRetrieveResult = async ({
       namespacePrefix: file.namespacePrefix,
       packagePath,
     })
-    if (Object.values(fileNameToValuesBuffer).length !== 1) {
-      if (file.fullName !== UNFILED_PUBLIC_FOLDER) {
+    if (Object.keys(fileNameToValuesBuffer).length !== 1) {
+      if (file.fullName !== UNFILED_PUBLIC_FOLDER && Object.keys(fileNameToValuesBuffer).length !== 0) {
         log.warn(
           `Expected to retrieve only single values file for instance (type:${file.type}, fullName:${file.fullName}), found ${Object.values(fileNameToValuesBuffer).length}`,
         )

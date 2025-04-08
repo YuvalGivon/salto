@@ -78,11 +78,12 @@ const setReferences = async (
   customObjectsByApiName: Record<string, ObjectType>,
 ): Promise<void> => {
   const controllingFieldName = REFERENCABLE_FIELD_NAME_TO_CONTROLLING_FIELD[referencableFieldName]
-  if (value[referencableFieldName] === undefined || value[controllingFieldName] === undefined) {
+  const fieldApiName = value[referencableFieldName]
+  const controllingField = value[controllingFieldName]
+  if (!_.isString(fieldApiName) || !_.isString(controllingField)) {
     return
   }
-  const objectApiName = getCPQObjectApiName(value[controllingFieldName])
-  const fieldApiName = value[referencableFieldName]
+  const objectApiName = getCPQObjectApiName(controllingField)
   const referencedObject = customObjectsByApiName[objectApiName]
   if (referencedObject === undefined) {
     log.warn('Could not find CustomObject with apiName: %s.', objectApiName)
