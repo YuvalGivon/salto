@@ -61,6 +61,17 @@ export const fullFetchConfig = (): FetchParams => ({
   exclude: emptyQueryParams(),
 })
 
+export const extendFilePathsQuery = (filePaths: string[]): string[] => {
+  const filePathsFolders = filePaths
+    .map(path => path.substring(0, path.lastIndexOf(FILE_CABINET_PATH_SEPARATOR) + 1))
+    .filter(path => path !== FILE_CABINET_PATH_SEPARATOR)
+    // in case that the query was like ".*\.js" (all js files), we want to query all folders
+    .map(path => (path === '' ? `.*${FILE_CABINET_PATH_SEPARATOR}` : path))
+    .filter(regex.isValidRegex)
+
+  return _.uniq(filePaths.concat(filePathsFolders))
+}
+
 const updatedFetchTarget = (config: NetsuiteConfig): NetsuiteQueryParameters | undefined => {
   if (config.fetchTarget === undefined) {
     return undefined
@@ -77,21 +88,13 @@ const updatedFetchTarget = (config: NetsuiteConfig): NetsuiteQueryParameters | u
   const customRecordTypesQuery = (types[CUSTOM_RECORD_TYPE] ?? []).concat(customRecordTypeNames)
   const customSegmentsQuery = (types[CUSTOM_SEGMENT] ?? []).concat(customSegmentNames)
 
-  const filePathsFolders = filePaths
-    .map(path => path.substring(0, path.lastIndexOf(FILE_CABINET_PATH_SEPARATOR) + 1))
-    .filter(path => path !== FILE_CABINET_PATH_SEPARATOR)
-    // in case that the query was like ".*\.js" (all js files), we want to query all folders
-    .map(path => (path === '' ? `.*${FILE_CABINET_PATH_SEPARATOR}` : path))
-    .filter(regex.isValidRegex)
-  const updatedFilePaths = _.uniq(filePaths.concat(filePathsFolders))
-
   return {
     types: {
       ...types,
       ...(customRecordTypesQuery.length > 0 ? { [CUSTOM_RECORD_TYPE]: customRecordTypesQuery } : {}),
       ...(customSegmentsQuery.length > 0 ? { [CUSTOM_SEGMENT]: customSegmentsQuery } : {}),
     },
-    filePaths: updatedFilePaths,
+    filePaths: extendFilePathsQuery(filePaths),
     customRecords,
   }
 }

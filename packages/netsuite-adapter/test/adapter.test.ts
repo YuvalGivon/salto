@@ -500,7 +500,7 @@ describe('Adapter', () => {
     describe('partialFetchTargets', () => {
       let adapter: NetsuiteAdapter
 
-      const conf = {
+      const conf: NetsuiteConfig = {
         fetch: {
           include: fullQueryParams(),
           exclude: {
@@ -508,6 +508,7 @@ describe('Adapter', () => {
             fileCabinet: ['^/Some/File/Regex$'],
             customRecords: [],
           },
+          partialFetchFileCabinetRegexes: ['.*\\.js'],
         },
       }
 
@@ -564,12 +565,16 @@ describe('Adapter', () => {
           expect(getStandardTypesNames().filter(customObjectsQuery.isTypeMatch)).toEqual([ADDRESS_FORM])
         })
 
-        it('should only match the files that are in partialFetchTargets', async () => {
+        it('should match the files that are in partialFetchTargets and in partialFetchFileCabinetRegexes', async () => {
           await adapter.fetch(mockPartialFetchOpts)
 
           const fileCabinetQuery = (client.importFileCabinetContent as jest.Mock).mock.calls[0][0]
           expect(fileCabinetQuery.isFileMatch('/Some/File/')).toBeTruthy()
           expect(fileCabinetQuery.isFileMatch('/Some/File/another')).toBeTruthy()
+
+          // matching all folders (with "/" at the end) is required for partialFetchFileCabinetRegexes
+          expect(fileCabinetQuery.isFileMatch('/Some/AnotherFile/')).toBeTruthy()
+          expect(fileCabinetQuery.isFileMatch('/Some/AnotherFile/helloworld.js')).toBeTruthy()
 
           expect(fileCabinetQuery.isFileMatch('/Some/File/Regex')).toBeFalsy()
           expect(fileCabinetQuery.isFileMatch('/Some/AnotherFile/another')).toBeFalsy()

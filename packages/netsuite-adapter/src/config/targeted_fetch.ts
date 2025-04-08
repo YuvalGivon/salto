@@ -23,7 +23,7 @@ import {
   NETSUITE,
 } from '../constants'
 import { standardTypesAliasMap, dataTypesAliasMap, settingsAliasMap } from '../filters/add_alias'
-import { netsuiteConfigFromConfig } from './config_creator'
+import { extendFilePathsQuery, netsuiteConfigFromConfig } from './config_creator'
 import { andQuery, buildNetsuiteQuery, NetsuiteQuery, notQuery } from './query'
 import { isSDFConfigTypeName, isSuiteAppConfigTypeName } from '../types'
 
@@ -159,7 +159,10 @@ export const getTargetsForElements: PartialFetchOperations['getTargetsForElement
   return elemIds.flatMap(getTargetsFromElemID)
 }
 
-export const targetedFetchQuery = (partialFetchTargets: PartialFetchTarget[]): NetsuiteQuery => {
+export const targetedFetchQuery = (
+  partialFetchTargets: PartialFetchTarget[] = [],
+  fileCabinetRegexes: string[] = [],
+): NetsuiteQuery => {
   const {
     [TYPES_GROUP]: types = [],
     [FILE_CABINET_GROUP]: fileCabinet = [],
@@ -168,7 +171,9 @@ export const targetedFetchQuery = (partialFetchTargets: PartialFetchTarget[]): N
 
   return buildNetsuiteQuery({
     types: types.map(type => ({ name: type.name })),
-    fileCabinet: fileCabinet.map(type => posix.join('^', _.escapeRegExp(type.name), '.*')),
+    fileCabinet: fileCabinet
+      .map(type => posix.join('^', _.escapeRegExp(type.name), '.*'))
+      .concat(extendFilePathsQuery(fileCabinetRegexes)),
     customRecords: customRecords.map(type => ({ name: type.name })),
   })
 }

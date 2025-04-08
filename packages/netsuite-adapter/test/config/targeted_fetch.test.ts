@@ -286,10 +286,36 @@ describe('targeted fetch', () => {
       expect(query.isCustomRecordTypeMatch('customrecord_test2')).toBeFalsy()
     })
 
-    it('should handle file cabinet regexes', () => {
+    it('should handle file cabinet targets with special characters', () => {
       const targets = [{ group: 'fileCabinet', name: 'SuiteScripts/test [test]' }]
       const query = targetedFetchQuery(targets)
       expect(query.isFileMatch('/SuiteScripts/test [test]/file.txt')).toBeTruthy()
+    })
+
+    it('should handle file cabinet regexes', () => {
+      const targets = undefined
+      const fileCabinetRegexes = ['.*\\.js']
+      const query = targetedFetchQuery(targets, fileCabinetRegexes)
+
+      // matching all folders (with "/" at the end) is required for fileCabinetRegexes
+      expect(query.isFileMatch('/SuiteScripts/test/')).toBeTruthy()
+      expect(query.isFileMatch('/SuiteScripts/test/helloworld.js')).toBeTruthy()
+      expect(query.isFileMatch('/SuiteScripts/test/helloworld.txt')).toBeFalsy()
+    })
+
+    it('should handle both targets and file cabinet regexes', () => {
+      const targets = [{ group: 'fileCabinet', name: 'SuiteScripts/test' }]
+      const fileCabinetRegexes = ['.*\\.js']
+      const query = targetedFetchQuery(targets, fileCabinetRegexes)
+
+      // match based on targets
+      expect(query.isFileMatch('/SuiteScripts/test/')).toBeTruthy()
+      expect(query.isFileMatch('/SuiteScripts/test/helloworld.txt')).toBeTruthy()
+
+      // match based on file cabinet regexes
+      expect(query.isFileMatch('/SuiteScripts/anotherFolder/')).toBeTruthy()
+      expect(query.isFileMatch('/SuiteScripts/anotherFolder/helloworld.js')).toBeTruthy()
+      expect(query.isFileMatch('/SuiteScripts/anotherFolder/helloworld.txt')).toBeFalsy()
     })
 
     it('should handle empty target groups', () => {

@@ -392,6 +392,7 @@ const validateFetchConfig = ({
   exclude,
   fieldsToOmit,
   singletonCustomRecords,
+  partialFetchFileCabinetRegexes,
 }: Record<keyof FetchParams, unknown>): void => {
   validateDefined(include, [CONFIG.fetch, FETCH_PARAMS.include])
   validatePlainObject(include, [CONFIG.fetch, FETCH_PARAMS.include])
@@ -413,6 +414,14 @@ const validateFetchConfig = ({
   if (singletonCustomRecords !== undefined) {
     validateArrayOfStrings(singletonCustomRecords, [CONFIG.fetch, FETCH_PARAMS.singletonCustomRecords])
     validateRegularExpressions(singletonCustomRecords, [CONFIG.fetch, FETCH_PARAMS.singletonCustomRecords])
+  }
+
+  if (partialFetchFileCabinetRegexes !== undefined) {
+    validateArrayOfStrings(partialFetchFileCabinetRegexes, [CONFIG.fetch, FETCH_PARAMS.partialFetchFileCabinetRegexes])
+    validateRegularExpressions(partialFetchFileCabinetRegexes, [
+      CONFIG.fetch,
+      FETCH_PARAMS.partialFetchFileCabinetRegexes,
+    ])
   }
 }
 

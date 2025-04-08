@@ -384,6 +384,26 @@ describe('netsuite config validations', () => {
         expect(() => validateConfig(config)).toThrow('The following regular expressions are invalid')
       })
     })
+
+    describe('partialFetchFileCabinetRegexes', () => {
+      it('should not throw', () => {
+        config.fetch.partialFetchFileCabinetRegexes = ['helloworld.js']
+        expect(() => validateConfig(config)).not.toThrow()
+      })
+
+      it('should throw an error when it is not a list of strings', () => {
+        config.fetch.partialFetchFileCabinetRegexes = 'helloworld.js'
+        expect(() => validateConfig(config)).toThrow('fetch.partialFetchFileCabinetRegexes should be a list of strings')
+
+        config.fetch.partialFetchFileCabinetRegexes = [new ReferenceExpression(ElemID.fromFullName('helloworld.js'))]
+        expect(() => validateConfig(config)).toThrow('fetch.partialFetchFileCabinetRegexes should be a list of strings')
+      })
+
+      it('should throw an error when there is an invalid regex', () => {
+        config.fetch.partialFetchFileCabinetRegexes = ['.*.js', 'helloworld(.*']
+        expect(() => validateConfig(config)).toThrow('The following regular expressions are invalid')
+      })
+    })
   })
 
   describe('client config', () => {

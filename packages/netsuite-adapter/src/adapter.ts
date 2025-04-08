@@ -585,7 +585,8 @@ export default class NetsuiteAdapter implements AdapterOperations {
     )
     const fetchQuery = [
       buildNetsuiteQuery(this.fetchInclude),
-      partialFetchTargets && targetedFetchQuery(partialFetchTargets),
+      (partialFetchTargets || this.config.fetch.partialFetchFileCabinetRegexes) &&
+        targetedFetchQuery(partialFetchTargets, this.config.fetch.partialFetchFileCabinetRegexes),
       this.fetchTarget && buildNetsuiteQuery(convertToQueryParams(this.fetchTarget)),
       notQuery(buildNetsuiteQuery(this.fetchExclude)),
       this.lockedElements && notQuery(buildNetsuiteQuery(this.lockedElements)),
