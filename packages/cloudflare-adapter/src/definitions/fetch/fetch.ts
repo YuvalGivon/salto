@@ -316,7 +316,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
-        elemID: { parts: [{ fieldName: 'id' }], extendsParent: true },
+        elemID: { parts: [{ fieldName: 'description' }, { fieldName: 'id' }], extendsParent: true },
         alias: { aliasComponents: [{ fieldName: 'description' }] },
       },
       fieldCustomizations: {
@@ -326,6 +326,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         kind: { hide: true },
         accountsOrZones: { hide: true },
         accountOrZoneId: { hide: true },
+        version: { hide: true }, // Very noisy, hiding to reduce diffs.
       },
     },
   },
@@ -347,7 +348,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
-        elemID: { parts: [{ fieldName: 'id' }], extendsParent: true },
+        elemID: { parts: [{ fieldName: 'description' }], extendsParent: true },
         alias: { aliasComponents: [{ fieldName: 'description' }] },
         serviceUrl: { path: '/{_parent.0.account.id}/{_parent.0.name}/security/waf/tools' },
       },
