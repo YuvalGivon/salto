@@ -3206,7 +3206,7 @@ export const configType = createMatchingObjectType<Partial<ZendeskConfig>>({
           translationBodyAsStaticFile: { refType: BuiltinTypes.BOOLEAN },
           fetchBotBuilder: { refType: BuiltinTypes.BOOLEAN },
         },
-        omitElemID: true,
+        omitElemID: false,
       }),
     },
     [DEPLOY_CONFIG]: {

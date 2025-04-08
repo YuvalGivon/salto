@@ -2381,6 +2381,60 @@ describe('adapter', () => {
     })
   })
 
+  describe('with deprecated user config', () => {
+    it('should return updated config after migration', async () => {
+      const deprecatedConfig = new InstanceElement('config', configType, {
+        [FETCH_CONFIG]: {
+          include: [
+            {
+              type: 'group',
+            },
+          ],
+          exclude: [],
+        },
+        [API_DEFINITIONS_CONFIG]: {
+          types: {
+            group: {
+              transformation: {
+                idFields: ['default', 'name'],
+              },
+            },
+          },
+        },
+      })
+      const { updatedConfig } = await adapter
+        .operations({
+          accountName: 'zendesk',
+          credentials: new InstanceElement('config', basicCredentialsType, {
+            username: 'user123',
+            password: 'token456',
+            subdomain: 'mybrand',
+          }),
+          config: deprecatedConfig,
+          elementsSource: buildElementsSourceFromElements([]),
+        })
+        .fetch({ progressReporter: nullProgressReporter })
+      expect(updatedConfig?.config[0].value).toEqual({
+        [FETCH_CONFIG]: {
+          include: [
+            {
+              type: 'group',
+            },
+          ],
+          exclude: [{ type: 'conversation_bot' }],
+          elemID: {
+            group: {
+              parts: [{ fieldName: 'default' }, { fieldName: 'name' }],
+            },
+          },
+        },
+      })
+      expect(updatedConfig?.message).toEqual(
+        'Elem ID customizations are now under `fetch.elemID`. The following changes will upgrade the deprecated definitions from `apiDefinitions` to the new location.',
+      )
+    })
+  })
+
   describe('deploy', () => {
     const jsonString = `{
       "zendesk": {

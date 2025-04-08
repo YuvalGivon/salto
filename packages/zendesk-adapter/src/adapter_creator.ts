@@ -20,7 +20,7 @@ import {
   config as configUtils,
   definitions,
 } from '@salto-io/adapter-components'
-import { inspectValue } from '@salto-io/adapter-utils'
+import { formatConfigSuggestionsReasons } from '@salto-io/adapter-utils'
 import ZendeskAdapter from './adapter'
 import { basicCredentialsType, Credentials, oauthAccessTokenCredentialsType, oauthRequestParametersType } from './auth'
 import {
@@ -44,7 +44,7 @@ import { customReferenceHandlers } from './custom_references'
 
 const log = logger(module)
 const { validateCredentials } = clientUtils
-const { validateClientConfig, mergeWithDefaultConfig, updateElemIDDefinitions } = definitions
+const { validateClientConfig, mergeWithDefaultConfig, updateDeprecatedConfig } = definitions
 const { validateDuckTypeApiDefinitionConfig } = configUtils
 const { validateDefaultMissingUserFallbackConfig } = definitions
 
@@ -112,17 +112,6 @@ const adapterConfigFromConfig = (config: Readonly<InstanceElement> | undefined):
   ) as configUtils.AdapterDuckTypeApiConfig
 
   const fetch = mergeWithDefaultConfig(DEFAULT_CONFIG.fetch, config?.value.fetch) as ZendeskFetchConfig
-  const configForNewInfra = config?.clone()
-  const updatedElemIDs = updateElemIDDefinitions(configForNewInfra?.value?.apiDefinitions)
-  if (updatedElemIDs?.elemID !== undefined) {
-    if (fetch.elemID !== undefined) {
-      log.debug('fetch.elemId is defined and is going to be merged with data from the api_definition')
-    }
-    const mergedElemIDConfig = _.merge(_.pick(fetch, 'elemID'), updatedElemIDs)
-    fetch.elemID = mergedElemIDConfig.elemID
-    log.debug(`elemId config has changes and equal to: ${inspectValue(fetch.elemID)}`)
-  }
-
   const adapterConfig: { [K in keyof Required<ZendeskConfig>]: ZendeskConfig[K] } = {
     client: configValue.client,
     fetch,
@@ -151,7 +140,9 @@ const adapterConfigFromConfig = (config: Readonly<InstanceElement> | undefined):
 
 export const adapter: Adapter = {
   operations: context => {
-    const config = adapterConfigFromConfig(context.config)
+    // TODO SALTO-7702 remove config migration after all envs were upgraded
+    const updatedConfig = context.config && updateDeprecatedConfig(context.config)
+    const config = adapterConfigFromConfig(updatedConfig?.config ?? context.config)
     const credentials = credentialsFromConfig(context.credentials)
     const adapterOperations = new ZendeskAdapter({
       client: new ZendeskClient({
@@ -162,14 +153,25 @@ export const adapter: Adapter = {
       credentials,
       config,
       getElemIdFunc: context.getElemIdFunc,
-      configInstance: context.config,
+      configInstance: updatedConfig?.config ?? context.config,
       elementsSource: context.elementsSource,
       accountName: context.accountName,
     })
 
     return {
       deploy: adapterOperations.deploy.bind(adapterOperations),
-      fetch: async args => adapterOperations.fetch(args),
+      fetch: async args => {
+        const fetchResults = await adapterOperations.fetch(args)
+        if (updatedConfig) {
+          fetchResults.updatedConfig = fetchResults.updatedConfig
+            ? {
+                config: fetchResults.updatedConfig.config,
+                message: formatConfigSuggestionsReasons([fetchResults.updatedConfig.message, updatedConfig.message]),
+              }
+            : { config: [updatedConfig.config], message: updatedConfig.message }
+        }
+        return fetchResults
+      },
       deployModifiers: adapterOperations.deployModifiers,
       fixElements: adapterOperations.fixElements.bind(adapterOperations),
     }
