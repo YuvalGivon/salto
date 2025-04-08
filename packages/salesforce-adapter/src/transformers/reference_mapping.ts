@@ -1589,6 +1589,15 @@ export const referenceMappingDefs: Record<string, FieldReferenceDefinition> = {
       type: 'CustomField',
     },
   },
+  'ConversationDefinitionPlanner.genAiPlannerName:GenAiPlanner': {
+    src: {
+      field: 'genAiPlannerName',
+      parentTypes: ['ConversationDefinitionPlanner'],
+    },
+    target: {
+      type: 'GenAiPlanner',
+    },
+  },
   'GenAiPlannerFunctionDef.genAiFunctionName:GenAiFunction': {
     src: {
       field: 'genAiFunctionName',
