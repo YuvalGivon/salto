@@ -43,9 +43,6 @@ const METADATA_NAME = 'name'
 const METADATA_NAMESPACE = 'namespace'
 export const METADATA_SEPARATE_FIELD_LIST = 'objectsToSeperateFieldsToFiles'
 export const DATA_CONFIGURATION = 'data'
-export const METADATA_TYPES_SKIPPED_LIST = 'metadataTypesSkippedList'
-export const DATA_MANAGEMENT = 'dataManagement'
-export const INSTANCES_REGEX_SKIPPED_LIST = 'instancesRegexSkippedList'
 const SHOULD_FETCH_ALL_CUSTOM_SETTINGS = 'fetchAllCustomSettings'
 
 export type MetadataQueryParams = Partial<Omit<MetadataInstance, 'isFolderType'>>
@@ -402,15 +399,6 @@ export type FetchParameters = {
   additionalImportantValues?: ImportantValues
   disabledReferences?: string[]
 }
-
-export type DeprecatedMetadataParams = {
-  [METADATA_TYPES_SKIPPED_LIST]?: string[]
-  [INSTANCES_REGEX_SKIPPED_LIST]?: string[]
-}
-
-export type DeprecatedFetchParameters = {
-  [DATA_MANAGEMENT]?: DataManagementConfig
-} & DeprecatedMetadataParams
 
 export type ClientRateLimitConfig = Partial<{
   total: number

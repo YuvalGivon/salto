@@ -43,10 +43,8 @@ import {
 } from './config/types'
 import { validateFetchParameters } from './config/context/context'
 import { ConfigValidationError } from './config/config_validation'
-import { updateDeprecatedConfiguration } from './config/deprecated_config'
 import createChangeValidator from './change_validator'
 import { getChangeGroupIds } from './group_changes'
-import { ConfigChange } from './config/config_change'
 import { configCreator } from './config/config_creator'
 import { loadElementsFromFolder } from './sfdx_parser/sfdx_parser'
 import { dumpElementsToFolder } from './sfdx_parser/sfdx_dump'
@@ -188,25 +186,6 @@ const createOAuthRequest = (userInput: InstanceElement): OAuthRequestParameters 
   oauthRequiredFields: ['refresh_token', 'instance_url', 'access_token'],
 })
 
-export const getConfigChange = (
-  configFromFetch?: ConfigChange,
-  configWithoutDeprecated?: ConfigChange,
-): ConfigChange | undefined => {
-  if (configWithoutDeprecated !== undefined && configFromFetch !== undefined) {
-    return {
-      config: configFromFetch.config,
-      message: `${configWithoutDeprecated.message}
-In Addition, ${configFromFetch.message}`,
-    }
-  }
-
-  if (configWithoutDeprecated !== undefined) {
-    return configWithoutDeprecated
-  }
-
-  return configFromFetch
-}
-
 export type DeployProgressReporter = ProgressReporter & {
   reportMetadataProgress: (args: { result: DeployResult; suffix?: string }) => void
   reportDataProgress: (successInstances: number) => void
@@ -284,8 +263,7 @@ export const createDeployProgressReporter = async (
 
 export const adapter: Adapter = {
   operations: context => {
-    const updatedConfig = context.config && updateDeprecatedConfiguration(context.config)
-    const config = adapterConfigFromConfig(updatedConfig?.config ?? context.config)
+    const config = adapterConfigFromConfig(context.config)
     const credentials = credentialsFromConfig(context.credentials)
     const client = new SalesforceClient({
       credentials,
@@ -307,15 +285,7 @@ export const adapter: Adapter = {
     return {
       fetch: async opts => {
         const salesforceAdapter = createSalesforceAdapter()
-        const fetchResults = await salesforceAdapter.fetch(opts)
-        fetchResults.updatedConfig = getConfigChange(
-          fetchResults.updatedConfig,
-          updatedConfig && {
-            config: [updatedConfig.config],
-            message: updatedConfig.message,
-          },
-        )
-        return fetchResults
+        return salesforceAdapter.fetch(opts)
       },
 
       deploy: async opts => {

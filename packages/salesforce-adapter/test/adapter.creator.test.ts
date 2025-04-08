@@ -8,7 +8,7 @@
 import { InstanceElement, ElemID, ObjectType, OAuthMethod, FetchOptions, ProgressReporter } from '@salto-io/adapter-api'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { MockInterface, mockFunction } from '@salto-io/test-utils'
-import { adapter, getConfigChange } from '../src/adapter_creator'
+import { adapter } from '../src/adapter_creator'
 import SalesforceClient, { validateCredentials } from '../src/client/client'
 import SalesforceAdapter from '../src/adapter'
 import {
@@ -17,7 +17,6 @@ import {
   oauthRequestParameters,
   OauthAccessTokenCredentials,
   accessTokenCredentialsType,
-  METADATA_TYPES_SKIPPED_LIST,
 } from '../src/config/types'
 import { METADATA_DEPLOY_PENDING_STATUS, RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS } from '../src/constants'
 import { createMockProgressReporter, MockDeployProgressReporter } from './utils'
@@ -484,119 +483,6 @@ describe('SalesforceAdapter creator', () => {
     })
   })
 
-  describe('validateDeprecatedParameters', () => {
-    describe('instancesRegexSkippedList', () => {
-      it('invalid instancesRegexSkippedList should throw an error', () => {
-        const configClone = config.clone()
-        configClone.value.instancesRegexSkippedList = ['(']
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).toThrow(
-          'Failed to load config due to an invalid instancesRegexSkippedList value. The following regular expressions are invalid: (',
-        )
-      })
-
-      it('valid instancesRegexSkippedList should not throw', () => {
-        const configClone = config.clone()
-        configClone.value.instancesRegexSkippedList = ['valid']
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).not.toThrow()
-      })
-    })
-
-    describe('dataManagement', () => {
-      it('invalid dataManagement should throw an error', () => {
-        const configClone = config.clone()
-        configClone.value.dataManagement = {}
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).toThrow(
-          'Failed to load config due to an invalid dataManagement.includeObjects value. includeObjects is required when dataManagement is configured',
-        )
-      })
-
-      it('valid dataManagement should not throw', () => {
-        const configClone = config.clone()
-        configClone.value.dataManagement = {
-          includeObjects: ['^SBQQ__.*'],
-          saltoIDSettings: {
-            defaultIdFields: ['##allMasterDetailFields##', 'Name'],
-            overrides: [],
-          },
-          brokenOutgoingReferencesSettings: {
-            defaultBehavior: 'BrokenReference',
-            perTargetTypeOverrides: {
-              User: 'InternalId',
-            },
-          },
-          omittedFields: ['OmniUiCard.SampleDataSourceResponse'],
-        }
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).not.toThrow()
-      })
-
-      it('valid dataManagement and fetch.data should throw an error', () => {
-        const configClone = config.clone()
-        const dataConf = {
-          includeObjects: ['^SBQQ__.*'],
-          saltoIDSettings: {
-            defaultIdFields: ['##allMasterDetailFields##', 'Name'],
-            overrides: [],
-          },
-        }
-        configClone.value.dataManagement = dataConf
-        configClone.value.fetch.data = dataConf
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).toThrow(
-          'Failed to load config due to an invalid dataManagement value. fetch.data configuration option cannot be used with dataManagement option. The configuration of dataManagement should be moved to fetch.data',
-        )
-      })
-    })
-
-    describe('metadataTypesSkippedList', () => {
-      it('valid metadataTypesSkippedList should not throw', () => {
-        const configClone = config.clone()
-        configClone.value.metadataTypesSkippedList = ['valid']
-
-        expect(() =>
-          adapter.operations({
-            credentials,
-            elementsSource: buildElementsSourceFromElements([]),
-            config: configClone,
-          }),
-        ).not.toThrow()
-      })
-    })
-  })
-
   describe('validateValidatorsConfig', () => {
     it('should throw when validators config exists and is not an object', () => {
       const configClone = config.clone()
@@ -623,110 +509,6 @@ describe('SalesforceAdapter creator', () => {
           config: configClone,
         }),
       ).toThrow()
-    })
-  })
-
-  describe('deprecated configuration', () => {
-    SalesforceAdapter.prototype.fetch = jest.fn().mockResolvedValue({ elements: [] })
-
-    const deprecatedConfig = config.clone()
-    deprecatedConfig.value[METADATA_TYPES_SKIPPED_LIST] = ['aaa']
-    const operations = adapter.operations({
-      credentials,
-      config: deprecatedConfig,
-      elementsSource: buildElementsSourceFromElements([]),
-    })
-    it('pass to the adapter operation configuration without deprecated fields', async () => {
-      await operations.fetch(mockFetchOpts)
-      expect(SalesforceAdapter).toHaveBeenCalledWith({
-        config: {
-          fetch: {
-            metadata: {
-              exclude: [{ metadataType: 'test1' }, { name: 'test2' }, { name: 'test3' }, { metadataType: 'aaa' }],
-            },
-          },
-          client: {
-            maxConcurrentApiRequests: {
-              list: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
-              read: 55,
-              retrieve: 3,
-              total: RATE_LIMIT_UNLIMITED_MAX_CONCURRENT_REQUESTS,
-            },
-          },
-          flags: {
-            apiVersionOverride: apiVersion,
-          },
-        },
-        client: expect.any(Object),
-        getElemIdFunc: undefined,
-        elementsSource: expect.any(Object),
-      })
-    })
-
-    it('return update from fetch', async () => {
-      expect((await operations.fetch(mockFetchOpts)).updatedConfig).toBeDefined()
-    })
-  })
-
-  describe('getConfigChange', () => {
-    describe('both configFromFetch and configWithoutDeprecated are defined', () => {
-      const configFromFetch = config.clone()
-      const updatedConfig = getConfigChange(
-        {
-          config: [config],
-          message: `Salto failed to fetch some items from salesforce.
-
-In order to complete the fetch operation, Salto needs to stop managing these items by applying the following configuration change:`,
-        },
-        {
-          config: [configFromFetch],
-          message:
-            'The configuration options "metadataTypesSkippedList", "instancesRegexSkippedList" and "dataManagement" are deprecated. The following changes will update the deprecated options to the "fetch" configuration option.',
-        },
-      )
-
-      it('return fetch configuration', () => {
-        expect(updatedConfig?.config[0]).toBe(config)
-      })
-      it('return combined message', () => {
-        expect(updatedConfig?.message)
-          .toBe(`The configuration options "metadataTypesSkippedList", "instancesRegexSkippedList" and "dataManagement" are deprecated. The following changes will update the deprecated options to the "fetch" configuration option.
-In Addition, Salto failed to fetch some items from salesforce.
-
-In order to complete the fetch operation, Salto needs to stop managing these items by applying the following configuration change:`)
-      })
-    })
-
-    describe('only configWithoutDeprecated is defined', () => {
-      const configChange = {
-        config: [config],
-        message:
-          'The configuration options "metadataTypesSkippedList", "instancesRegexSkippedList" and "dataManagement" are deprecated. The following changes will update the deprecated options to the "fetch" configuration option.',
-      }
-      const updatedConfig = getConfigChange(undefined, configChange)
-      it('return configWithoutDeprecated', () => {
-        expect(updatedConfig).toBe(configChange)
-      })
-    })
-
-    describe('only fetchConfiguration is defined', () => {
-      const configChange = {
-        config: [config],
-        message: `Salto failed to fetch some items from salesforce.
-
-In order to complete the fetch operation, Salto needs to stop managing these items by applying the following configuration change:`,
-      }
-      const updatedConfig = getConfigChange(configChange, undefined)
-      it('return configWithoutDeprecated', () => {
-        expect(updatedConfig).toBe(configChange)
-      })
-    })
-
-    describe('both configFromFetch and configWithoutDeprecated are undefined', () => {
-      const updatedConfig = getConfigChange(undefined, undefined)
-      it('return undefined', () => {
-        expect(updatedConfig).toBe(undefined)
-      })
     })
   })
 
