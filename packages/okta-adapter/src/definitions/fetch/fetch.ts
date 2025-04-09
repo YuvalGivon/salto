@@ -606,7 +606,7 @@ const createCustomizations = ({
         applicationProvisioningGeneral: { fieldType: 'unknown' },
         applicationInboundProvisioning: { fieldType: 'ApplicationFeature' },
         applicationUserProvisioning: { fieldType: 'ApplicationFeature' },
-        apiScopes: { fieldType: 'list<OAuth2ScopeConsentGrant>' },
+        apiScopes: { fieldType: 'list<OAuth2ScopeConsentGrant>', sort: { properties: [{ path: 'scopeId' }] } },
         settings: { fieldType: 'unknown' },
         profileEnrollment: { fieldType: 'string' },
         accessPolicy: { fieldType: 'string' },
