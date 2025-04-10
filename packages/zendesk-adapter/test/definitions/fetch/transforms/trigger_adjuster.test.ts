@@ -16,10 +16,12 @@ describe('trigger_adjuster', () => {
           {
             field: 'add_skills',
             value: 'skillWithoutPriority',
+            priority: 'no_priority',
           },
           {
             field: 'set_skills',
             value: 'skillWithoutPriority',
+            priority: 'no_priority',
           },
         ],
       }
@@ -127,6 +129,82 @@ describe('trigger_adjuster', () => {
             {
               field: 'set_skills',
               value: 'skillWithoutPriority',
+              priority: 'no_priority',
+            },
+          ],
+        },
+      })
+    })
+
+    it('should transform trigger item with array of skills with priorities', async () => {
+      const value = {
+        title: 'arraySkillsTrigger',
+        actions: [
+          {
+            field: 'add_skills',
+            value: ['skill1#1', 'skill2#2', 'skill3#3'],
+          },
+        ],
+      }
+      const transformedItem = await transformTriggerItem({ value, context: {}, typeName: 'trigger' })
+      expect(transformedItem).toEqual({
+        value: {
+          title: 'arraySkillsTrigger',
+          actions: [
+            {
+              field: 'add_skills',
+              value: ['skill1', 'skill2', 'skill3'],
+              priority: ['optional high', 'optional medium', 'optional low'],
+            },
+          ],
+        },
+      })
+    })
+
+    it('should transform trigger item with mixed array of skills with and without priorities', async () => {
+      const value = {
+        title: 'mixedSkillsTrigger',
+        actions: [
+          {
+            field: 'add_skills',
+            value: ['skill1#1', 'skill2', 'skill3#3'],
+          },
+        ],
+      }
+      const transformedItem = await transformTriggerItem({ value, context: {}, typeName: 'trigger' })
+      expect(transformedItem).toEqual({
+        value: {
+          title: 'mixedSkillsTrigger',
+          actions: [
+            {
+              field: 'add_skills',
+              value: ['skill1', 'skill2', 'skill3'],
+              priority: ['optional high', 'no_priority', 'optional low'],
+            },
+          ],
+        },
+      })
+    })
+
+    it('should transform trigger item with array of skills with unknown priorities', async () => {
+      const value = {
+        title: 'unknownPrioritiesTrigger',
+        actions: [
+          {
+            field: 'add_skills',
+            value: ['skill1#44', 'skill2#55'],
+          },
+        ],
+      }
+      const transformedItem = await transformTriggerItem({ value, context: {}, typeName: 'trigger' })
+      expect(transformedItem).toEqual({
+        value: {
+          title: 'unknownPrioritiesTrigger',
+          actions: [
+            {
+              field: 'add_skills',
+              value: ['skill1', 'skill2'],
+              priority: ['unknown_44', 'unknown_55'],
             },
           ],
         },
@@ -160,6 +238,7 @@ describe('trigger_adjuster', () => {
           {
             field: 'add_skills',
             value: 'invalidWithABang!@?',
+            priority: 'no_priority',
           },
         ],
       },

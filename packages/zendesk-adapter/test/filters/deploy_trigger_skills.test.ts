@@ -26,6 +26,10 @@ const triggerInstance = new InstanceElement('instance', triggerType, {
     { field: 'set_skills', value: 'previousVersion', priority: 'optional' },
     { field: 'set_skills', value: 'isItReallyASkill', priority: 'unknown_12' },
     { field: 'set_skills', value: 'thisIsActuallyAn', priority: 'invalidCase' },
+    { field: 'set_skills', value: ['skill1', 'skill2'], priority: ['required', 'optional high'] },
+    { field: 'add_skills', value: ['skill3', 'skill4'], priority: ['optional medium', 'optional low'] },
+    { field: 'set_skills', value: 'noPrioritySkill', priority: 'no_priority' },
+    { field: 'add_skills', value: ['mixedSkill1', 'mixedSkill2'], priority: ['no_priority', 'required'] },
   ],
 })
 
@@ -50,6 +54,10 @@ describe('deploy trigger skills filter', () => {
         { field: 'set_skills', value: 'previousVersion#1' },
         { field: 'set_skills', value: 'isItReallyASkill#12' },
         { field: 'set_skills', value: 'thisIsActuallyAn#invalidCase' },
+        { field: 'set_skills', value: ['skill1#0', 'skill2#1'] },
+        { field: 'add_skills', value: ['skill3#2', 'skill4#3'] },
+        { field: 'set_skills', value: 'noPrioritySkill' },
+        { field: 'add_skills', value: ['mixedSkill1', 'mixedSkill2#0'] },
       ])
     })
   })
