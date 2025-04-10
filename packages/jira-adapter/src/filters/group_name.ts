@@ -23,9 +23,9 @@ import { JiraConfig } from '../config/config'
 
 const log = logger(module)
 
-const UUID_REGEX = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+export const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 const GROUP_NAME = 'trusted-users'
-const TRUSTED_GROUP_NAME_REGEX = new RegExp(`^${GROUP_NAME}-${UUID_REGEX}$`)
+const TRUSTED_GROUP_NAME_REGEX = new RegExp(`^${GROUP_NAME}-${UUID_PATTERN}$`)
 
 const isGroupElement = (element: Element): boolean => element.elemID.typeName === GROUP_TYPE_NAME
 

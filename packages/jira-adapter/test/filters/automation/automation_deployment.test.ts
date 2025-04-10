@@ -15,14 +15,28 @@ import {
   toChange,
   Value,
   ReferenceExpression,
+  ListType,
+  ReadOnlyElementsSource,
 } from '@salto-io/adapter-api'
+import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import _ from 'lodash'
 import { filterUtils, client as clientUtils } from '@salto-io/adapter-components'
 import { MockInterface } from '@salto-io/test-utils'
 import { getFilterParams, mockClient } from '../../utils'
 import automationDeploymentFilter from '../../../src/filters/automation/automation_deployment'
 import { getDefaultConfig, JiraConfig } from '../../../src/config/config'
-import { AUTOMATION_TYPE, JIRA, OBJECT_SCHEMA_TYPE, OBJECT_TYPE_TYPE, REQUEST_TYPE_NAME } from '../../../src/constants'
+import {
+  AUTOMATION_COMPONENT_TYPE,
+  AUTOMATION_COMPONENT_VALUE_TYPE,
+  AUTOMATION_EMAIL_RECIPENT,
+  AUTOMATION_GROUP,
+  AUTOMATION_TYPE,
+  GROUP_TYPE_NAME,
+  JIRA,
+  OBJECT_SCHEMA_TYPE,
+  OBJECT_TYPE_TYPE,
+  REQUEST_TYPE_NAME,
+} from '../../../src/constants'
 import { PRIVATE_API_HEADERS } from '../../../src/client/headers'
 import JiraClient from '../../../src/client/client'
 
@@ -34,6 +48,7 @@ describe('automationDeploymentFilter', () => {
   let client: JiraClient
   let connection: MockInterface<clientUtils.APIConnection>
   let deploymentTriggerSegment: Value
+  let elementsSource: ReadOnlyElementsSource
   const objectSchemaType = new ObjectType({
     elemID: new ElemID(JIRA, OBJECT_SCHEMA_TYPE),
     fields: {
@@ -98,11 +113,13 @@ describe('automationDeploymentFilter', () => {
     connection = conn
 
     config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
+    elementsSource = buildElementsSourceFromElements([])
     filter = automationDeploymentFilter(
       getFilterParams({
         client,
         paginator,
         config,
+        elementsSource,
       }),
     ) as filterUtils.FilterWith<'onFetch' | 'deploy' | 'preDeploy' | 'onDeploy'>
 
@@ -319,6 +336,156 @@ describe('automationDeploymentFilter', () => {
       expect(instance.value.created).toBe(1)
     })
 
+    describe('reference resolving', () => {
+      let automationInstance: InstanceElement
+      beforeEach(() => {
+        const groupObjectType = new ObjectType({
+          elemID: new ElemID(JIRA, GROUP_TYPE_NAME),
+          fields: {
+            name: { refType: BuiltinTypes.STRING },
+            groupId: { refType: BuiltinTypes.STRING },
+          },
+        })
+
+        const recipientType = new ObjectType({
+          elemID: new ElemID(JIRA, AUTOMATION_EMAIL_RECIPENT),
+          fields: {
+            value: { refType: BuiltinTypes.STRING },
+          },
+        })
+
+        const groupType = new ObjectType({
+          elemID: new ElemID(JIRA, AUTOMATION_GROUP),
+          fields: {
+            value: { refType: BuiltinTypes.STRING },
+          },
+        })
+
+        const componentValueType = new ObjectType({
+          elemID: new ElemID(JIRA, AUTOMATION_COMPONENT_VALUE_TYPE),
+          fields: {
+            to: { refType: new ListType(recipientType) },
+            group: { refType: groupType },
+            groups: { refType: new ListType(groupType) },
+          },
+        })
+        const componentType = new ObjectType({
+          elemID: new ElemID(JIRA, AUTOMATION_COMPONENT_TYPE),
+          fields: {
+            value: { refType: componentValueType },
+          },
+        })
+        const automationObjectType = new ObjectType({
+          elemID: new ElemID(JIRA, AUTOMATION_TYPE),
+          fields: {
+            trigger: { refType: componentType },
+            components: { refType: new ListType(componentType) },
+          },
+        })
+        const groupInstance = new InstanceElement('instance', groupObjectType, {
+          name: 'groupName',
+          groupId: 'uuid',
+        })
+        automationInstance = new InstanceElement('instance', automationObjectType, {
+          name: 'someName',
+          state: 'ENABLED',
+          trigger: {
+            component: 'TRIGGER',
+            value: {
+              groups: [new ReferenceExpression(groupInstance.elemID, groupInstance)],
+            },
+          },
+          components: [
+            {
+              component: 'ACTION',
+              type: 'jira.issue.outgoing.email',
+              value: {
+                to: [
+                  {
+                    type: 'GROUP_ID',
+                    value: new ReferenceExpression(groupInstance.elemID, groupInstance),
+                  },
+                ],
+              },
+              children: [],
+              conditions: [],
+            },
+            {
+              component: 'ACTION',
+              type: 'jira.issue.assign',
+              value: {
+                group: {
+                  type: 'GROUP_ID',
+                  value: new ReferenceExpression(groupInstance.elemID, groupInstance),
+                },
+              },
+            },
+          ],
+          projects: [],
+        })
+
+        elementsSource = buildElementsSourceFromElements([
+          groupInstance,
+          automationInstance,
+          automationObjectType,
+          componentType,
+          componentValueType,
+          recipientType,
+          groupType,
+        ])
+      })
+      it('should resolve group references correctly', async () => {
+        await filter.deploy([toChange({ after: automationInstance })])
+        expect(connection.post).toHaveBeenCalledWith(
+          '/gateway/api/automation/internal-api/jira/cloudId/pro/rest/GLOBAL/rule/import',
+          {
+            rules: [
+              {
+                name: 'someName',
+                state: 'ENABLED',
+                trigger: {
+                  component: 'TRIGGER',
+                  value: {
+                    eventFilters: ['ari:cloud:jira::site/cloudId'],
+                    groups: ['uuid'],
+                  },
+                },
+                components: [
+                  {
+                    component: 'ACTION',
+                    type: 'jira.issue.outgoing.email',
+                    value: {
+                      to: [
+                        {
+                          type: 'GROUP_ID',
+                          value: 'uuid',
+                        },
+                      ],
+                    },
+                    children: [],
+                    conditions: [],
+                  },
+                  {
+                    component: 'ACTION',
+                    type: 'jira.issue.assign',
+                    value: {
+                      group: { type: 'GROUP_ID', value: 'uuid' },
+                    },
+                  },
+                ],
+                projects: [],
+                ruleScope: {
+                  resources: ['ari:cloud:jira::site/cloudId'],
+                },
+              },
+            ],
+          },
+          {
+            headers: PRIVATE_API_HEADERS,
+          },
+        )
+      })
+    })
     describe('retries', () => {
       beforeEach(() => {
         const { client: cli, paginator, connection: conn } = mockClient(false)

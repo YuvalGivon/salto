@@ -850,6 +850,11 @@ export const referencesRules: JiraFieldReferenceDefinition[] = [
   },
   {
     src: { field: 'groups', parentTypes: [AUTOMATION_COMPONENT_VALUE_TYPE] },
+    serializationStrategy: 'groupId',
+    target: { type: GROUP_TYPE_NAME },
+  },
+  {
+    src: { field: 'groups', parentTypes: [AUTOMATION_COMPONENT_VALUE_TYPE] },
     serializationStrategy: 'groupStrategyByOriginalName',
     target: { type: GROUP_TYPE_NAME },
   },
@@ -874,15 +879,15 @@ export const referencesRules: JiraFieldReferenceDefinition[] = [
     src: { field: 'value', parentTypes: [AUTOMATION_STATUS] },
     serializationStrategy: 'nameWithPath',
     target: { type: 'Status' },
-  },
-  {
-    src: { field: 'value', parentTypes: [AUTOMATION_EMAIL_RECIPENT, AUTOMATION_CONDITION_CRITERIA, AUTOMATION_GROUP] },
-    serializationStrategy: 'groupStrategyByOriginalName',
-    target: { type: GROUP_TYPE_NAME },
   },
   {
     src: { field: 'value', parentTypes: [AUTOMATION_EMAIL_RECIPENT, AUTOMATION_CONDITION_CRITERIA, AUTOMATION_GROUP] },
     serializationStrategy: 'groupId',
+    target: { type: GROUP_TYPE_NAME },
+  },
+  {
+    src: { field: 'value', parentTypes: [AUTOMATION_EMAIL_RECIPENT, AUTOMATION_CONDITION_CRITERIA, AUTOMATION_GROUP] },
+    serializationStrategy: 'groupStrategyByOriginalName',
     target: { type: GROUP_TYPE_NAME },
   },
   {

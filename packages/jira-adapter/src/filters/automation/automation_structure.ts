@@ -24,6 +24,8 @@ import {
   createSchemeGuard,
   TransformFuncSync,
   TransformFuncArgs,
+  WalkOnFunc,
+  WALK_NEXT_STEP,
 } from '@salto-io/adapter-utils'
 import { collections, values as lowerDashValues } from '@salto-io/lowerdash'
 import {
@@ -42,12 +44,18 @@ import {
 import { FilterCreator } from '../../filter'
 import { getLookUpName } from '../../reference_mapping'
 import { getHTMLStaticFileName } from '../../utils'
+import { UUID_PATTERN } from '../group_name'
+import { isAutomationInstance } from './smart_values/smart_value_reference_filter'
+import { walkOnAutomation } from './walk_on_automation'
 
 const { awu } = collections.asynciterable
+const { makeArray } = collections.array
 const log = logger(module)
 const { isDefined } = lowerDashValues
 
 const AUTOMATION_ATTACH_FORM_ACTION_TYPE = 'jira.proforma.form.add.action'
+const UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`)
+const isUUID = (value: string): boolean => UUID_REGEX.test(value)
 
 type LinkTypeObject = {
   linkType: string
@@ -385,6 +393,36 @@ const createAutomationTransformFunc =
     return newValue
   }
 
+const logInvalidGroupIdentifier = (instance: InstanceElement): void => {
+  const automationGroupReferenceWalkOnFunc: WalkOnFunc = ({ value, path }) => {
+    if (value == null) {
+      return WALK_NEXT_STEP.SKIP
+    }
+    if ((path.name === 'group' || value.additional === 'GROUP') && !isUUID(value.value)) {
+      log.warn(
+        `Group reference using non-uuid value: "${value.value}" with type "${value.type}" for Automation ${instance.elemID.getFullName()}`,
+      )
+    }
+    if (path.name === 'groups') {
+      const nonUuidGroupIdentifiers = makeArray(value).filter(groupIdentifier => !isUUID(groupIdentifier))
+      if (nonUuidGroupIdentifiers.length > 0) {
+        const groupIdentifiers = nonUuidGroupIdentifiers.map(groupIdentifier => `"${groupIdentifier}"`).join(', ')
+        log.warn(
+          `Group reference using non-uuid value: ${groupIdentifiers} for Automation ${instance.elemID.getFullName()}`,
+        )
+      }
+    }
+    return WALK_NEXT_STEP.RECURSE
+  }
+
+  if (isAutomationInstance(instance)) {
+    walkOnAutomation({
+      instance,
+      func: automationGroupReferenceWalkOnFunc,
+    })
+  }
+}
+
 const filter: FilterCreator = ({ client }) => {
   let originalAutomationChanges: Record<string, Change<InstanceElement>>
   return {
@@ -424,6 +462,7 @@ const filter: FilterCreator = ({ client }) => {
           instance.value.projects = instance.value.projects?.map(({ projectId, projectTypeKey }: Values) =>
             projectId !== undefined ? { projectId } : { projectTypeKey },
           )
+          logInvalidGroupIdentifier(instance)
         }),
 
     preDeploy: async changes => {
