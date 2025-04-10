@@ -6,7 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import { CORE_ANNOTATIONS, ElemID, Field, ObjectType } from '@salto-io/adapter-api'
+import { BuiltinTypes, CORE_ANNOTATIONS, ElemID, Field, ObjectType } from '@salto-io/adapter-api'
 import { buildContext } from '../../src/config/context/context'
 import { defaultFilterContext } from '../utils'
 import { SALESFORCE, TYPES_PATH } from '../../src/constants'
@@ -58,18 +58,14 @@ describe('hideTypesFolder filter', () => {
       describe('when element has inner fields', () => {
         beforeEach(() => {
           fields = {
-            mockField__c: new Field(elementWithinTypesFolder.clone(), 'mockField__c', elementWithinTypesFolder.clone()),
+            mockField__c: new Field(elementWithinTypesFolder.clone(), 'mockField__c', BuiltinTypes.STRING),
           }
           elementWithinTypesFolder.fields = fields
         })
         it('should update inner types fields type to be hidden', async () => {
-          expect(
-            elementWithinTypesFolder.fields.mockField__c.refType.type?.annotations[CORE_ANNOTATIONS.HIDDEN],
-          ).toBeFalsy()
+          expect(elementWithinTypesFolder.fields.mockField__c).not.toSatisfy(toBeHidden)
           await filter.onFetch([elementWithinTypesFolder])
-          expect(
-            elementWithinTypesFolder.fields.mockField__c.refType.type?.annotations[CORE_ANNOTATIONS.HIDDEN],
-          ).toBeTrue()
+          expect(elementWithinTypesFolder.fields.mockField__c).toSatisfy(toBeHidden)
         })
       })
     })

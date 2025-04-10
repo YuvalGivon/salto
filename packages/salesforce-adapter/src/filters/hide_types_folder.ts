@@ -23,11 +23,8 @@ const filterCreator: FilterCreator = ({ config }) => ({
       elements.filter(isElementWithinTypesFolder).forEach(element => {
         element.annotations[CORE_ANNOTATIONS.HIDDEN] = true
         if (isObjectType(element)) {
-          const objFields = Object.values(element.fields)
-          objFields.forEach(f => {
-            if (f.refType?.type?.annotations) {
-              f.refType.type.annotations[CORE_ANNOTATIONS.HIDDEN] = true
-            }
+          Object.values(element.fields).forEach(f => {
+            f.annotations[CORE_ANNOTATIONS.HIDDEN] = true
           })
         }
       })
