@@ -102,7 +102,19 @@ export const replaceReferenceValues = async <TContext extends string, CustomInde
         return undefined
       }
 
-      return lookup.get(targetType, value)
+      const elem = lookup.get(targetType, value)
+      if (elem !== undefined && !isElement(elem)) {
+        log.warn(
+          'Lookup %s returned non-element for value %s, targetType %s. Got: %s',
+          lookupIndexName ?? 'default',
+          value,
+          targetType,
+          inspectValue(elem),
+        )
+        return undefined
+      }
+
+      return elem
     }
 
     const isValidContextFunc = (funcName?: string): boolean =>
