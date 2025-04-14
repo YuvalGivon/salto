@@ -5,14 +5,11 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { ChangeValidator, getChangeData, ChangeError, InstanceElement, ElemID } from '@salto-io/adapter-api'
-import { collections } from '@salto-io/lowerdash'
-import { getNamespace } from '../filters/utils'
+import { ChangeValidator, getChangeData, ChangeError, ElemID } from '@salto-io/adapter-api'
+import { getNamespaceSync, isInstanceOfCustomObjectChangeSync } from '../filters/utils'
 import { hasNamespace } from './package'
-import { isInstanceOfCustomObjectChange } from '../custom_object_instances_deploy'
 import { CPQ_NAMESPACE } from '../constants'
 
-const { awu } = collections.asynciterable
 const getCpqError = (elemID: ElemID): ChangeError => ({
   elemID,
   severity: 'Info',
@@ -45,12 +42,12 @@ const getCpqError = (elemID: ElemID): ChangeError => ({
 
 // this changeValidator will return none or a single changeError
 const changeValidator: ChangeValidator = async changes => {
-  const cpqInstance = await awu(changes)
-    .filter(isInstanceOfCustomObjectChange)
-    .map(change => getChangeData(change) as InstanceElement) // already checked that this is an instance element
-    .find(async instance => {
-      const type = await instance.getType()
-      return (await hasNamespace(type)) && (await getNamespace(type)) === CPQ_NAMESPACE
+  const cpqInstance = changes
+    .filter(isInstanceOfCustomObjectChangeSync)
+    .map(change => getChangeData(change)) // already checked that this is an instance element
+    .find(instance => {
+      const type = instance.getTypeSync()
+      return hasNamespace(type) && getNamespaceSync(type) === CPQ_NAMESPACE
     })
 
   return cpqInstance !== undefined ? [getCpqError(cpqInstance.elemID)] : []

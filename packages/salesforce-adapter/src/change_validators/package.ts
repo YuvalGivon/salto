@@ -7,12 +7,11 @@
  */
 import { ChangeError, ChangeValidator, CORE_ANNOTATIONS, Element, getChangeData } from '@salto-io/adapter-api'
 import _ from 'lodash'
-import { collections, values } from '@salto-io/lowerdash'
-import { apiName } from '../transformers/transformer'
+import { values } from '@salto-io/lowerdash'
 import { NAMESPACE_SEPARATOR } from '../constants'
 import { INSTANCE_SUFFIXES } from '../types'
+import { apiNameSync } from '../filters/utils'
 
-const { awu } = collections.asynciterable
 const { isDefined } = values
 
 const createPackageElementModificationChangeWarning = (
@@ -27,8 +26,8 @@ const createPackageElementModificationChangeWarning = (
     `For more information refer to ${annotations[CORE_ANNOTATIONS.SERVICE_URL]}. You can learn more about this deployment preview error here: https://help.salto.io/en/articles/8046659-modifying-an-element-from-a-managed-package-may-not-be-allowed`,
 })
 
-export const hasNamespace = async (customElement: Element): Promise<boolean> => {
-  const apiNameResult = await apiName(customElement, true)
+export const hasNamespace = (customElement: Element): boolean => {
+  const apiNameResult = apiNameSync(customElement, true)
   if (_.isUndefined(apiNameResult)) {
     return false
   }
@@ -40,17 +39,14 @@ export const hasNamespace = async (customElement: Element): Promise<boolean> => 
   return cleanFullName.includes(NAMESPACE_SEPARATOR)
 }
 
-const getNamespace = async (customElement: Element): Promise<string> =>
-  (await apiName(customElement, true)).split(NAMESPACE_SEPARATOR)[0]
+const getNamespace = (customElement: Element): string =>
+  (apiNameSync(customElement, true) ?? '').split(NAMESPACE_SEPARATOR)[0]
 
 const changeValidator: ChangeValidator = async changes =>
-  awu(changes)
+  changes
     .map(getChangeData)
     .filter(hasNamespace)
-    .map(async managedElement =>
-      createPackageElementModificationChangeWarning(managedElement, await getNamespace(managedElement)),
-    )
+    .map(managedElement => createPackageElementModificationChangeWarning(managedElement, getNamespace(managedElement)))
     .filter(isDefined)
-    .toArray()
 
 export default changeValidator

@@ -64,6 +64,7 @@ import {
   isCustomMetadataRecordInstanceSync,
   metadataTypeOrUndefined,
   isCustomObjectOrCustomMetadataRecordTypeSync,
+  apiNameSync,
 } from '../../src/filters/utils'
 import {
   API_NAME,
@@ -93,6 +94,7 @@ import {
   APEX_CLASS_METADATA_TYPE,
   CUSTOM_FIELD,
   CUSTOM_OBJECT_ALIASES_FIELD,
+  DOCUMENT_METADATA_TYPE,
 } from '../../src/constants'
 import { createInstanceElement, Types } from '../../src/transformers/transformer'
 import { CustomField, CustomObject, CustomPicklistValue, FilterItem } from '../../src/client/types'
@@ -1690,6 +1692,66 @@ describe('filter utils', () => {
       it('should return undefined', () => {
         expect(metadataTypeOrUndefined(ArtificialTypes.FetchTargets)).toBeUndefined()
       })
+    })
+  })
+
+  describe('apiNameSync', () => {
+    it('should return full api name when relative is false', () => {
+      const objType = new ObjectType({
+        elemID: new ElemID(SALESFORCE, 'Test'),
+        annotations: {
+          [API_NAME]: 'Test__c',
+        },
+        fields: {
+          testField: {
+            refType: BuiltinTypes.STRING,
+            annotations: {
+              [API_NAME]: 'Test__c.testField',
+            },
+          },
+        },
+      })
+      expect(apiNameSync(objType.fields.testField)).toBe('Test__c.testField')
+    })
+
+    it('should return relative api name when relative is true and element is not a document', () => {
+      const objType = new ObjectType({
+        elemID: new ElemID(SALESFORCE, 'Test'),
+        annotations: {
+          [API_NAME]: 'Test__c',
+        },
+        fields: {
+          testField: {
+            refType: BuiltinTypes.STRING,
+            annotations: {
+              [API_NAME]: 'Test__c.testField',
+            },
+          },
+        },
+      })
+      expect(apiNameSync(objType.fields.testField, true)).toBe('testField')
+    })
+
+    it('should return full api name when element is a document', () => {
+      const docType = new ObjectType({
+        elemID: new ElemID(SALESFORCE, DOCUMENT_METADATA_TYPE),
+        annotations: {
+          [METADATA_TYPE]: DOCUMENT_METADATA_TYPE,
+        },
+      })
+      const docInstance = new InstanceElement('test', docType, {
+        [INSTANCE_FULL_NAME_FIELD]: 'DocumentsFolder/logo.png',
+      })
+      expect(apiNameSync(docInstance, true)).toBe('DocumentsFolder/logo.png')
+      expect(apiNameSync(docInstance)).toBe('DocumentsFolder/logo.png')
+    })
+
+    it('should return undefined when fullApiNameSync returns undefined', () => {
+      const objType = new ObjectType({
+        elemID: new ElemID(SALESFORCE, 'Test'),
+      })
+      expect(apiNameSync(objType)).toBeUndefined()
+      expect(apiNameSync(objType, true)).toBeUndefined()
     })
   })
 })

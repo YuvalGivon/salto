@@ -99,6 +99,7 @@ import {
   VALUE_SET_FIELDS,
   DESCRIPTION,
   CUSTOM_OBJECT_ALIASES_FIELD,
+  DOCUMENT_METADATA_TYPE,
 } from '../constants'
 import { CustomField, CustomObject, FieldWithFieldDependency, JSONBool, SalesforceRecord } from '../client/types'
 import * as transformer from '../transformers/transformer'
@@ -196,9 +197,30 @@ const fullApiNameSync = (elem: Readonly<Element>): string | undefined => {
   return elem.annotations[API_NAME] ?? elem.annotations[METADATA_TYPE]
 }
 
+// This function checks whether an element is an instance of a certain metadata type
+// note that for instances of custom objects this will check the specific type (i.e Lead)
+// if you want instances of all custom objects use isInstanceOfCustomObject
+export const isInstanceOfTypeSync =
+  (...typeNames: string[]) =>
+  (elem: Readonly<Element>): elem is InstanceElement => {
+    if (!isInstanceElement(elem)) {
+      return false
+    }
+
+    const typeApiName = fullApiNameSync(elem.getTypeSync())
+    if (typeApiName !== undefined) {
+      return typeNames.includes(typeApiName)
+    }
+
+    // If the type isn't resolved yet fall back on checking the type in the element ID
+    return typeNames.includes(elem.elemID.typeName)
+  }
+
 export const apiNameSync = (elem: Readonly<Element>, relative = false): string | undefined => {
   const name = fullApiNameSync(elem)
-  return name && relative ? transformer.relativeApiName(name) : name
+  return name && relative && !isInstanceOfTypeSync(DOCUMENT_METADATA_TYPE)(elem)
+    ? transformer.relativeApiName(name)
+    : name
 }
 
 export const isMetadataInstanceElementSync = (elem: Element): elem is MetadataInstanceElement =>
@@ -774,25 +796,6 @@ export const toListType = (type: TypeElement): ListType => (isListType(type) ? t
 
 export const findObjectType = (elements: Element[], metadataTypeName: string): ObjectType | undefined =>
   elements.filter(isObjectType).find(obj => apiNameSync(obj) === metadataTypeName)
-
-// This function checks whether an element is an instance of a certain metadata type
-// note that for instances of custom objects this will check the specific type (i.e Lead)
-// if you want instances of all custom objects use isInstanceOfCustomObject
-export const isInstanceOfTypeSync =
-  (...typeNames: string[]) =>
-  (elem: Element): elem is InstanceElement => {
-    if (!isInstanceElement(elem)) {
-      return false
-    }
-
-    const typeApiName = apiNameSync(elem.getTypeSync())
-    if (typeApiName !== undefined) {
-      return typeNames.includes(typeApiName)
-    }
-
-    // If the type isn't resolved yet fall back on checking the type in the element ID
-    return typeNames.includes(elem.elemID.typeName)
-  }
 
 export const isInstanceOfTypeChangeSync =
   (...typeNames: string[]) =>
