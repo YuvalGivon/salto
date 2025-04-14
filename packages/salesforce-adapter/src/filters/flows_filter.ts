@@ -52,37 +52,36 @@ const { toArrayAsync } = collections.asynciterable
 
 const DEFAULT_CHUNK_SIZE = 500
 
+type AuthorInfo = { Name: string } | null
 type FlowVersionRecord = SalesforceRecord & {
   DefinitionId: string
   VersionNumber: number
   Status: string
   CreatedDate: string
-  CreatedBy: {
-    Name: string
-  }
+  CreatedBy: AuthorInfo
   LastModifiedDate: string
-  LastModifiedBy: {
-    Name: string
-  }
+  LastModifiedBy: AuthorInfo
 }
+
+const isValidAuthorInfo = (value: unknown): value is AuthorInfo =>
+  (_.isPlainObject(value) && _.isString(_.get(value, 'Name'))) || value === null
+
 const isFlowVersionRecord = (record: SalesforceRecord): record is FlowVersionRecord =>
   _.isString(record.DefinitionId) &&
   _.isString(record.Status) &&
   _.isNumber(record.VersionNumber) &&
   _.isString(record.CreatedDate) &&
-  _.isPlainObject(record.CreatedBy) &&
-  _.isString(record.CreatedBy.Name) &&
+  isValidAuthorInfo(record.CreatedBy) &&
   _.isString(record.LastModifiedDate) &&
-  _.isPlainObject(record.LastModifiedBy) &&
-  _.isString(record.LastModifiedBy.Name)
+  isValidAuthorInfo(record.LastModifiedBy)
 
 type FlowVersionProperties = {
   id: string
   version: number
   status: string
-  createdByName: string
+  createdByName?: string
   createdDate: string
-  lastModifiedByName: string
+  lastModifiedByName?: string
   lastModifiedDate: string
 }
 
@@ -110,7 +109,7 @@ const getFlowVersionsByApiName = async ({
   )
   const [validRecords, invalidRecords] = _.partition(records, isFlowVersionRecord)
   if (invalidRecords.length > 0) {
-    log.error(
+    log.warn(
       'Some Flow version records are invalid. Records are: %s',
       inspectValue(invalidRecords, { maxArrayLength: 10 }),
     )
@@ -129,9 +128,9 @@ const getFlowVersionsByApiName = async ({
         id: record.Id,
         version: record.VersionNumber,
         status: record.Status,
-        createdByName: record.CreatedBy.Name,
+        createdByName: record.CreatedBy?.Name,
         createdDate: record.CreatedDate,
-        lastModifiedByName: record.LastModifiedBy.Name,
+        lastModifiedByName: record.LastModifiedBy?.Name,
         lastModifiedDate: record.LastModifiedDate,
       })
       return acc

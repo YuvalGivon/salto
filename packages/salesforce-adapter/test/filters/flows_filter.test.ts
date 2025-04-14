@@ -81,13 +81,9 @@ describe('flows filter', () => {
         VersionNumber: 1,
         Status: 'Obsolete',
         CreatedDate: '2025-01-01T01:01:00.000Z',
-        CreatedBy: {
-          Name: 'Flow1 version 1 creator',
-        },
+        CreatedBy: null,
         LastModifiedDate: '2025-01-02T01:01:00.000Z',
-        LastModifiedBy: {
-          Name: 'Flow1 version 1 modifier',
-        },
+        LastModifiedBy: null,
       },
       {
         Id: FLOW1_INTERNAL_ID,
