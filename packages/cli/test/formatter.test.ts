@@ -120,8 +120,8 @@ describe('formatter', () => {
     const plan = preview()
     const changeErrors = [...plan.changeErrors, workspaceErrorWithPreDeployAction, workspaceErrorWithInfoSeverity]
     let output: string
-    beforeAll(async () => {
-      output = await formatExecutionPlan(
+    beforeAll(() => {
+      output = formatExecutionPlan(
         plan,
         changeErrors.map(ce => ({
           ...ce,
@@ -147,8 +147,8 @@ describe('formatter', () => {
       expect(output).toMatch(`${chalk.bold('This is my title')}`)
       expect(output).toMatch(/description.*first subtext.*second subtext.*someURL/s)
     })
-    it('should not print pre deploy actions when there are none', async () => {
-      const outputWithNoDeployActions = await formatExecutionPlan(
+    it('should not print pre deploy actions when there are none', () => {
+      const outputWithNoDeployActions = formatExecutionPlan(
         plan,
         [workspaceErrorWithInfoSeverity].map(ce => ({
           ...ce,
@@ -312,9 +312,9 @@ describe('formatter', () => {
 
     describe('without value', () => {
       describe('with top level element', () => {
-        beforeAll(async () => {
+        beforeAll(() => {
           const instanceChange = detailedChange('add', instance.elemID, undefined, instance)
-          output = await formatChange(instanceChange)
+          output = formatChange(instanceChange)
         })
         it('should have element id', () => {
           expect(output).toContain(Prompts.MODIFIERS.add)
@@ -324,9 +324,9 @@ describe('formatter', () => {
 
       describe('with nested element', () => {
         const changedField = objectType.fields.name
-        beforeAll(async () => {
+        beforeAll(() => {
           const fieldChange = detailedChange('add', changedField.elemID, undefined, changedField)
-          output = await formatChange(fieldChange)
+          output = formatChange(fieldChange)
         })
         it('should not contain the full id', () => {
           expect(output).not.toContain(changedField.elemID.getFullName())
@@ -339,9 +339,9 @@ describe('formatter', () => {
 
       describe('with nested value', () => {
         const changedValueId = instance.elemID.createNestedID('nested', 'value')
-        beforeAll(async () => {
+        beforeAll(() => {
           const valueChange = detailedChange('add', changedValueId, undefined, 'bla')
-          output = await formatChange(valueChange)
+          output = formatChange(valueChange)
         })
         it('should not contain the full id', () => {
           expect(output).not.toContain(changedValueId.getFullName())
@@ -353,9 +353,9 @@ describe('formatter', () => {
       })
 
       describe('with dummy change', () => {
-        beforeAll(async () => {
+        beforeAll(() => {
           const dummyChange = detailedChange('modify', objectType.elemID, undefined, undefined)
-          output = await formatChange(dummyChange)
+          output = formatChange(dummyChange)
         })
         it('should contain the dummy change ID as a header', () => {
           expect(output).toContain(Prompts.MODIFIERS.eq)
@@ -365,9 +365,9 @@ describe('formatter', () => {
     })
     describe('with value', () => {
       describe('with instance value', () => {
-        beforeAll(async () => {
+        beforeAll(() => {
           const instanceChange = detailedChange('add', instance.elemID, undefined, instance)
-          output = await formatChange(instanceChange, true)
+          output = formatChange(instanceChange, true)
         })
         it('should have element id', () => {
           expect(output).toContain(instance.elemID.name)
@@ -383,9 +383,9 @@ describe('formatter', () => {
           annotations: { bla: 'foo' },
           annotationRefsOrTypes: { bla: BuiltinTypes.STRING },
         })
-        beforeAll(async () => {
+        beforeAll(() => {
           const typeChange = detailedChange('add', dummyType.elemID, undefined, dummyType)
-          output = await formatChange(typeChange, true)
+          output = formatChange(typeChange, true)
         })
         it('should have element id', () => {
           expect(output).toContain(dummyType.elemID.name)
@@ -401,9 +401,9 @@ describe('formatter', () => {
         })
       })
       describe('with object type', () => {
-        beforeAll(async () => {
+        beforeAll(() => {
           const objTypeChange = detailedChange('add', objectType.elemID, undefined, objectType)
-          output = await formatChange(objTypeChange, true)
+          output = formatChange(objTypeChange, true)
         })
         it('should have element id', () => {
           expect(output).toContain(objectType.elemID.name)
@@ -440,15 +440,15 @@ describe('formatter', () => {
             staticFileBefore,
             staticFileAfter,
           )
-          output = await formatChange(fileChange, true)
+          output = formatChange(fileChange, true)
           expect(output).toMatch('content')
           expect(output).not.toMatch('Buffer')
         })
       })
       describe('removal change', () => {
-        beforeAll(async () => {
+        beforeAll(() => {
           const instanceChange = detailedChange('remove', instance.elemID, instance, undefined)
-          output = await formatChange(instanceChange, true)
+          output = formatChange(instanceChange, true)
         })
         it('should have element id', () => {
           expect(output).toContain(instance.elemID.name)
@@ -458,14 +458,14 @@ describe('formatter', () => {
         })
       })
       describe('with array of objects', () => {
-        const formatedObjectsExpectedResults = `[
+        const formattedObjectsExpectedResults = `[
           {
             name: "sal"
-            nicknames: ["o","s","s"]
-          },
+            nicknames: ["o", "s", "s"]
+          }, 
           {
             name: "to"
-            nicknames: ["s","a","a","s"]
+            nicknames: ["s", "a", "a", "s"]
             office: 
                 {
                   label: "a"
@@ -497,10 +497,10 @@ describe('formatter', () => {
             ],
           })
           const instanceChange = detailedChange('add', instanceAfter.elemID, undefined, instanceAfter)
-          output = await formatChange(instanceChange, true)
+          output = formatChange(instanceChange, true)
         })
         it('should match expected value', () => {
-          expect(output).toContain(formatedObjectsExpectedResults)
+          expect(output).toContain(formattedObjectsExpectedResults)
         })
       })
     })
@@ -510,8 +510,8 @@ describe('formatter', () => {
     describe('without conflict', () => {
       const changeWithoutConflict = { change, serviceChanges: [change] }
       let output: string
-      beforeAll(async () => {
-        output = await formatFetchChangeForApproval(changeWithoutConflict, 0, 3)
+      beforeAll(() => {
+        output = formatFetchChangeForApproval(changeWithoutConflict, 0, 3)
       })
       it('should contain change path', () => {
         expect(output).toMatch(/salesforce.*object.*value/s)
@@ -527,8 +527,8 @@ describe('formatter', () => {
         pendingChanges: [detailedChange('modify', ['object', 'field', 'value'], 'old', 'local')],
       }
       let output: string
-      beforeAll(async () => {
-        output = await formatFetchChangeForApproval(fetchChange, 2, 3)
+      beforeAll(() => {
+        output = formatFetchChangeForApproval(fetchChange, 2, 3)
       })
       it('should contain change path', () => {
         expect(output).toMatch(/salesforce.*object.*value/s)

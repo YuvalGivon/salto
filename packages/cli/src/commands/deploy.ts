@@ -74,7 +74,7 @@ const printPlan = async (
     20,
   )
   outputLine(header(Prompts.PLAN_STEPS_HEADER_DEPLOY), output)
-  outputLine(await formatExecutionPlan(actions, planWorkspaceErrors, detailedPlan), output)
+  outputLine(formatExecutionPlan(actions, planWorkspaceErrors, detailedPlan), output)
 }
 
 const printStartDeploy = async (output: CliOutput, executingDeploy: boolean, checkOnly: boolean): Promise<void> => {

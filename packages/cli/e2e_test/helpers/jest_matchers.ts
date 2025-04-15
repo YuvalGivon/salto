@@ -6,40 +6,17 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 
-import type { ChangeError } from '@salto-io/adapter-api'
-import type { Plan, PlanItem } from '@salto-io/core'
+import type { Plan } from '@salto-io/core'
+import { formatExecutionPlan } from '../../src/formatter'
 
 expect.extend({
   toBeEmptyPlan(plan?: Plan) {
-    const formatPlanItem = (item: PlanItem): string =>
-      Array.from(item.changes())
-        .flatMap(change => Array.from(change.detailedChanges()))
-        .map(change => `${change.action}: ${change.id.getFullName()}`)
-        .join('\n')
-
-    const formatChangeError = (error: ChangeError): string =>
-      `${error.elemID.getFullName()}: ${error.message} (${error.detailedMessage})`
-
-    const formatPlan = (): string => {
-      if (plan === undefined) {
-        return 'undefined'
-      }
-      if (plan.size === 0 && plan.changeErrors.length === 0) {
-        return 'empty plan'
-      }
-      return ['changes:']
-        .concat(Array.from(plan.itemsByEvalOrder()).map(formatPlanItem))
-        .concat(['errors:'])
-        .concat(plan.changeErrors.map(formatChangeError))
-        .join('\n')
-    }
-
     const createMessage = (expected: string): string =>
       [
         this.utils.matcherHint('toBeEmptyPlan', undefined, ''),
         '',
         `Expected: ${this.utils.printExpected(expected)}`,
-        `Received: ${this.utils.printReceived(formatPlan())}`,
+        `Received: ${this.utils.printReceived(plan ? formatExecutionPlan(plan, [], true) : 'undefined')}`,
       ].join('\n')
 
     if (plan?.size === 0 && plan?.changeErrors.length === 0) {

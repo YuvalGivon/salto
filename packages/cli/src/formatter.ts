@@ -27,7 +27,6 @@ import {
   ChangeError,
   SaltoError,
   isElement,
-  TypeMap,
   DetailedChange,
   ChangeDataType,
   isStaticFile,
@@ -35,6 +34,9 @@ import {
   SaltoElementError,
   PartialFetchTarget,
   PartialFetchTargetWithPath,
+  isModificationChange,
+  isRemovalChange,
+  ReferenceMap,
 } from '@salto-io/adapter-api'
 import { getSupportedServiceAdapterNames } from '@salto-io/adapter-creators'
 import {
@@ -53,7 +55,6 @@ import { safeJsonStringify } from '@salto-io/adapter-utils'
 import { collections, values } from '@salto-io/lowerdash'
 import Prompts from './prompts'
 
-const { awu } = collections.asynciterable
 const { isDefined } = values
 
 export const header = (txt: string): string => chalk.bold(txt)
@@ -123,21 +124,25 @@ const singleOrPluralString = (number: number, single: string, plural: string): s
 
 const formatSimpleError = (errorMsg: string): string => header(error(`Error: ${errorMsg}`))
 
-const formatValue = async (value: Element | Value): Promise<string> => {
-  const formatAnnotations = async (annotations: Values): Promise<string> =>
-    _.isEmpty(annotations) ? '' : formatValue(annotations)
-  const formatAnnotationTypes = async (types: TypeMap): Promise<string> =>
-    _.isEmpty(types) ? '' : indent(`\nannotations:${await formatValue(types)}`, 2)
-  const formatFields = async (fields: Record<string, Field>): Promise<string> =>
-    _.isEmpty(fields) ? '' : indent(`\nfields:${await formatValue(fields)}`, 2)
+const formatValue = (value: Element | Value): string => {
+  const formatAnnotations = (annotations: Values): string => (_.isEmpty(annotations) ? '' : formatValue(annotations))
+  const formatAnnotationTypes = (types: ReferenceMap): string =>
+    _.isEmpty(types)
+      ? ''
+      : indent(
+          `\nannotations:${formatValue(_.mapValues(types, type => type.getResolvedValueSync() ?? type.elemID.getFullName()))}`,
+          2,
+        )
+  const formatFields = (fields: Record<string, Field>): string =>
+    _.isEmpty(fields) ? '' : indent(`\nfields:${formatValue(fields)}`, 2)
   if (isInstanceElement(value)) {
     return formatValue(value.value)
   }
   if (isObjectType(value)) {
     return [
-      await formatAnnotations(value.annotations),
-      await formatFields(value.fields),
-      await formatAnnotationTypes(await value.getAnnotationTypes()),
+      formatAnnotations(value.annotations),
+      formatFields(value.fields),
+      formatAnnotationTypes(value.annotationRefTypes),
     ].join('')
   }
   if (isPrimitiveType(value)) {
@@ -149,25 +154,20 @@ const formatValue = async (value: Element | Value): Promise<string> => {
     }
     return [
       indent(`\nTYPE: ${primitiveTypeNames[value.primitive]}`, 2),
-      await formatAnnotations(value.annotations),
-      await formatAnnotationTypes(await value.getAnnotationTypes()),
+      formatAnnotations(value.annotations),
+      formatAnnotationTypes(value.annotationRefTypes),
     ].join('')
   }
   if (isField(value)) {
-    return [
-      indent(`\nTYPE: ${value.refType.elemID.getFullName()}`, 2),
-      await formatAnnotations(value.annotations),
-    ].join('')
+    return [indent(`\nTYPE: ${value.refType.elemID.getFullName()}`, 2), formatAnnotations(value.annotations)].join('')
   }
   if (_.isArray(value)) {
-    return `[${await awu(value).map(formatValue).toArray()}]`
+    return `[${value.map(formatValue).join(', ')}]`
   }
   if (_.isPlainObject(value)) {
-    const formattedKeys = (
-      await awu(_.entries(value))
-        .map(async ([k, v]) => `${k}: ${await formatValue(v)}`)
-        .toArray()
-    ).join('\n')
+    const formattedKeys = _.entries(value)
+      .map(([k, v]) => `${k}: ${formatValue(v)}`)
+      .join('\n')
     return `\n${indent(`{\n${indent(formattedKeys, 1)}\n}`, 2)}`
   }
   if (value instanceof ReferenceExpression) {
@@ -179,27 +179,27 @@ const formatValue = async (value: Element | Value): Promise<string> => {
 const isDummyChange = (change: DetailedChange): boolean =>
   change.action === 'modify' && change.data.before === undefined && change.data.after === undefined
 
-const formatChangeData = async (change: DetailedChange): Promise<string> => {
+const formatChangeData = (change: DetailedChange): string => {
   if (isDummyChange(change)) {
     // Dummy changes are only headers, so add a ":"
     return ':'
   }
-  if (change.action === 'remove' || isStaticFile(getChangeData(change))) {
+  if (isRemovalChange(change) || isStaticFile(getChangeData(change))) {
     // No need to emit any details about a remove change
     return ''
   }
-  if (change.action === 'modify') {
+  if (isModificationChange(change)) {
     const { before, after } = change.data
-    return `: ${await formatValue(before)} => ${await formatValue(after)}`
+    return `: ${formatValue(before)} => ${formatValue(after)}`
   }
-  return `: ${await formatValue(_.get(change.data, 'before', _.get(change.data, 'after')))}`
+  return `: ${formatValue(change.data.after)}`
 }
 
-export const formatChange = async (change: DetailedChange, withValue = false): Promise<string> => {
+export const formatChange = (change: DetailedChange, withValue = false): string => {
   const modifierType = isDummyChange(change) ? 'eq' : change.action
   const modifier = Prompts.MODIFIERS[modifierType]
   const id = change.id.isTopLevel() ? change.id.getFullName() : change.id.name
-  return indent(`${modifier} ${id}${withValue ? await formatChangeData(change) : ''}`, change.id.nestingLevel)
+  return indent(`${modifier} ${id}${withValue ? formatChangeData(change) : ''}`, change.id.nestingLevel)
 }
 
 const formatCountPlanItemTypes = (plan: Plan): string => {
@@ -224,10 +224,7 @@ const formatCountPlanItemTypes = (plan: Plan): string => {
   )
 }
 
-export const formatDetailedChanges = async (
-  changeGroups: Iterable<Iterable<DetailedChange>>,
-  withValue = false,
-): Promise<string> => {
+export const formatDetailedChanges = (changeGroups: Iterable<Iterable<DetailedChange>>, withValue = false): string => {
   const addMissingEmptyChanges = (changes: DetailedChange[]): DetailedChange[] => {
     const emptyChange = (id: ElemID): DetailedChange => ({
       action: 'modify',
@@ -253,17 +250,15 @@ export const formatDetailedChanges = async (
   }
 
   return (
-    (
-      await awu(changeGroups)
-        .map(changes => [...changes])
-        // Fill in all missing "levels" of each change group
-        .map(addMissingEmptyChanges)
-        // Sort changes so they show up nested correctly
-        .map(changes => _.sortBy(changes, change => change.id.getFullName()))
-        // Format changes
-        .map(async changes => (await Promise.all(changes.map(change => formatChange(change, withValue)))).join('\n'))
-        .toArray()
-    ).join('\n\n')
+    Array.from(changeGroups)
+      .map(changes => [...changes])
+      // Fill in all missing "levels" of each change group
+      .map(addMissingEmptyChanges)
+      // Sort changes so they show up nested correctly
+      .map(changes => _.sortBy(changes, change => change.id.getFullName()))
+      // Format changes
+      .map(changes => changes.map(change => formatChange(change, withValue)).join('\n'))
+      .join('\n\n')
   )
 }
 
@@ -383,11 +378,11 @@ export const formatDeploymentSummary = (
   return failed === null && partiallySucceeded === null ? noFailedElements : foundFailedElements
 }
 
-export const formatExecutionPlan = async (
+export const formatExecutionPlan = (
   plan: Plan,
   workspaceErrors: ReadonlyArray<ChangeWorkspaceError>,
   detailed = false,
-): Promise<string> => {
+): string => {
   const formattedPlanChangeErrors: string = formatChangeErrors(workspaceErrors, detailed)
   const preDeployCallToActions: string[] = formatDeployActions({
     wsChangeErrors: workspaceErrors,
@@ -400,8 +395,8 @@ export const formatExecutionPlan = async (
     return [emptyLine(), Prompts.EMPTY_PLAN, ...planErrorsOutput].join('\n')
   }
   const actionCount = formatCountPlanItemTypes(plan)
-  const planSteps = await formatDetailedChanges(
-    wu(plan.itemsByEvalOrder()).map(item => item.detailedChanges()),
+  const planSteps = formatDetailedChanges(
+    Array.from(plan.itemsByEvalOrder()).map(item => item.detailedChanges()),
     detailed,
   )
   return [
@@ -508,16 +503,12 @@ export const formatActionInProgress = (itemName: string, actionName: ActionName,
   return body(`${styledItemName} Still ${Prompts.START_ACTION[actionName]} (${elapsed}s elapsed)\n`)
 }
 
-export const formatFetchChangeForApproval = async (
-  change: FetchChange,
-  idx: number,
-  totalChanges: number,
-): Promise<string> => {
-  const formattedChange = await formatDetailedChanges([change.serviceChanges], true)
+export const formatFetchChangeForApproval = (change: FetchChange, idx: number, totalChanges: number): string => {
+  const formattedChange = formatDetailedChanges([change.serviceChanges], true)
   const formattedConflict =
     change.pendingChanges === undefined || _.isEmpty(change.pendingChanges)
       ? []
-      : [header(Prompts.FETCH_CONFLICTING_CHANGE), body(await formatDetailedChanges([change.pendingChanges], true))]
+      : [header(Prompts.FETCH_CONFLICTING_CHANGE), body(formatDetailedChanges([change.pendingChanges], true))]
   return [
     header(Prompts.FETCH_CHANGE_HEADER(idx + 1, totalChanges)),
     body(formattedChange),
@@ -748,14 +739,9 @@ export const formatListUnresolvedFound = (env: string, elemIDs: ElemID[]): strin
 export const formatListUnresolvedMissing = (elemIDs: ElemID[]): string =>
   [Prompts.LIST_UNRESOLVED_MISSING(), ...elemIDs.map(id => `  ${id.getFullName()}`), emptyLine()].join('\n')
 
-export const formatEnvDiff = async (
-  changes: LocalChange[],
-  detailed: boolean,
-  toEnv: string,
-  fromEnv: string,
-): Promise<string> => {
+export const formatEnvDiff = (changes: LocalChange[], detailed: boolean, toEnv: string, fromEnv: string): string => {
   const changesStr =
-    changes.length > 0 ? await formatDetailedChanges([changes.map(change => change.change)], detailed) : 'No changes'
+    changes.length > 0 ? formatDetailedChanges([changes.map(change => change.change)], detailed) : 'No changes'
   return [emptyLine(), header(Prompts.DIFF_CALC_DIFF_RESULT_HEADER(toEnv, fromEnv)), changesStr, emptyLine()].join('\n')
 }
 

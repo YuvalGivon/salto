@@ -71,10 +71,7 @@ export const shouldUpdateConfig = async (
   change: Change,
 ): Promise<boolean> => {
   stdout.write(
-    formatConfigChangeNeeded(
-      introMessage,
-      await formatDetailedChanges([[toDetailedChangeFromBaseChange(change)]], true),
-    ),
+    formatConfigChangeNeeded(introMessage, formatDetailedChanges([[toDetailedChangeFromBaseChange(change)]], true)),
   )
   return getUserBooleanInput(Prompts.SHOULD_UPDATE_CONFIG)
 }
@@ -89,22 +86,20 @@ export const getApprovedChanges = async (changes: ReadonlyArray<FetchChange>): P
     return autoApproved
   }
 
-  const questions = await awu(askForApproval)
-    .map(
-      async (change, idx): Promise<inquirer.ExpandQuestion> => ({
-        type: 'expand',
-        choices: [
-          { key: 'y', value: 'yes' },
-          { key: 'n', value: 'no' },
-          { key: 'a', value: 'all' },
-        ],
-        default: 0,
-        name: idx.toString(),
-        message: await formatFetchChangeForApproval(change, idx, askForApproval.length),
-        when: answers => !shouldApproveAll(answers),
-      }),
-    )
-    .toArray()
+  const questions = askForApproval.map(
+    (change, idx): inquirer.ExpandQuestion => ({
+      type: 'expand',
+      choices: [
+        { key: 'y', value: 'yes' },
+        { key: 'n', value: 'no' },
+        { key: 'a', value: 'all' },
+      ],
+      default: 0,
+      name: idx.toString(),
+      message: formatFetchChangeForApproval(change, idx, askForApproval.length),
+      when: answers => !shouldApproveAll(answers),
+    }),
+  )
 
   const answers = await inquirer.prompt(questions)
   if (shouldApproveAll(answers)) {

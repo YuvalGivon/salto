@@ -42,11 +42,11 @@ const log = logger(module)
 
 const GETTING_CONTENT_CONCURRENCY_LIMIT = 100
 
-const printRestorePlan = async (changes: LocalChange[], detailed: boolean, output: CliOutput): Promise<void> => {
+const printRestorePlan = (changes: LocalChange[], detailed: boolean, output: CliOutput): void => {
   outputLine(EOL, output)
   outputLine(header(Prompts.RESTORE_CALC_DIFF_RESULT_HEADER), output)
   if (changes.length > 0) {
-    outputLine(await formatDetailedChanges([changes.map(change => change.change)], detailed), output)
+    outputLine(formatDetailedChanges([changes.map(change => change.change)], detailed), output)
   } else {
     outputLine('No changes', output)
   }
@@ -184,7 +184,7 @@ export const action: WorkspaceCommandAction<RestoreArgs> = async ({
   }
 
   if (listPlannedChanges || dryRun) {
-    await printRestorePlan(await getRestoreChanges(), detailedPlan, output)
+    printRestorePlan(await getRestoreChanges(), detailedPlan, output)
   }
 
   outputLine(formatStepCompleted(Prompts.RESTORE_CALC_DIFF_FINISH), output)

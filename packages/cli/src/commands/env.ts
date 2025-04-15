@@ -114,7 +114,7 @@ export const diffAction: WorkspaceCommandAction<EnvDiffArgs> = async ({
     accounts === undefined ? undefined : actualAccounts,
     validSelectors,
   )
-  outputLine(await formatEnvDiff(changes, detailedPlan, toEnv, fromEnv), output)
+  outputLine(formatEnvDiff(changes, detailedPlan, toEnv, fromEnv), output)
   outputLine(formatStepCompleted(Prompts.DIFF_CALC_DIFF_FINISH(toEnv, fromEnv)), output)
   outputLine(EOL, output)
 
