@@ -111,7 +111,6 @@ export const replaceReferenceValues = async <TContext extends string, CustomInde
           targetType,
           inspectValue(elem),
         )
-        return undefined
       }
 
       return elem
