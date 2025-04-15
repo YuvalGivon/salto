@@ -21,7 +21,7 @@ import { getInstancesFromElementSource } from '@salto-io/adapter-utils'
 import { CUSTOM_ROLE_TYPE_NAME } from '../constants'
 
 const log = logger(module)
-const SYSTEM_ROLE_NAMES = ['agen', 'agent', 'administrator', 'admin', 'billing admin', 'light agent']
+const SYSTEM_ROLE_NAMES = ['agen', 'agent', 'administrator', 'admin', 'billing admin', 'light agent', 'chat-only agent']
 
 const isRelevantChange = (change: Change<InstanceElement>): boolean =>
   getChangeData(change).elemID.typeName === CUSTOM_ROLE_TYPE_NAME &&
