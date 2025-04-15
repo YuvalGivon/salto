@@ -51,6 +51,7 @@ const adapter: Adapter<Args, e2eUtils.Credentials> = {
     servicesToManage: {
       Entra: true,
       Intune: true,
+      Defender: true,
     },
   }),
   validateCredentials: async credentials => {

@@ -113,7 +113,7 @@ const graphBetaCustomizations: FetchCustomizations = {
             },
             transformation: {
               ...DEFAULT_TRANSFORMATION,
-              omit: ['assignments@odata.context', 'settingCount'],
+              omit: ['assignments@odata.context', 'settingCount', 'settings@odata.context'],
             },
           },
         ],

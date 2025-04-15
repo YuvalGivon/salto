@@ -24,6 +24,7 @@ export const TOP_LEVEL_TYPES = {
   FIREWALL_POLICY_TYPE_NAME: 'DefenderFirewallPolicy',
   DISK_ENCRYPTION_POLICY_TYPE_NAME: 'DefenderDiskEncryptionPolicy',
   ACCOUNT_PROTECTION_POLICY_TYPE_NAME: 'DefenderAccountProtectionPolicy',
+  SECURITY_BASELINE_PROFILE_TYPE_NAME: 'DefenderSecurityBaselineProfile',
 } as const
 
 // This anonymous function is only used for compile time validation.
@@ -41,6 +42,7 @@ export const POLICY_TYPE_TO_TEMPLATE_FAMILY_NAME: Record<string, string> = {
   [TOP_LEVEL_TYPES.FIREWALL_POLICY_TYPE_NAME]: 'endpointSecurityFirewall',
   [TOP_LEVEL_TYPES.DISK_ENCRYPTION_POLICY_TYPE_NAME]: 'endpointSecurityDiskEncryption',
   [TOP_LEVEL_TYPES.ACCOUNT_PROTECTION_POLICY_TYPE_NAME]: 'endpointSecurityAccountProtection',
+  [TOP_LEVEL_TYPES.SECURITY_BASELINE_PROFILE_TYPE_NAME]: 'Baseline',
 }
 
 export const POLICY_TYPE_NAMES = Object.keys(POLICY_TYPE_TO_TEMPLATE_FAMILY_NAME)

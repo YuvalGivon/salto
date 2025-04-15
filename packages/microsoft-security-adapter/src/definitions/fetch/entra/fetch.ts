@@ -731,14 +731,6 @@ const graphV1Customizations: FetchCustomizations = {
         transformation: DEFAULT_TRANSFORMATION,
       },
     ],
-    element: {
-      topLevel: {
-        isTopLevel: true,
-        elemID: {
-          extendsParent: true,
-        },
-      },
-    },
   },
   // TODO SALTO-6073: There's a problem with this API. In the website they're using graph.windows.net, which is the Azure AD API.
   // The docs which specify graph.microsoft.com behave differently. We need to investigate this further.

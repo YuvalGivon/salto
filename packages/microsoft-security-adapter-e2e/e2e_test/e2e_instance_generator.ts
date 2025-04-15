@@ -24,6 +24,7 @@ export const UNIQUE_NAME = 'E2ETest'
 const fetchDefinitions = createFetchDefinitions({
   Entra: true,
   Intune: true,
+  Defender: true,
 })
 
 const testSuffix = uuid().slice(0, 8)

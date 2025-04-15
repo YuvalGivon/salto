@@ -20,6 +20,7 @@ import {
   helpers as e2eHelpers,
 } from '@salto-io/e2e-test-utils'
 import { promises } from '@salto-io/lowerdash'
+import { definitions } from '@salto-io/adapter-components'
 import { credsLease } from './adapter'
 import { getAllInstancesToDeploy, UNIQUE_NAME } from './e2e_instance_generator'
 import {
@@ -34,10 +35,6 @@ import { modificationChangesBeforeAndAfterOverrides } from './mock_elements'
 
 const log = logger(module)
 const { sleep } = promises.timeout
-const {
-  entraConstants: { TOP_LEVEL_TYPES: entraTopLevelTypes, ...entraConstants },
-  intuneConstants: { TOP_LEVEL_TYPES: intuneTopLevelTypes },
-} = e2eUtils
 
 // Set long timeout as we communicate with Microsoft Graph APIs
 jest.setTimeout(1000 * 60 * 15)
@@ -49,6 +46,7 @@ const adapterCreators = {
 const fetchDefinitions = e2eUtils.createFetchDefinitions({
   Entra: true,
   Intune: true,
+  Defender: true,
 })
 
 const microsoftSecurityCleanUp = async (instances: InstanceElement[], workspace: Workspace): Promise<void> => {
@@ -139,53 +137,21 @@ describe('Microsoft Security adapter E2E', () => {
     })
 
     it('should fetch the regular instances and types', async () => {
-      const typesToFetch = [
-        // Entra ID
-        entraTopLevelTypes.ADMINISTRATIVE_UNIT_TYPE_NAME,
-        entraTopLevelTypes.APPLICATION_TYPE_NAME,
-        entraTopLevelTypes.APP_ROLE_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraConstants.AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME,
-        entraTopLevelTypes.AUTHENTICATION_METHOD_POLICY_TYPE_NAME,
-        entraTopLevelTypes.AUTHENTICATION_STRENGTH_POLICY_TYPE_NAME,
-        entraTopLevelTypes.AUTHORIZATION_POLICY_TYPE_NAME,
-        entraTopLevelTypes.CONDITIONAL_ACCESS_POLICY_TYPE_NAME,
-        entraConstants.CUSTOM_SECURITY_ATTRIBUTE_ALLOWED_VALUES_TYPE_NAME,
-        entraTopLevelTypes.CUSTOM_SECURITY_ATTRIBUTE_DEFINITION_TYPE_NAME,
-        entraTopLevelTypes.CUSTOM_SECURITY_ATTRIBUTE_SET_TYPE_NAME,
-        entraConstants.DELEGATED_PERMISSION_CLASSIFICATION_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraTopLevelTypes.DIRECTORY_ROLE_TEMPLATE_TYPE_NAME, // Not deployable
-        entraTopLevelTypes.DIRECTORY_ROLE_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraTopLevelTypes.DOMAIN_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraTopLevelTypes.GROUP_TYPE_NAME,
-        entraTopLevelTypes.LIFE_CYCLE_POLICY_TYPE_NAME,
-        entraTopLevelTypes.OAUTH2_PERMISSION_GRANT_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraTopLevelTypes.PERMISSION_GRANT_POLICY_TYPE_NAME, // TODO SALTO-6454: test deployment
-        entraTopLevelTypes.ROLE_DEFINITION_TYPE_NAME,
-        entraTopLevelTypes.SERVICE_PRINCIPAL_TYPE_NAME,
-        // Intune
-        // TODO SALTO-6454: test Intune deployment
-        intuneTopLevelTypes.APPLICATION_CONFIGURATION_MANAGED_APP_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_CONFIGURATION_MANAGED_DEVICE_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_PROTECTION_ANDROID_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_PROTECTION_IOS_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_PROTECTION_WINDOWS_INFORMATION_PROTECTION_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_PROTECTION_WINDOWS_TYPE_NAME,
-        intuneTopLevelTypes.APPLICATION_TYPE_NAME,
-        intuneTopLevelTypes.DEVICE_COMPLIANCE_TYPE_NAME,
-        intuneTopLevelTypes.DEVICE_CONFIGURATION_TYPE_NAME,
-        intuneTopLevelTypes.FILTER_TYPE_NAME,
-        intuneTopLevelTypes.PLATFORM_SCRIPT_LINUX_TYPE_NAME,
-        intuneTopLevelTypes.PLATFORM_SCRIPT_MAC_OS_TYPE_NAME,
-        intuneTopLevelTypes.PLATFORM_SCRIPT_WINDOWS_TYPE_NAME,
-        intuneTopLevelTypes.SCOPE_TAG_TYPE_NAME,
-      ]
-      const typeNames = elements.filter(isObjectType).map(e => e.elemID.typeName)
       const instances = elements.filter(isInstanceElement)
-      typesToFetch.forEach(typeName => {
-        expect(typeNames).toContain(typeName)
-        const instance = instances.find(e => e.elemID.typeName === typeName)
-        expect(instance).toBeDefined()
-      })
+      const expectedTopLevelTypeNames = Object.entries(
+        definitions.queryWithDefault(fetchDefinitions.instances).getAll(),
+      )
+        .filter(([_typeName, def]) => def.element?.topLevel?.isTopLevel)
+        .map(([typeName]) => typeName)
+      const fetchedInstancesTypeNames = instances.map(e => e.elemID.typeName)
+      const missingTypes = new Set(
+        expectedTopLevelTypeNames.filter(typeName => !fetchedInstancesTypeNames.includes(typeName)),
+      )
+      const unexpectedTypes = new Set(
+        fetchedInstancesTypeNames.filter(typeName => !expectedTopLevelTypeNames.includes(typeName)),
+      )
+      expect(Array.from(missingTypes)).toEqual([])
+      expect(Array.from(unexpectedTypes)).toEqual([])
     })
 
     it('should fetch the newly deployed instances', async () => {

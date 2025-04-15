@@ -38,7 +38,7 @@ export const credsSpec = (envName?: string): CredsSpec<Required<e2eUtils.Credent
         clientId: envUtils.required(microsoftSecurityClientIdVarName),
         clientSecret: envUtils.required(microsoftSecurityClientSecretVarName),
         refreshToken: envUtils.required(microsoftSecurityRefreshTokenVarName),
-        servicesToManage: { Entra: true, Intune: true },
+        servicesToManage: { Entra: true, Intune: true, Defender: true },
       }
     },
     validate: async (_creds: e2eUtils.Credentials): Promise<void> => {
