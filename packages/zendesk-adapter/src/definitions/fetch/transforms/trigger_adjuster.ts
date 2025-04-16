@@ -96,8 +96,8 @@ export const transform: definitions.AdjustFunctionSingle = async ({ value }) => 
           priority: processedSkill.priority,
         }
       }
+      log.warn(`For trigger ${triggerTitle} - Received invalid skill value, could not get priority`)
     }
-    log.warn(`For trigger ${triggerTitle} - Received invalid skill value, could not get priority`)
     return { ...action }
   })
 
