@@ -17,6 +17,7 @@ const { makeArray } = collections.array
 
 const DEFAULT_ALIAS_FIELDS: types.NonEmptyArray<string> = [DETECTS_PARENTS_INDICATOR, 'Name']
 const ALIAS_FIELDS_BY_TYPE: Record<string, types.NonEmptyArray<string>> = {
+  // CPQ Types
   SBQQ__ProductFeature__c: [DETECTS_PARENTS_INDICATOR, 'SBQQ__ConfiguredSKU__c', 'Name'],
   SBQQ__LineColumn__c: [DETECTS_PARENTS_INDICATOR, 'SBQQ__FieldName__c', 'Name'],
   SBQQ__LookupQuery__c: [DETECTS_PARENTS_INDICATOR, 'SBQQ__PriceRule2__c', 'Name'],
@@ -25,6 +26,19 @@ const ALIAS_FIELDS_BY_TYPE: Record<string, types.NonEmptyArray<string>> = {
   PricebookEntry: ['Pricebook2Id', 'Name'],
   Product2: ['ProductCode', 'Family', 'Name'],
   sbaa__ApprovalCondition__c: ['sbaa__ApprovalRule__c', 'sbaa__Index__c'],
+
+  // RLM Types
+  AttributeAdjustmentCondition: ['ProductId', 'AttributeDefinitionId', 'Operator', 'StringValue', 'BooleanValue'],
+  AttributeBasedAdjustment: ['ProductId', 'ProductSellingModelId', 'AdjustmentType'],
+  AttributeCategoryAttribute: ['AttributeCategoryId', 'AttributeDefinitionId'],
+  PriceAdjustmentTier: ['Product2Id', 'ProductSellingModelId', 'TierType'],
+  PriceBookEntryDerivedPrice: ['PricebookEntryId'],
+  ProductAttributeDefinition: ['Product2Id', 'AttributeDefinitionId'],
+  ProductDisqualification: ['ProductId'],
+  ProductQualification: ['ProductId'],
+  ProductRampSegment: ['SegmentType', 'ProductId', 'ProductSellingModelId'],
+  ProductUsageGrant: ['Label'],
+  RateCardEntry: ['RateCardId', 'UsageResourceId'],
 }
 
 const DEFAULT_BROKEN_REFS_BEHAVIOR: OutgoingReferenceBehavior = 'BrokenReference'
