@@ -73,6 +73,8 @@ import { SORT_ORDER } from '../src/change_validators/duplicate_rules_sort_order'
 
 const apiVersion = '60.0'
 
+const BILLING_PAYMENT_TYPE_NAME = 'blng__Payment__c'
+
 const SBAA_APPROVAL_RULE_TYPE = createCustomObjectType(SBAA_APPROVAL_RULE, {
   fields: {
     [SBAA_CONDITIONS_MET]: {
@@ -917,6 +919,7 @@ export const mockTypes = {
       },
     },
   }),
+  [BILLING_PAYMENT_TYPE_NAME]: createCustomObjectType(BILLING_PAYMENT_TYPE_NAME, {}),
 }
 
 export const lwcJsResourceContent = Buffer.from(
@@ -1115,6 +1118,10 @@ export const mockInstances = () => ({
     createInstanceElement(values, mockTypes[typeName as keyof typeof mockDefaultValues]),
   ),
   [CHANGED_AT_SINGLETON]: new InstanceElement(ElemID.CONFIG_NAME, ArtificialTypes.ChangedAtSingleton),
+  [CPQ_QUOTE]: new InstanceElement('TestQuote', mockTypes[CPQ_QUOTE], { Name: 'TestQuote' }),
+  [BILLING_PAYMENT_TYPE_NAME]: new InstanceElement('TestPayment', mockTypes[BILLING_PAYMENT_TYPE_NAME], {
+    Name: 'TestPayment',
+  }),
 })
 
 export const createFlowChange = ({

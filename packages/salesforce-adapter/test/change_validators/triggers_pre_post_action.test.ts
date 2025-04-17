@@ -17,7 +17,8 @@ import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
 import { TRIGGER_TYPES_FIELD_NAME, TriggerType } from '../../src/filters/extend_triggers_metadata'
 import changeValidator from '../../src/change_validators/triggers_pre_post_action'
 import { apiNameSync } from '../../src/filters/utils'
-import { mockTypes } from '../mock_elements'
+import { mockInstances, mockTypes } from '../mock_elements'
+import { BILLING_NAMESPACE, CPQ_NAMESPACE, INSTANCE_FULL_NAME_FIELD } from '../../src/constants'
 
 describe('Triggers pre/post action change validator', () => {
   const createTriggerInstance = (name: string, triggerTypes: TriggerType[], parentType: ObjectType): InstanceElement =>
@@ -25,6 +26,7 @@ describe('Triggers pre/post action change validator', () => {
       name,
       mockTypes.ApexTrigger,
       {
+        [INSTANCE_FULL_NAME_FIELD]: name,
         [TRIGGER_TYPES_FIELD_NAME]: triggerTypes,
       },
       undefined,
@@ -142,6 +144,22 @@ describe('Triggers pre/post action change validator', () => {
           },
         },
       })
+    })
+    it('should ignore triggers from billing and cpq packages', async () => {
+      const instances = mockInstances()
+      const dataInstances = [instances.SBQQ__Quote__c, instances.blng__Payment__c]
+      const triggerInstances = [
+        createTriggerInstance(`${CPQ_NAMESPACE}__Trigger`, [TriggerType.UsageBeforeInsert], mockTypes.SBQQ__Quote__c),
+        createTriggerInstance(
+          `${BILLING_NAMESPACE}__Trigger`,
+          [TriggerType.UsageBeforeInsert],
+          mockTypes.blng__Payment__c,
+        ),
+      ]
+      const changes = dataInstances.map(instance => toChange({ after: instance }))
+      const elementsSource = buildElementsSourceFromElements(triggerInstances)
+      const result = await changeValidator(changes, elementsSource)
+      expect(result).toBeEmpty()
     })
   })
 })

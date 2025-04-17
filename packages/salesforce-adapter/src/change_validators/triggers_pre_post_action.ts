@@ -19,12 +19,14 @@ import {
   ReferenceExpression,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
-import { apiNameSync, isInstanceOfCustomObjectChangeSync } from '../filters/utils'
-import { APEX_TRIGGER_METADATA_TYPE } from '../constants'
+import { apiNameSync, getNamespaceSync, isInstanceOfCustomObjectChangeSync } from '../filters/utils'
+import { APEX_TRIGGER_METADATA_TYPE, BILLING_NAMESPACE, CPQ_NAMESPACE } from '../constants'
 import { TRIGGER_TYPES_FIELD_NAME, TriggerType } from '../filters/extend_triggers_metadata'
 
 const { awu } = collections.asynciterable
 const { DefaultMap } = collections.map
+
+const TRIGGER_NAMESPACES_TO_IGNORE = new Set([BILLING_NAMESPACE, CPQ_NAMESPACE])
 
 const TRIGGER_TYPES = new Set(Object.values(TriggerType))
 
@@ -112,6 +114,8 @@ const changeValidator: ChangeValidator = async (changes, elementsSource) => {
     .map(elementsSource.get)
     .filter(isInstanceElement)
     .filter(isApexTriggerInstance)
+    // Ignore Triggers from these packages since they have a dedicated pre/post action.
+    .filter(trigger => !TRIGGER_NAMESPACES_TO_IGNORE.has(getNamespaceSync(trigger) ?? ''))
     .forEach(trigger => {
       const parentType = trigger.annotations[CORE_ANNOTATIONS.PARENT][0].elemID.name
       const indexEntry = index.getOrUndefined(parentType)
