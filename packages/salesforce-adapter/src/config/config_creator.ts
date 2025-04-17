@@ -169,6 +169,163 @@ const CONFIG_WITH_CPQ = new InstanceElement(ElemID.CONFIG_NAME, configType, {
   maxItemsInRetrieveRequest: 2500,
 })
 
+const CONFIG_WITH_RLM = new InstanceElement(ElemID.CONFIG_NAME, configType, {
+  fetch: {
+    metadata: {
+      include: [
+        {
+          metadataType: '.*',
+          namespace: '',
+          name: '.*',
+        },
+      ],
+      exclude: [
+        {
+          metadataType: 'Report',
+        },
+        {
+          metadataType: 'ReportType',
+        },
+        {
+          metadataType: 'ReportFolder',
+        },
+        {
+          metadataType: 'Dashboard',
+        },
+        {
+          metadataType: 'DashboardFolder',
+        },
+        {
+          metadataType: 'Document',
+        },
+        {
+          metadataType: 'DocumentFolder',
+        },
+        {
+          metadataType: 'SiteDotCom',
+        },
+        {
+          metadataType: 'EmailTemplate',
+          name: 'Marketo_?Email_?Templates/.*',
+        },
+        {
+          metadataType: 'ContentAsset',
+        },
+        {
+          metadataType: 'CustomObjectTranslation',
+        },
+        {
+          metadataType: 'AnalyticSnapshot',
+        },
+        {
+          metadataType: 'WaveDashboard',
+        },
+        {
+          metadataType: 'WaveDataflow',
+        },
+        {
+          metadataType: 'StandardValueSet',
+          name: '^(AddressCountryCode)|(AddressStateCode)$',
+          namespace: '',
+        },
+        {
+          metadataType: 'Layout',
+          name: 'CollaborationGroup-Group Layout',
+        },
+        {
+          metadataType: 'Layout',
+          name: 'CaseInteraction-Case Feed Layout',
+        },
+        {
+          metadataType: 'EclairGeoData',
+        },
+        {
+          metadataType:
+            'OmniUiCard|OmniDataTransform|OmniIntegrationProcedure|OmniInteractionAccessConfig|OmniInteractionConfig|OmniScript',
+        },
+        {
+          metadataType: 'DiscoveryAIModel',
+        },
+        {
+          metadataType: 'Translations',
+        },
+        {
+          metadataType: 'ManagedEventSubscription',
+        },
+      ],
+    },
+    data: {
+      includeObjects: [
+        'AdAvailabilityViewConfig',
+        'AttributeAdjustmentCondition',
+        'AttributeBasedAdjRule',
+        'AttributeBasedAdjustment',
+        'AttributeCategory',
+        'AttributeCategoryAttribute',
+        'AttributeDefinition',
+        'AttributePicklist',
+        'AttributePicklistValue',
+        'BundleBasedAdjustment',
+        'ObjectStateActionDefinition',
+        'ObjectStateDefinition',
+        'ObjectStateTransition',
+        'ObjectStateTransitionAction',
+        'ObjectStateValue',
+        'PriceAdjustmentSchedule',
+        'PriceAdjustmentTier',
+        'PriceBookEntryDerivedPrice',
+        'PriceBookRateCard',
+        'ProductAttributeDefinition',
+        'ProductClassification',
+        'ProductClassificationAttr',
+        'ProductComponentGroup',
+        'ProductDisqualification',
+        'ProductQualification',
+        'ProductRampSegment',
+        'ProductRelatedComponent',
+        'ProductRelationshipType',
+        'ProductSellingModel',
+        'ProductUsageGrant',
+        'RateCard',
+        'RateCardEntry',
+        'UnitOfMeasure',
+        'UnitOfMeasureClass',
+        'UsageResource',
+        'UsageResourceBillingPolicy',
+      ],
+      allowReferenceTo: ['Product2', 'Pricebook2', 'PricebookEntry'],
+      saltoIDSettings: {
+        defaultIdFields: ['Id'],
+        overrides: [
+          {
+            objectsRegex: 'AttributeCategory',
+            idFields: ['Name'],
+          },
+          {
+            objectsRegex: 'AttributeDefinition',
+            idFields: ['Name'],
+          },
+          {
+            objectsRegex: 'AttributePicklist',
+            idFields: ['Name'],
+          },
+          {
+            objectsRegex: 'ProductClassification',
+            idFields: ['Name'],
+          },
+        ],
+      },
+      brokenOutgoingReferencesSettings: {
+        defaultBehavior: 'BrokenReference',
+        perTargetTypeOverrides: {
+          User: 'InternalId',
+        },
+      },
+    },
+  },
+  maxItemsInRetrieveRequest: 2500,
+})
+
 const EXCLUDE_PROFILES = [
   {
     metadataType: constants.PROFILE_METADATA_TYPE,
@@ -197,6 +354,7 @@ type ManagedPackage = (typeof MANAGED_PACKAGES)[number]
 
 export type SalesforceConfigOptionsType = {
   cpq?: boolean
+  rlm?: boolean
   managedPackages?: ManagedPackage[]
   manageProfiles?: boolean
   managePermissionSets?: boolean
@@ -206,6 +364,7 @@ export const optionsType = createMatchingObjectType<SalesforceConfigOptionsType>
   elemID: optionsElemId,
   fields: {
     cpq: { refType: BuiltinTypes.BOOLEAN },
+    rlm: { refType: BuiltinTypes.BOOLEAN, annotations: { [CORE_ANNOTATIONS.ALIAS]: 'With Revenue Cloud (RLM)' } },
     managedPackages: {
       refType: new ListType(BuiltinTypes.STRING),
       annotations: {
@@ -246,6 +405,8 @@ export const getConfig = async (options?: InstanceElement): Promise<InstanceElem
   }
   if (options.value.cpq === true || options.value.managedPackages?.includes(CPQ_MANAGED_PACKAGE)) {
     config = CONFIG_WITH_CPQ.clone()
+  } else if (options.value.rlm === true) {
+    config = CONFIG_WITH_RLM.clone()
   }
   const excludeProfiles = options.value.manageProfiles ? [] : EXCLUDE_PROFILES
   const excludePermissionSets = options.value.managePermissionSets ? [] : EXCLUDE_PERMISSION_SETS

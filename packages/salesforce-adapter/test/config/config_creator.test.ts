@@ -69,6 +69,18 @@ describe('config_creator', () => {
     })
   })
 
+  describe('when RLM is enabled', () => {
+    beforeEach(async () => {
+      options = createMockOptionsInstance({ rlm: true })
+      resultConfig = await getConfig(options)
+    })
+    it('should return adapter config with rlm', async () => {
+      expect(resultConfig.value.fetch.data).toBeDefined()
+      expect(resultConfig.value.fetch.data.includeObjects).toInclude('AttributeDefinition')
+      expect(mockLogError).not.toHaveBeenCalled()
+    })
+  })
+
   describe('when input contains manageProfiles or managePermissionSets equal true', () => {
     const getExcludedTypesFromConfig = (instance: InstanceElement): string[] =>
       instance.value.fetch.metadata.exclude.map((entry: MetadataInstance) => entry.metadataType)
