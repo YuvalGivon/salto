@@ -26,6 +26,7 @@ import { adapter as pagerDutyAdapter } from '@salto-io/pagerduty-adapter'
 import { adapter as jamfAdapter } from '@salto-io/jamf-adapter'
 import { adapter as microsoftSecurityAdapter } from '@salto-io/microsoft-security-adapter'
 import { adapter as cloudflareAdapter } from '@salto-io/cloudflare-adapter'
+import { adapter as splunkAdapter } from '@salto-io/splunk-adapter'
 
 const adapterCreators: Record<string, Adapter> = {
   salesforce: salesforceAdapter,
@@ -48,6 +49,7 @@ const adapterCreators: Record<string, Adapter> = {
   jamf: jamfAdapter,
   microsoft_security: microsoftSecurityAdapter,
   cloudflare: cloudflareAdapter,
+  splunk: splunkAdapter,
 }
 
 export default adapterCreators

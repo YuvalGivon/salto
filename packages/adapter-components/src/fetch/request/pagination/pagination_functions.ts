@@ -328,3 +328,26 @@ export const getPaginationWithLimitedResults = ({
   }
   return paginationWithLimitedResults
 }
+
+export const offsetAndTotalPagination = (): PaginationFunction => {
+  const getNextPage: PaginationFunction = ({ responseData, currentParams }) => {
+    const offset = Number(_.get(responseData, 'paging.offset'))
+    const perPage = Number(_.get(responseData, 'paging.perPage'))
+    const total = Number(_.get(responseData, 'paging.total'))
+
+    if (offset + perPage >= total) {
+      return []
+    }
+
+    return [
+      _.merge({}, currentParams, {
+        queryParams: {
+          ...currentParams.queryParams,
+          offset: (offset + perPage).toString(),
+        },
+      }),
+    ]
+  }
+
+  return getNextPage
+}

@@ -165,6 +165,10 @@
       "path": "packages/zendesk-adapter-e2e",
     },
     {
+      "name": "splunk-adapter",
+      "path": "packages/splunk-adapter",
+    },
+    {
       "name": "adapter-creators",
       "path": "packages/adapter-creators",
     },
