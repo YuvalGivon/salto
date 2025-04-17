@@ -11,9 +11,11 @@ import {
   AdapterFormat,
   AdapterOperationsContext,
   Change,
+  CORE_ANNOTATIONS,
   Element,
   getChangeData,
   isAdditionChange,
+  isField,
   ReadOnlyElementsSource,
   SaltoError,
   toChange,
@@ -194,12 +196,19 @@ const loadElementsAndMerge = (
 // This is a naive approach, for a more complete implementations see workspace.filterOutHiddenChanges.
 // This is good enough for now since hidden value (etc.) changes will not affect adapter format (as far as we can tell).
 // For mixed mode, we need to partition on the hidden elements test and add all the hidden changes to the unapplied changes.
+// The check for fields is a workaround until SALTO-7725 is fixed.
 const filterHiddenChanges = async (
   changes: ReadonlyArray<Change>,
   elementsSource: ReadOnlyElementsSource,
 ): Promise<ReadonlyArray<Change>> =>
   awu(changes)
-    .filter(async change => !(await hiddenValues.isHidden(getChangeData(change), elementsSource)))
+    .filter(async change => {
+      const element = getChangeData(change)
+      if (isField(element) && element.parent.annotations[CORE_ANNOTATIONS.HIDDEN]) {
+        return false
+      }
+      return !(await hiddenValues.isHidden(element, elementsSource))
+    })
     .toArray()
 
 type CalculatePatchArgs = {
