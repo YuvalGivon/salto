@@ -47,7 +47,6 @@
     "@salto-io/salesforce-adapter": "0.5.2",
     "@salto-io/sap-adapter": "0.5.2",
     "@salto-io/serviceplaceholder-adapter": "0.5.2",
-    "@salto-io/splunk-adapter": "0.5.2",
     "@salto-io/stripe-adapter": "0.5.2",
     "@salto-io/test-utils": "0.5.2",
     "@salto-io/workato-adapter": "0.5.2",

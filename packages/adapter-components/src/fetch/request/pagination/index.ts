@@ -18,6 +18,5 @@ export {
   tokenPagination,
   offsetAndLimitPagination,
   getPaginationWithLimitedResults,
-  offsetAndTotalPagination,
 } from './pagination_functions'
 export { traversePages } from './pagination'
