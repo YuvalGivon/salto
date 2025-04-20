@@ -145,9 +145,7 @@ const getServiceElemIDsFromPaths = (
         ? resolveRelativePath(filePath, ref)
         : FILE_CABINET_PATH_SEPARATOR.concat(ref)
       return [ref, absolutePath].concat(
-        osPath.extname(absolutePath) === '' && osPath.extname(filePath) !== ''
-          ? [absolutePath.concat(osPath.extname(filePath))]
-          : [],
+        osPath.extname(filePath) !== '' ? [absolutePath.concat(osPath.extname(filePath))] : [],
       )
     })
     .map(ref => {

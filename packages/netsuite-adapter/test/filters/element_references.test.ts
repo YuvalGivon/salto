@@ -408,7 +408,7 @@ describe('instance_references filter', () => {
 
     it('should add extracted element to generated dependencies', async () => {
       const fileContent = `
-      define(['N/record', '../SuiteScripts/oauth_1.js', '../SuiteScripts/oauth_2'], function(record) {
+      define(['N/record', '/SuiteScripts/withAdditionalSuffix.1', '../SuiteScripts/oauth_1', '../SuiteScripts/oauth_2'], function(record) {
         return{
           post: function(requestBody){
           // Convert JSON string to JSON  object
@@ -444,6 +444,13 @@ describe('instance_references filter', () => {
       const syntacticFileInstance2 = new InstanceElement('syntacticFileInstance2', fileType(), {
         [PATH]: '/SuiteScripts/oauth_2.js',
       })
+      const syntacticFileInstanceReferencedWithAdditionalSuffix = new InstanceElement(
+        'syntacticFileInstanceReferencedWithAdditionalSuffix',
+        fileType(),
+        {
+          [PATH]: '/SuiteScripts/withAdditionalSuffix.1.js',
+        },
+      )
       const innerFileInstance = new InstanceElement('innferRefFile', fileType(), {
         [PATH]: '/Templates/innerFileRef.name',
       })
@@ -454,12 +461,13 @@ describe('instance_references filter', () => {
         fileInstance,
         syntacticFileInstance,
         syntacticFileInstance2,
+        syntacticFileInstanceReferencedWithAdditionalSuffix,
         innerFileInstance,
         customRecordType,
         customSegmentInstance,
         workflowInstance,
       ])
-      expect(fileInstance.annotations[CORE_ANNOTATIONS.GENERATED_DEPENDENCIES]).toHaveLength(5)
+      expect(fileInstance.annotations[CORE_ANNOTATIONS.GENERATED_DEPENDENCIES]).toHaveLength(6)
       expect(fileInstance.annotations[CORE_ANNOTATIONS.GENERATED_DEPENDENCIES]).toEqual(
         expect.arrayContaining([
           {
@@ -472,6 +480,12 @@ describe('instance_references filter', () => {
           },
           {
             reference: new ReferenceExpression(syntacticFileInstance2.elemID.createNestedID(PATH)),
+            occurrences: undefined,
+          },
+          {
+            reference: new ReferenceExpression(
+              syntacticFileInstanceReferencedWithAdditionalSuffix.elemID.createNestedID(PATH),
+            ),
             occurrences: undefined,
           },
           {
