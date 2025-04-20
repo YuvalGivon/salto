@@ -307,11 +307,15 @@ const CONFIG_WITH_RLM = new InstanceElement(ElemID.CONFIG_NAME, configType, {
           },
           {
             objectsRegex: 'AttributePicklist',
-            idFields: ['Name'],
+            idFields: ['Code'],
           },
           {
             objectsRegex: 'ProductClassification',
-            idFields: ['Name'],
+            idFields: ['Code'],
+          },
+          {
+            objectsRegex: 'UnitOfMeasureClass',
+            idFields: ['Code'],
           },
         ],
       },
@@ -354,8 +358,8 @@ type ManagedPackage = (typeof MANAGED_PACKAGES)[number]
 
 export type SalesforceConfigOptionsType = {
   cpq?: boolean
-  rlm?: boolean
   managedPackages?: ManagedPackage[]
+  rlm?: boolean
   manageProfiles?: boolean
   managePermissionSets?: boolean
 }
@@ -364,7 +368,6 @@ export const optionsType = createMatchingObjectType<SalesforceConfigOptionsType>
   elemID: optionsElemId,
   fields: {
     cpq: { refType: BuiltinTypes.BOOLEAN },
-    rlm: { refType: BuiltinTypes.BOOLEAN, annotations: { [CORE_ANNOTATIONS.ALIAS]: 'With Revenue Cloud (RLM)' } },
     managedPackages: {
       refType: new ListType(BuiltinTypes.STRING),
       annotations: {
@@ -376,6 +379,7 @@ export const optionsType = createMatchingObjectType<SalesforceConfigOptionsType>
           'Names of managed packages to fetch into the environment [Learn more](https://help.salto.io/en/articles/9164974-extending-your-salesforce-configuration-with-managed-packages)',
       },
     },
+    rlm: { refType: BuiltinTypes.BOOLEAN, annotations: { [CORE_ANNOTATIONS.ALIAS]: 'With Revenue Cloud (RLM)' } },
     manageProfiles: {
       refType: BuiltinTypes.BOOLEAN,
       annotations: {
