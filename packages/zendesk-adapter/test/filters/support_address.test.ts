@@ -19,6 +19,7 @@ import { FilterResult } from '../../src/filter'
 import { BRAND_TYPE_NAME, SUPPORT_ADDRESS_TYPE_NAME, ZENDESK } from '../../src/constants'
 import filterCreator, { INVALID_USERNAME } from '../../src/filters/support_address'
 import { createFilterCreatorParams } from '../utils'
+import { DEFAULT_CONFIG, FETCH_CONFIG } from '../../src/config'
 
 describe('support address filter', () => {
   type FilterType = filterUtils.FilterWith<'onFetch' | 'onDeploy' | 'preDeploy', FilterResult>
@@ -59,6 +60,25 @@ describe('support address filter', () => {
   const sandboxAddress = new InstanceElement('address5', supportAddressType, {
     email: 'help-at-yourbusiness-com@one.zendesk.com',
   })
+  const supportAddressCustomDomain = new InstanceElement('address6', supportAddressType, {
+    email: 'support.1@one.com',
+  })
+  const supportAddressCustomDomainAfterFetch = new InstanceElement('address6', supportAddressType, {
+    email: new TemplateExpression({
+      parts: [
+        'support.1@',
+        new ReferenceExpression(brand1.elemID.createNestedID('subdomain'), brand1.value.subdomain),
+        '.com',
+      ],
+    }),
+    production_email: new TemplateExpression({
+      parts: [
+        'support.1@',
+        new ReferenceExpression(brand1.elemID.createNestedID('subdomain'), brand1.value.subdomain),
+        '.com',
+      ],
+    }),
+  })
 
   beforeAll(() => {
     const elementSource = buildElementsSourceFromElements([supportAddressZendesk, supportAddressOther, brand1, brand2])
@@ -69,19 +89,27 @@ describe('support address filter', () => {
     it('should turn zendesk emails to template expression and add username', async () => {
       const supportAddressZendeskAfterFetchCloned = supportAddressZendeskAfterFetch.clone()
       supportAddressZendeskAfterFetchCloned.value.username = 'support.1'
+
+      const supportAddressCustomDomainAfterFetchCloned = supportAddressCustomDomainAfterFetch.clone()
+      supportAddressCustomDomainAfterFetchCloned.value.username = 'support.1'
+
       const supportAddressOtherCloned = supportAddressOther.clone()
       supportAddressOtherCloned.value.username = 'support1'
       supportAddressOtherCloned.value.production_email = 'support1@gmail.com'
+
       const supportAddressUndefinedCloned = supportAddressUndefined.clone()
       supportAddressUndefinedCloned.value.username = INVALID_USERNAME
+
       const supportAddressInvalidCloned = supportAddressInvalid.clone()
       supportAddressInvalidCloned.value.username = 'invalidEmail'
       supportAddressInvalidCloned.value.production_email = 'invalidEmail'
+
       const elements = [
         supportAddressZendesk,
         supportAddressOther,
         supportAddressUndefined,
         supportAddressInvalid,
+        supportAddressCustomDomain,
         brand1,
         brand2,
       ].map(e => e.clone())
@@ -90,15 +118,18 @@ describe('support address filter', () => {
       const otherAddress = elements.find(e => e.elemID.name === 'address2')
       const undefinedAddress = elements.find(e => e.elemID.name === 'address3')
       const invalidAddress = elements.find(e => e.elemID.name === 'address4')
+      const hostMappingAddress = elements.find(e => e.elemID.name === 'address6')
       expect(zendeskAddress).toBeDefined()
       expect(otherAddress).toBeDefined()
       expect(undefinedAddress).toBeDefined()
       expect(invalidAddress).toBeDefined()
+      expect(hostMappingAddress).toBeDefined()
       if (
         zendeskAddress === undefined ||
         otherAddress === undefined ||
         undefinedAddress === undefined ||
-        invalidAddress === undefined
+        invalidAddress === undefined ||
+        hostMappingAddress === undefined
       ) {
         return
       }
@@ -106,6 +137,31 @@ describe('support address filter', () => {
       expect(otherAddress).toEqual(supportAddressOtherCloned)
       expect(undefinedAddress).toEqual(supportAddressUndefinedCloned)
       expect(invalidAddress).toEqual(supportAddressInvalidCloned)
+      expect(hostMappingAddress).toEqual(supportAddressCustomDomainAfterFetchCloned)
+    })
+    it('should not reference subdomain for non-zendesk emails if referenceSubdomainForNonZendeskEmails is false', async () => {
+      const elementSource = buildElementsSourceFromElements([
+        supportAddressZendesk,
+        supportAddressOther,
+        brand1,
+        brand2,
+      ])
+
+      filter = filterCreator(
+        createFilterCreatorParams({
+          elementSource,
+          config: {
+            ...DEFAULT_CONFIG,
+            [FETCH_CONFIG]: {
+              ...DEFAULT_CONFIG[FETCH_CONFIG],
+              referenceSubdomainForNonZendeskEmails: false,
+            },
+          },
+        }),
+      ) as FilterType
+      const elements = [supportAddressCustomDomain]
+      await filter.onFetch(elements)
+      expect(elements[0].value.email).toEqual('support.1@one.com')
     })
     it('should create production_email from email', async () => {
       const supportAddressZendeskCloned = supportAddressZendesk.clone()

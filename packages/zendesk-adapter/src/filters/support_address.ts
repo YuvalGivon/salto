@@ -24,6 +24,7 @@ import { extractTemplate } from '@salto-io/adapter-utils'
 import { logger } from '@salto-io/logging'
 import { FilterCreator } from '../filter'
 import { BRAND_TYPE_NAME, SUPPORT_ADDRESS_TYPE_NAME } from '../constants'
+import { FETCH_CONFIG } from '../config'
 
 const log = logger(module)
 export const INVALID_USERNAME = 'INVALID_USERNAME'
@@ -31,9 +32,11 @@ export const INVALID_USERNAME = 'INVALID_USERNAME'
 const referenceEmail = ({
   emailPart,
   brandInstances,
+  referenceSubdomainForNonZendeskEmails,
 }: {
   emailPart: string
   brandInstances: Record<string, InstanceElement>
+  referenceSubdomainForNonZendeskEmails: boolean
 }): TemplatePart[] => {
   // emailPart should be of the form {username}@{subdomain}.{domain} (usually zendesk.com)
   // zendesk subdomain cannot have a dot (.) in it.
@@ -42,6 +45,10 @@ const referenceEmail = ({
     return [emailPart]
   }
   const [username, subdomain, domain] = splitEmail
+  if (domain !== 'zendesk.com' && !referenceSubdomainForNonZendeskEmails) {
+    log.debug(`referenceSubdomainForNonZendeskEmails is false, so we will not reference ${emailPart}`)
+    return [emailPart]
+  }
   const elem = brandInstances[subdomain]
   if (elem !== undefined) {
     return [
@@ -58,9 +65,11 @@ const referenceEmail = ({
 const turnEmailToTemplateExpression = ({
   supportAddressInstance,
   brandList,
+  referenceSubdomainForNonZendeskEmails,
 }: {
   supportAddressInstance: InstanceElement
   brandList: Record<string, InstanceElement>
+  referenceSubdomainForNonZendeskEmails: boolean
 }): void => {
   const originalEmail = supportAddressInstance.value.email
   if (!_.isString(originalEmail)) {
@@ -71,6 +80,7 @@ const turnEmailToTemplateExpression = ({
     referenceEmail({
       emailPart,
       brandInstances: brandList,
+      referenceSubdomainForNonZendeskEmails,
     }),
   )
 }
@@ -142,7 +152,7 @@ const removeProductionEmail = (instance: InstanceElement): void => {
  * to the brand's subdomain. only for zendesk emails. In preDeploy the template expressions are turned back to string.
  * 2. OnFetch, from the email username@subdomain.zendesk.com we will extract the username to a hidden field
  */
-const filterCreator: FilterCreator = () => {
+const filterCreator: FilterCreator = ({ config }) => {
   const deployTemplateMapping: Record<string, TemplateExpression> = {}
   return {
     name: 'supportAddress',
@@ -160,6 +170,7 @@ const filterCreator: FilterCreator = () => {
         turnEmailToTemplateExpression({
           supportAddressInstance: supportInstance,
           brandList: brandBySubdomains,
+          referenceSubdomainForNonZendeskEmails: config[FETCH_CONFIG].referenceSubdomainForNonZendeskEmails ?? true,
         })
         extractProductionEmailFromEmail(supportInstance)
       })

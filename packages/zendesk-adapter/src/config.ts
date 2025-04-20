@@ -2815,6 +2815,7 @@ export const DEFAULT_CONFIG: ZendeskConfig = {
     resolveOrganizationIDs: false,
     resolveUserIDs: true,
     includeAuditDetails: false,
+    referenceSubdomainForNonZendeskEmails: true,
     handleIdenticalAttachmentConflicts: false,
     omitInactive: {
       default: OMIT_INACTIVE_DEFAULT,
@@ -3193,6 +3194,7 @@ export const configType = createMatchingObjectType<Partial<ZendeskConfig>>({
         additionalFields: {
           enableMissingReferences: { refType: BuiltinTypes.BOOLEAN },
           resolveUserIDs: { refType: BuiltinTypes.BOOLEAN },
+          referenceSubdomainForNonZendeskEmails: { refType: BuiltinTypes.BOOLEAN },
           includeAuditDetails: { refType: BuiltinTypes.BOOLEAN },
           handleIdenticalAttachmentConflicts: { refType: BuiltinTypes.BOOLEAN },
           greedyAppReferences: { refType: BuiltinTypes.BOOLEAN },

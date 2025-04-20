@@ -40,6 +40,7 @@ export type ZendeskFetchConfig = definitions.UserFetchConfig<{
 }> & {
   enableMissingReferences?: boolean
   includeAuditDetails?: boolean
+  referenceSubdomainForNonZendeskEmails?: boolean
   handleIdenticalAttachmentConflicts?: boolean
   greedyAppReferences?: boolean
   appReferenceLocators?: IdLocator[]
