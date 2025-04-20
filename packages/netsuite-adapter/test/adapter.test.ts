@@ -23,7 +23,6 @@ import {
   SaltoElementError,
   ProgressReporter,
   isInstanceElement,
-  CORE_ANNOTATIONS,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
@@ -40,11 +39,8 @@ import {
   FOLDER,
   PATH,
   TRANSACTION_FORM,
-  CONFIG_FEATURES,
   INTEGRATION,
   NETSUITE,
-  REPORT_DEFINITION,
-  FINANCIAL_LAYOUT,
   ROLE,
   METADATA_TYPE,
   CUSTOM_RECORD_TYPE,
@@ -52,21 +48,14 @@ import {
   IS_LOCKED,
   ADDRESS_FORM,
 } from '../src/constants'
-import { createInstanceElement, toCustomizationInfo } from '../src/transformer'
+import { toCustomizationInfo } from '../src/transformer'
 import { LocalFilterCreator } from '../src/filter'
 import resolveValuesFilter from '../src/filters/element_references'
 import { configType, NetsuiteConfig } from '../src/config/types'
 import { getConfigFromConfigChanges } from '../src/config/suggestions'
 import { mockGetElemIdFunc } from './utils'
 import NetsuiteClient from '../src/client/client'
-import {
-  CustomizationInfo,
-  CustomTypeInfo,
-  FileCustomizationInfo,
-  FolderCustomizationInfo,
-  ImportFileCabinetResult,
-  SDFObjectNode,
-} from '../src/client/types'
+import { CustomizationInfo, ImportFileCabinetResult, SDFObjectNode } from '../src/client/types'
 import * as changesDetector from '../src/changes_detector/changes_detector'
 import * as deletionCalculator from '../src/deletion_calculator'
 import SdfClient from '../src/client/sdf_client'
@@ -224,137 +213,6 @@ describe('Adapter', () => {
   })
 
   describe('fetch', () => {
-    describe.each([false, true])('when fetch.fetchPluginImplementations is %s', fetchPluginImplementations => {
-      it(`should fetch all types and instances that are not in fetch.exclude ${fetchPluginImplementations ? 'including' : 'excluding'} pluginimplementation`, async () => {
-        const adapter = new NetsuiteAdapter({
-          client: new NetsuiteClient(client),
-          elementsSource: buildElementsSourceFromElements([]),
-          filtersCreators: [firstDummyFilter, secondDummyFilter],
-          config: {
-            ...config,
-            fetch: {
-              ...config.fetch,
-              lockedElementsToExclude: {
-                types: [
-                  {
-                    name: 'customrecordtype',
-                    ids: ['customrecord_locked2', 'customrecord_locked3'],
-                  },
-                ],
-                fileCabinet: [],
-              },
-              fetchPluginImplementations,
-            },
-          },
-          originalConfig: config,
-          getElemIdFunc: mockGetElemIdFunc,
-        })
-
-        const folderCustomizationInfo: FolderCustomizationInfo = {
-          typeName: FOLDER,
-          values: {},
-          path: ['a', 'b'],
-        }
-
-        const fileCustomizationInfo: FileCustomizationInfo = {
-          typeName: FILE,
-          values: {},
-          path: ['a', 'b'],
-          fileContent: Buffer.from('Dummy content'),
-        }
-
-        const featuresCustomTypeInfo: CustomTypeInfo = {
-          typeName: CONFIG_FEATURES,
-          scriptId: CONFIG_FEATURES,
-          values: {
-            feature: [{ id: 'feature', label: 'Feature', status: 'ENABLED' }],
-          },
-        }
-
-        const customTypeInfo = {
-          typeName: 'entitycustomfield',
-          values: {
-            '@_scriptid': 'custentity_my_script_id',
-            label: 'elementName',
-          },
-          scriptId: 'custentity_my_script_id',
-        }
-
-        client.importFileCabinetContent = mockFunction<SdfClient['importFileCabinetContent']>().mockResolvedValue({
-          elements: [folderCustomizationInfo, fileCustomizationInfo],
-          failedPaths: { lockedError: [], otherError: [], largeSizeFoldersError: [], largeFilesCountFoldersError: [] },
-          largeFilesCountFolderWarnings: [],
-        })
-        client.getCustomObjects = mockFunction<SdfClient['getCustomObjects']>().mockResolvedValue({
-          elements: [customTypeInfo, featuresCustomTypeInfo],
-          instancesIds: [],
-          failedToFetchAllAtOnce: false,
-          failedTypes: { lockedError: {}, unexpectedError: {}, excludedTypes: [] },
-        })
-        const { elements, partialFetchData } = await adapter.fetch(mockFetchOpts)
-        expect(partialFetchData?.isPartial).toBeFalsy()
-        const customObjectsQuery = (client.getCustomObjects as jest.Mock).mock.calls[0][1].updatedFetchQuery
-        const typesToSkip = [SAVED_SEARCH, TRANSACTION_FORM, INTEGRATION, REPORT_DEFINITION, FINANCIAL_LAYOUT].concat(
-          !fetchPluginImplementations ? 'pluginimplementation' : [],
-        )
-        expect(_.pull(getStandardTypesNames(), ...typesToSkip).every(customObjectsQuery.isTypeMatch)).toBeTruthy()
-        expect(typesToSkip.every(customObjectsQuery.isTypeMatch)).toBeFalsy()
-        expect(customObjectsQuery.isTypeMatch('subsidiary')).toBeFalsy()
-        expect(customObjectsQuery.isTypeMatch('account')).toBeTruthy()
-
-        const fileCabinetQuery = (client.importFileCabinetContent as jest.Mock).mock.calls[0][0]
-        expect(fileCabinetQuery.isFileMatch('Some/File/Regex')).toBeFalsy()
-        expect(fileCabinetQuery.isFileMatch('Some/anotherFile/Regex')).toBeTruthy()
-
-        const scriptIdListElements = await getOrCreateObjectIdListElements(
-          [],
-          buildElementsSourceFromElements([]),
-          false,
-        )
-        const suiteQLTableElements = await getSuiteQLTableElements(config, buildElementsSourceFromElements([]), false)
-
-        expect(elements.map(elem => elem.elemID.getFullName()).sort()).toEqual(
-          [...metadataTypes, ...scriptIdListElements, ...suiteQLTableElements.elements]
-            .map(elem => elem.elemID.getFullName())
-            .concat([
-              'netsuite.companyFeatures.instance',
-              'netsuite.entitycustomfield.instance.custentity_my_script_id',
-              'netsuite.file.instance.a_b@d',
-              'netsuite.folder.instance.a_b@d',
-            ])
-            .sort(),
-        )
-
-        const customFieldType = elements.find(element =>
-          element.elemID.isEqual(new ElemID(NETSUITE, ENTITY_CUSTOM_FIELD)),
-        )
-        expect(isObjectType(customFieldType)).toBeTruthy()
-        expect(elements).toContainEqual(
-          await createInstanceElement(customTypeInfo, customFieldType as ObjectType, mockGetElemIdFunc),
-        )
-
-        const file = elements.find(element => element.elemID.isEqual(new ElemID(NETSUITE, FILE)))
-        expect(isObjectType(file)).toBeTruthy()
-        expect(elements).toContainEqual(
-          await createInstanceElement(fileCustomizationInfo, file as ObjectType, mockGetElemIdFunc),
-        )
-
-        const folder = elements.find(element => element.elemID.isEqual(new ElemID(NETSUITE, FOLDER)))
-        expect(isObjectType(folder)).toBeTruthy()
-        expect(elements).toContainEqual(
-          await createInstanceElement(folderCustomizationInfo, folder as ObjectType, mockGetElemIdFunc),
-        )
-
-        const featuresType = elements.find(element => element.elemID.isEqual(new ElemID(NETSUITE, CONFIG_FEATURES)))
-        expect(isObjectType(featuresType)).toBeTruthy()
-        expect(elements).toContainEqual(
-          await createInstanceElement(featuresCustomTypeInfo, featuresType as ObjectType, mockGetElemIdFunc),
-        )
-
-        expect(suiteAppImportFileCabinetMock).not.toHaveBeenCalled()
-      })
-    })
-
     describe('fetchConfig', () => {
       const createAdapter = (configInput: NetsuiteConfig): NetsuiteAdapter =>
         new NetsuiteAdapter({
@@ -955,73 +813,68 @@ describe('Adapter', () => {
       })
     })
 
-    describe.each([false, true])('visibleLockedCustomRecordTypes %s', visibleLockedCustomRecordTypes => {
-      it('should create locked custom record type elements', async () => {
-        const adapter = new NetsuiteAdapter({
-          client: new NetsuiteClient(client),
-          elementsSource: buildElementsSourceFromElements([]),
-          filtersCreators: [firstDummyFilter, secondDummyFilter],
-          config: {
-            ...config,
-            fetch: {
-              ...config.fetch,
-              lockedElementsToExclude: {
-                types: [
-                  {
-                    name: 'customrecordtype',
-                    ids: ['customrecord_locked2', 'customrecord_locked3'],
-                  },
-                ],
-                fileCabinet: [],
-              },
-              visibleLockedCustomRecordTypes,
+    it('should create locked custom record type elements', async () => {
+      const adapter = new NetsuiteAdapter({
+        client: new NetsuiteClient(client),
+        elementsSource: buildElementsSourceFromElements([]),
+        filtersCreators: [firstDummyFilter, secondDummyFilter],
+        config: {
+          ...config,
+          fetch: {
+            ...config.fetch,
+            lockedElementsToExclude: {
+              types: [
+                {
+                  name: 'customrecordtype',
+                  ids: ['customrecord_locked2', 'customrecord_locked3'],
+                },
+              ],
+              fileCabinet: [],
             },
           },
-          originalConfig: config,
-          getElemIdFunc: mockGetElemIdFunc,
-        })
-        client.getCustomObjects = mockFunction<SdfClient['getCustomObjects']>().mockResolvedValue({
-          elements: [],
-          instancesIds: [
-            { type: 'customrecordtype', instanceId: 'customrecord_locked1' },
-            { type: 'customrecordtype', instanceId: 'customrecord_locked2' },
-          ],
-          failedToFetchAllAtOnce: true,
-          failedTypes: {
-            lockedError: { customrecordtype: ['customrecord_locked1'] },
-            unexpectedError: {},
-            excludedTypes: [],
-          },
-        })
-        const fetchResult = await adapter.fetch(mockFetchOpts)
-        const lockedCustomRecordTypes = fetchResult.elements
-          .filter(isObjectType)
-          .filter(isCustomRecordType)
-          .filter(e =>
-            visibleLockedCustomRecordTypes ? e.annotations[IS_LOCKED] : e.annotations[CORE_ANNOTATIONS.HIDDEN],
-          )
-        expect(lockedCustomRecordTypes).toHaveLength(2)
-        const lockedCustomRecordType1 = lockedCustomRecordTypes.find(
-          type => type.elemID.name === 'customrecord_locked1',
-        ) as ObjectType
-        expect(lockedCustomRecordType1.annotations).toEqual({
-          scriptid: 'customrecord_locked1',
-          source: 'soap',
-          [METADATA_TYPE]: CUSTOM_RECORD_TYPE,
-          ...(visibleLockedCustomRecordTypes ? { [IS_LOCKED]: true } : { [CORE_ANNOTATIONS.HIDDEN]: true }),
-        })
-        expect(lockedCustomRecordType1.path).toEqual([NETSUITE, CUSTOM_RECORDS_PATH, 'customrecord_locked1'])
-        const lockedCustomRecordType2 = lockedCustomRecordTypes.find(
-          type => type.elemID.name === 'customrecord_locked2',
-        ) as ObjectType
-        expect(lockedCustomRecordType2.annotations).toEqual({
-          scriptid: 'customrecord_locked2',
-          source: 'soap',
-          [METADATA_TYPE]: CUSTOM_RECORD_TYPE,
-          ...(visibleLockedCustomRecordTypes ? { [IS_LOCKED]: true } : { [CORE_ANNOTATIONS.HIDDEN]: true }),
-        })
-        expect(lockedCustomRecordType2.path).toEqual([NETSUITE, CUSTOM_RECORDS_PATH, 'customrecord_locked2'])
+        },
+        originalConfig: config,
+        getElemIdFunc: mockGetElemIdFunc,
       })
+      client.getCustomObjects = mockFunction<SdfClient['getCustomObjects']>().mockResolvedValue({
+        elements: [],
+        instancesIds: [
+          { type: 'customrecordtype', instanceId: 'customrecord_locked1' },
+          { type: 'customrecordtype', instanceId: 'customrecord_locked2' },
+        ],
+        failedToFetchAllAtOnce: true,
+        failedTypes: {
+          lockedError: { customrecordtype: ['customrecord_locked1'] },
+          unexpectedError: {},
+          excludedTypes: [],
+        },
+      })
+      const fetchResult = await adapter.fetch(mockFetchOpts)
+      const lockedCustomRecordTypes = fetchResult.elements
+        .filter(isObjectType)
+        .filter(isCustomRecordType)
+        .filter(e => e.annotations[IS_LOCKED])
+      expect(lockedCustomRecordTypes).toHaveLength(2)
+      const lockedCustomRecordType1 = lockedCustomRecordTypes.find(
+        type => type.elemID.name === 'customrecord_locked1',
+      ) as ObjectType
+      expect(lockedCustomRecordType1.annotations).toEqual({
+        scriptid: 'customrecord_locked1',
+        source: 'soap',
+        [METADATA_TYPE]: CUSTOM_RECORD_TYPE,
+        [IS_LOCKED]: true,
+      })
+      expect(lockedCustomRecordType1.path).toEqual([NETSUITE, CUSTOM_RECORDS_PATH, 'customrecord_locked1'])
+      const lockedCustomRecordType2 = lockedCustomRecordTypes.find(
+        type => type.elemID.name === 'customrecord_locked2',
+      ) as ObjectType
+      expect(lockedCustomRecordType2.annotations).toEqual({
+        scriptid: 'customrecord_locked2',
+        source: 'soap',
+        [METADATA_TYPE]: CUSTOM_RECORD_TYPE,
+        [IS_LOCKED]: true,
+      })
+      expect(lockedCustomRecordType2.path).toEqual([NETSUITE, CUSTOM_RECORDS_PATH, 'customrecord_locked2'])
     })
   })
 
@@ -1530,7 +1383,6 @@ describe('Adapter', () => {
         maxFileCabinetSizeInGB: 3,
         extensionsToExclude: ['.*\\.(csv|pdf|png)'],
         maxFilesPerFileCabinetFolder: [],
-        wrapFolderIdsWithQuotes: false,
       })
     })
 

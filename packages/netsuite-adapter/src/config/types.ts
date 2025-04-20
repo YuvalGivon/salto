@@ -107,9 +107,6 @@ export type FetchParams = {
   fieldsToOmit?: FieldToOmitParams[]
   findReferencesInFilesWithExtension?: string[]
   singletonCustomRecords?: string[]
-  visibleLockedCustomRecordTypes?: boolean
-  fetchPluginImplementations?: boolean
-  wrapFolderIdsWithQuotes?: boolean
   partialFetchFileCabinetRegexes?: string[]
 } & LockedElementsConfig['fetch']
 
@@ -122,9 +119,6 @@ export const FETCH_PARAMS: lowerdashTypes.TypeKeysEnum<FetchParams> = {
   fieldsToOmit: 'fieldsToOmit',
   findReferencesInFilesWithExtension: 'findReferencesInFilesWithExtension',
   singletonCustomRecords: 'singletonCustomRecords',
-  visibleLockedCustomRecordTypes: 'visibleLockedCustomRecordTypes',
-  fetchPluginImplementations: 'fetchPluginImplementations',
-  wrapFolderIdsWithQuotes: 'wrapFolderIdsWithQuotes',
   partialFetchFileCabinetRegexes: 'partialFetchFileCabinetRegexes',
 }
 
@@ -655,9 +649,6 @@ const fetchConfigType = createMatchingObjectType<FetchParams>({
     fieldsToOmit: { refType: new ListType(fieldsToOmitConfig) },
     findReferencesInFilesWithExtension: { refType: new ListType(BuiltinTypes.STRING) },
     singletonCustomRecords: { refType: new ListType(BuiltinTypes.STRING) },
-    visibleLockedCustomRecordTypes: { refType: BuiltinTypes.BOOLEAN },
-    fetchPluginImplementations: { refType: BuiltinTypes.BOOLEAN },
-    wrapFolderIdsWithQuotes: { refType: BuiltinTypes.BOOLEAN },
     partialFetchFileCabinetRegexes: { refType: new ListType(BuiltinTypes.STRING) },
   },
   annotations: {

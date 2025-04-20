@@ -186,7 +186,6 @@ type FilesQueryParams = {
   folderIdsToQuery: string[]
   isSuiteBundlesEnabled: boolean
   extensionsToExclude: string[]
-  wrapFolderIdsWithQuotes: boolean
   numOfFolderIdsPerFilesQuery: number
 }
 
@@ -195,7 +194,6 @@ export type ImportFileCabinetParams = {
   maxFileCabinetSizeInGB: number
   extensionsToExclude: string[]
   maxFilesPerFileCabinetFolder: MaxFilesPerFileCabinetFolder[]
-  wrapFolderIdsWithQuotes: boolean
   numOfFolderIdsPerFilesQuery?: number
 }
 
@@ -334,18 +332,13 @@ const getFilesWhereQueries = ({
   folderIdsToQuery,
   isSuiteBundlesEnabled,
   extensionsToExclude,
-  wrapFolderIdsWithQuotes,
   numOfFolderIdsPerFilesQuery,
 }: FilesQueryParams): string[] => {
   const whereNotHideInBundle = isSuiteBundlesEnabled ? "hideinbundle = 'F' AND " : ''
   const whereNotExtension = extensionsToExclude.map(reg => `NOT REGEXP_LIKE(name, '${reg}') AND `).join('')
-  const whereQueries = _.chunk(folderIdsToQuery, numOfFolderIdsPerFilesQuery).map(foldersToQueryChunk => {
-    const wrappedFolderIds = wrapFolderIdsWithQuotes
-      ? foldersToQueryChunk.map(folderId => `'${folderId}'`)
-      : foldersToQueryChunk
-
-    return `${whereNotExtension}${whereNotHideInBundle}folder IN (${wrappedFolderIds.join(', ')})`
-  })
+  const whereQueries = _.chunk(folderIdsToQuery, numOfFolderIdsPerFilesQuery).map(
+    foldersToQueryChunk => `${whereNotExtension}${whereNotHideInBundle}folder IN (${foldersToQueryChunk.join(', ')})`,
+  )
   return whereQueries
 }
 
@@ -614,7 +607,6 @@ const queryFileCabinet = async (
     query,
     extensionsToExclude,
     maxFilesPerFileCabinetFolder,
-    wrapFolderIdsWithQuotes,
     numOfFolderIdsPerFilesQuery = MAX_ITEMS_IN_WHERE_QUERY,
   }: ImportFileCabinetParams,
 ): Promise<FileCabinetResults> => {
@@ -654,7 +646,6 @@ const queryFileCabinet = async (
     folderIdsToQuery: foldersToIncludeByPath.map(folder => folder.id),
     isSuiteBundlesEnabled,
     extensionsToExclude,
-    wrapFolderIdsWithQuotes,
     numOfFolderIdsPerFilesQuery,
   })
 
@@ -677,7 +668,6 @@ const queryFileCabinet = async (
     folderIdsToQuery: foldersResults.map(folder => folder.id),
     isSuiteBundlesEnabled,
     extensionsToExclude,
-    wrapFolderIdsWithQuotes,
     numOfFolderIdsPerFilesQuery,
   })
 

@@ -34,7 +34,7 @@ import { filter, logDuration } from '@salto-io/adapter-utils'
 import { combineElementFixers } from '@salto-io/adapter-components'
 import { createElements } from './transformer'
 import { DeployResult, TYPES_TO_SKIP, isCustomRecordType } from './types'
-import { BUNDLE, CUSTOM_RECORD_TYPE, IS_LOCKED, PLUGIN_IMPLEMENTATION, SCRIPT_ID } from './constants'
+import { BUNDLE, CUSTOM_RECORD_TYPE, IS_LOCKED, SCRIPT_ID } from './constants'
 import convertListsToMaps from './filters/convert_lists_to_maps'
 import replaceElementReferences from './filters/element_references'
 import parseReportTypes from './filters/parse_report_types'
@@ -103,7 +103,6 @@ import dependencyChanger from './dependency_changer'
 import { cloneChange } from './change_validators/utils'
 import { getChangeGroupIdsFunc } from './group_changes'
 import { getCustomRecords } from './custom_records/custom_records'
-import { createLockedCustomRecordTypes } from './custom_records/custom_record_type'
 import { getDataElements } from './data_elements/data_elements'
 import { getSuiteQLTableElements } from './data_elements/suiteql_table_elements'
 import { getStandardTypesNames } from './autogen/types'
@@ -379,7 +378,6 @@ export default class NetsuiteAdapter implements AdapterOperations {
         maxFileCabinetSizeInGB: this.config.client?.maxFileCabinetSizeInGB ?? DEFAULT_MAX_FILE_CABINET_SIZE_IN_GB,
         extensionsToExclude: this.config.fetch.exclude.fileCabinet.filter(reg => reg.startsWith(EXTENSION_REGEX)),
         maxFilesPerFileCabinetFolder: this.config.client?.maxFilesPerFileCabinetFolder ?? [],
-        wrapFolderIdsWithQuotes: this.config.fetch.wrapFolderIdsWithQuotes ?? false,
         numOfFolderIdsPerFilesQuery: this.config.suiteAppClient?.numOfFolderIdsPerFilesQuery,
       })
       progressReporter.reportProgress({ message: 'Fetching instances' })
@@ -399,18 +397,7 @@ export default class NetsuiteAdapter implements AdapterOperations {
       )
     }
 
-    const getHiddenLockedCustomRecordTypes = (failedTypes: FailedTypes, instancesIds: ObjectID[]): ObjectType[] => {
-      if (this.config.fetch.visibleLockedCustomRecordTypes !== false) {
-        return []
-      }
-      const lockedCustomRecordTypesScriptIds = getLockedCustomRecordTypesScriptIds(failedTypes, instancesIds)
-      return createLockedCustomRecordTypes(lockedCustomRecordTypesScriptIds)
-    }
-
     const getLockedCustomRecordTypes = (failedTypes: FailedTypes, instancesIds: ObjectID[]): CustomTypeInfo[] => {
-      if (this.config.fetch.visibleLockedCustomRecordTypes === false) {
-        return []
-      }
       const lockedCustomRecordTypesScriptIds = getLockedCustomRecordTypesScriptIds(failedTypes, instancesIds)
       return lockedCustomRecordTypesScriptIds.map(scriptId => ({
         typeName: CUSTOM_RECORD_TYPE,
@@ -423,7 +410,6 @@ export default class NetsuiteAdapter implements AdapterOperations {
       standardInstances: InstanceElement[]
       standardTypes: TypeElement[]
       customRecordTypes: ObjectType[]
-      lockedCustomRecordTypes: ObjectType[]
       customRecords: InstanceElement[]
       errors: SaltoError[]
       instancesIds: ObjectID[]
@@ -453,14 +439,14 @@ export default class NetsuiteAdapter implements AdapterOperations {
       const [standardInstances, types] = _.partition(elements, isInstanceElement)
       const [objectTypes, otherTypes] = _.partition(types, isObjectType)
       const [customRecordTypes, standardTypes] = _.partition(objectTypes, isCustomRecordType)
-      const lockedCustomRecordTypes = getHiddenLockedCustomRecordTypes(failedTypes, instancesIds)
+
       const {
         elements: customRecords,
         errors: customRecordErrors,
         largeTypesError: failedCustomRecords,
       } = await getCustomRecords(
         this.client,
-        customRecordTypes.concat(lockedCustomRecordTypes),
+        customRecordTypes,
         fetchQueryWithBundles,
         this.config.fetch.singletonCustomRecords ?? [],
         this.getElemIdFunc,
@@ -473,7 +459,6 @@ export default class NetsuiteAdapter implements AdapterOperations {
         standardInstances,
         standardTypes: [...standardTypes, ...otherTypes],
         customRecordTypes,
-        lockedCustomRecordTypes,
         customRecords,
         errors: largeFilesCountFolderFetchWarnings.concat(customRecordErrors),
         instancesIds,
@@ -482,16 +467,7 @@ export default class NetsuiteAdapter implements AdapterOperations {
     }
 
     const [
-      {
-        standardInstances,
-        standardTypes,
-        customRecordTypes,
-        lockedCustomRecordTypes,
-        customRecords,
-        errors,
-        instancesIds,
-        failures,
-      },
+      { standardInstances, standardTypes, customRecordTypes, customRecords, errors, instancesIds, failures },
       { elements: dataElements, requestedTypes: requestedDataTypes, largeTypesError: dataTypeError },
       { elements: suiteQLTableElements },
     ] = await Promise.all([
@@ -530,7 +506,6 @@ export default class NetsuiteAdapter implements AdapterOperations {
       .concat(standardInstances)
       .concat(standardTypes)
       .concat(customRecordTypes)
-      .concat(lockedCustomRecordTypes)
       .concat(customRecords)
       .concat(dataElements)
       .concat(suiteQLTableElements)
@@ -575,11 +550,7 @@ export default class NetsuiteAdapter implements AdapterOperations {
 
     const deprecatedSkipList = buildNetsuiteQuery(
       convertToQueryParams({
-        types: Object.fromEntries(
-          this.typesToSkip
-            .concat(this.config.fetch.fetchPluginImplementations === false ? PLUGIN_IMPLEMENTATION : [])
-            .map(typeName => [typeName, [ALL_TYPES_REGEX]]),
-        ),
+        types: Object.fromEntries(this.typesToSkip.map(typeName => [typeName, [ALL_TYPES_REGEX]])),
         filePaths: this.filePathRegexSkipList.map(reg => `.*${reg}.*`),
       }),
     )

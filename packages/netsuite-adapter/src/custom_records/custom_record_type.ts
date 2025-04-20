@@ -126,14 +126,6 @@ export const createCustomRecordTypes = (
     .concat(translation, translationsList)
 }
 
-export const createLockedCustomRecordTypes = (scriptIds: string[]): ObjectType[] =>
-  scriptIds.map(scriptId =>
-    createCustomRecordType({
-      [SCRIPT_ID]: scriptId,
-      [CORE_ANNOTATIONS.HIDDEN]: true,
-    }),
-  )
-
 export const toCustomRecordTypeInstance = (element: ObjectType): InstanceElement =>
   new InstanceElement(element.elemID.name, customrecordtypeType().type, {
     ..._.omit(element.annotations, [SOURCE, METADATA_TYPE, ...Object.values(CORE_ANNOTATIONS)]),
