@@ -13,6 +13,7 @@ import {
   ReferenceExpression,
   ChangeValidator,
   ReadOnlyElementsSource,
+  Value,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
@@ -116,7 +117,7 @@ describe.each([[WORKFLOW_V1], [WORKFLOW_V2]])('workflow scheme migration: %s ', 
   let validator: ChangeValidator
   let config: JiraConfig
   let elementSource: ReadOnlyElementsSource
-  let numberOfIssues: number
+  let issues: Value[]
 
   const setupWorkflowReferences = (): void => {
     if (workflowVersion === 'workflowV1') {
@@ -233,7 +234,7 @@ describe.each([[WORKFLOW_V1], [WORKFLOW_V2]])('workflow scheme migration: %s ', 
     jest.clearAllMocks()
     const { client, paginator, connection } = mockClient()
     mockConnection = connection
-    numberOfIssues = 100
+    issues = [{ 'fields': 'test' }]
     workflowSchemeType = new ObjectType({ elemID: new ElemID(JIRA, 'WorkflowScheme') })
     issueTypeSchemeType = new ObjectType({ elemID: new ElemID(JIRA, 'IssueTypeScheme') })
     setupWorkflowReferences()
@@ -291,11 +292,11 @@ describe.each([[WORKFLOW_V1], [WORKFLOW_V2]])('workflow scheme migration: %s ', 
       ],
     })
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         return {
           status: 200,
           data: {
-            total: numberOfIssues,
+            issues,
           },
         }
       }
@@ -362,7 +363,7 @@ describe.each([[WORKFLOW_V1], [WORKFLOW_V2]])('workflow scheme migration: %s ', 
     await expect(errorsPromise).resolves.not.toThrow()
   })
   it('should not return an error for active workflow scheme with no issues in assigned projects', async () => {
-    numberOfIssues = 0
+    issues = []
     const errors = await validator(
       [toChange({ before: workflowSchemeInstance, after: modifiedInstance })],
       elementSource,

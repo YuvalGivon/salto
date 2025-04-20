@@ -17,6 +17,7 @@ import {
   ModificationChange,
   ReferenceExpression,
   SeverityLevel,
+  Value,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { client as clientUtils } from '@salto-io/adapter-components'
@@ -72,10 +73,10 @@ const areIssueTypesUsed = async (
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
   try {
     response = await client.get({
-      url: '/rest/api/3/search',
+      url: '/rest/api/3/search/jql',
       queryParams: {
         jql,
-        maxResults: '0',
+        maxResults: '1',
       },
     })
   } catch (e) {
@@ -83,13 +84,15 @@ const areIssueTypesUsed = async (
     return false
   }
 
-  if (Array.isArray(response.data) || response.data.total === undefined) {
+  if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
     log.error(
       `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming issue type "${issueType}" has no issues.`,
     )
     return false
   }
-  return response.data.total !== 0
+
+  const { issues } = response.data as { issues: Value[] }
+  return issues.length !== 0
 }
 
 export const issueTypeSchemeMigrationValidator =

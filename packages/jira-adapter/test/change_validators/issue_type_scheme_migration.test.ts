@@ -14,6 +14,7 @@ import {
   toChange,
   ReadOnlyElementsSource,
   ChangeError,
+  Value,
 } from '@salto-io/adapter-api'
 import { MockInterface } from '@salto-io/test-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
@@ -52,7 +53,7 @@ describe('issue type scheme migration validator', () => {
   let validator: ChangeValidator
   let elementSource: ReadOnlyElementsSource
   let mockConnection: MockInterface<clientUtils.APIConnection>
-  let numberOfIssues: number
+  let issues: Value[]
   const callValidator = async (): Promise<readonly ChangeError[]> => {
     const changes = [toChange({ before: issueTypeScheme, after: modifiedIssueTypeScheme })]
     return validator(changes, elementSource)
@@ -62,7 +63,7 @@ describe('issue type scheme migration validator', () => {
     jest.clearAllMocks()
     const { client, connection } = mockClient()
     mockConnection = connection
-    numberOfIssues = 100
+    issues = [{ 'fields': 'test' }]
     const issueTypeSchemeType = new ObjectType({ elemID: new ElemID(JIRA, ISSUE_TYPE_SCHEMA_NAME) })
     projectInstance = new InstanceElement('instance', projectType, {
       name: 'instance',
@@ -93,11 +94,11 @@ describe('issue type scheme migration validator', () => {
       modifiedIssueTypeScheme,
     ])
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         return {
           status: 200,
           data: {
-            total: numberOfIssues,
+            issues,
           },
         }
       }
@@ -132,7 +133,7 @@ describe('issue type scheme migration validator', () => {
     expect(await validator([toChange({ before: issueTypeScheme, after: modifiedIssueTypeScheme })])).toEqual([])
   })
   it('should not return an error if there are no linked issues', async () => {
-    numberOfIssues = 0
+    issues = []
     expect(await callValidator()).toEqual([])
   })
   it('should not return an error if changed issue type scheme is not used by projects', async () => {
@@ -141,7 +142,7 @@ describe('issue type scheme migration validator', () => {
   })
   it("should assume there aren't issues if error is returned from server", async () => {
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         throw new Error('error')
       }
       throw new Error(`Unexpected url ${url}`)
@@ -171,13 +172,23 @@ describe('issue type scheme migration validator', () => {
     )
   })
   it('should only include issue type with assigned issues in error', async () => {
-    numberOfIssues = 0
     mockConnection.get.mockImplementationOnce(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         return {
           status: 200,
           data: {
-            total: 100,
+            issues: [{'fields': 'test'}],
+          },
+        }
+      }
+      throw new Error(`Unexpected url ${url}`)
+    })
+    mockConnection.get.mockImplementationOnce(async url => {
+      if (url === '/rest/api/3/search/jql') {
+        return {
+          status: 200,
+          data: {
+            issues: [],
           },
         }
       }

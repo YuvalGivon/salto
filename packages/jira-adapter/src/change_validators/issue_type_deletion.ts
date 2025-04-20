@@ -15,6 +15,7 @@ import {
   isRemovalChange,
   RemovalChange,
   SeverityLevel,
+  Value,
 } from '@salto-io/adapter-api'
 import { safeJsonStringify } from '@salto-io/adapter-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
@@ -31,10 +32,10 @@ const isIssueTypeUsed = async (instance: InstanceElement, client: JiraClient): P
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
   try {
     response = await client.get({
-      url: '/rest/api/3/search',
+      url: '/rest/api/3/search/jql',
       queryParams: {
         jql: `issuetype = "${instance.value.name}"`,
-        maxResults: '0',
+        maxResults: '1',
       },
     })
   } catch (e) {
@@ -44,16 +45,17 @@ const isIssueTypeUsed = async (instance: InstanceElement, client: JiraClient): P
     return false
   }
 
-  if (Array.isArray(response.data) || response.data.total === undefined) {
+  if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
     log.error(
       `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming issue type ${instance.elemID.getFullName()} has no issues.`,
     )
     return false
   }
 
-  log.debug(`Issue type ${instance.elemID.getFullName()} has ${response.data.total} issues.`)
+  const { issues } = response.data as { issues: Value[] }
+  log.debug(`Issue type ${instance.elemID.getFullName()} has ${issues.length} issues.`)
 
-  return response.data.total !== 0
+  return issues.length !== 0
 }
 const getRelevantChanges = (changes: ReadonlyArray<Change>): RemovalChange<InstanceElement>[] =>
   changes

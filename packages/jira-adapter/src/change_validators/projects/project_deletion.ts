@@ -12,6 +12,7 @@ import {
   isInstanceChange,
   isRemovalChange,
   SeverityLevel,
+  Value,
 } from '@salto-io/adapter-api'
 import { safeJsonStringify } from '@salto-io/adapter-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
@@ -28,10 +29,10 @@ export const doesProjectHaveIssues = async (instance: InstanceElement, client: J
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
   try {
     response = await client.get({
-      url: '/rest/api/3/search',
+      url: '/rest/api/3/search/jql',
       queryParams: {
         jql: `project = "${instance.value.key}"`,
-        maxResults: '0',
+        maxResults: '1',
       },
     })
   } catch (e) {
@@ -41,16 +42,17 @@ export const doesProjectHaveIssues = async (instance: InstanceElement, client: J
     return true
   }
 
-  if (Array.isArray(response.data) || response.data.total === undefined) {
+  if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
     log.error(
       `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming project ${instance.elemID.getFullName()} has issues.`,
     )
     return true
   }
 
-  log.debug(`Project ${instance.elemID.getFullName()} has ${response.data.total} issues.`)
+  const { issues } = response.data as { issues: Value[] }
+  log.debug(`Project ${instance.elemID.getFullName()} has ${issues.length} issues.`)
 
-  return response.data.total !== 0
+  return issues.length !== 0
 }
 
 export const projectDeletionValidator: (client: JiraClient, config: JiraConfig) => ChangeValidator =

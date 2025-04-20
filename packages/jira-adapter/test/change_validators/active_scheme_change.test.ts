@@ -12,6 +12,7 @@ import {
   InstanceElement,
   ReferenceExpression,
   ChangeValidator,
+  Value,
 } from '@salto-io/adapter-api'
 import { MockInterface } from '@salto-io/test-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
@@ -29,13 +30,13 @@ describe('active scheme change', () => {
   let projectInstance: InstanceElement
   let modifiedInstance: InstanceElement
   let validator: ChangeValidator
-  let numberOfIssues: number
+  let issues: Value[]
 
   beforeEach(() => {
     jest.clearAllMocks()
     const { client, connection } = mockClient()
     mockConnection = connection
-    numberOfIssues = 100
+    issues = [{ 'fields': 'test' }]
     projectType = new ObjectType({ elemID: new ElemID(JIRA, 'Project') })
     projectInstance = new InstanceElement('project', projectType, {
       name: 'instance',
@@ -46,11 +47,11 @@ describe('active scheme change', () => {
       workflowScheme: workflowSchemeReference2,
     })
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         return {
           status: 200,
           data: {
-            total: numberOfIssues,
+            issues,
           },
         }
       }
@@ -69,7 +70,7 @@ describe('active scheme change', () => {
     expect(errors).toHaveLength(0)
   })
   it('should not return error for projects without issues', async () => {
-    numberOfIssues = 0
+    issues = []
     const errors = await validator([toChange({ before: projectInstance, after: modifiedInstance })])
     expect(errors).toHaveLength(0)
   })

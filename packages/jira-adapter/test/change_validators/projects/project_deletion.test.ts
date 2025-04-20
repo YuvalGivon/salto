@@ -28,7 +28,7 @@ describe('projectDeletionValidator', () => {
     mockConnection.get.mockResolvedValue({
       status: 200,
       data: {
-        total: 1,
+        issues: [{'fields': 'test'}],
       },
     })
 
@@ -58,10 +58,10 @@ describe('projectDeletionValidator', () => {
       },
     ])
 
-    expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/3/search/jql', {
       params: {
         jql: 'project = "KEY"',
-        maxResults: '0',
+        maxResults: '1',
       },
     })
   })
@@ -70,7 +70,7 @@ describe('projectDeletionValidator', () => {
     mockConnection.get.mockResolvedValue({
       status: 200,
       data: {
-        total: 0,
+        issues: [],
       },
     })
 
