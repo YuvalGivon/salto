@@ -854,18 +854,23 @@ const validateVariableValue = (elemID: ElemID, value: Value): ValidationError[] 
 
 const validateVariable = (element: Variable): ValidationError[] => validateVariableValue(element.elemID, element.value)
 
-export const validateElement = (element: Element): ValidationError[] => {
-  if (isInstanceElement(element)) {
-    return validateInstanceElement(element)
-  }
-  if (isVariable(element)) {
-    return validateVariable(element)
-  }
-  if (isType(element)) {
-    return validateType(element)
-  }
-  return []
-}
+export const validateElement = (element: Element): ValidationError[] =>
+  log.timeTrace(
+    () => {
+      if (isInstanceElement(element)) {
+        return validateInstanceElement(element)
+      }
+      if (isVariable(element)) {
+        return validateVariable(element)
+      }
+      if (isType(element)) {
+        return validateType(element)
+      }
+      return []
+    },
+    'validateElement %s',
+    element.elemID.getFullName(),
+  )
 
 export const validateElements = async (
   elements: Element[],

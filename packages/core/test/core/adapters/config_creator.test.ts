@@ -5,18 +5,12 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-
+import { logger } from '@salto-io/logging'
 import { Adapter, BuiltinTypes, CORE_ANNOTATIONS, ElemID, InstanceElement, ObjectType } from '@salto-io/adapter-api'
 import { getAdapterConfigOptionsType } from '../../../src/core/adapters/config_creator'
 import { createMockAdapter } from '../../common/helpers'
 
-const mockLogWarn = jest.fn()
-jest.mock('@salto-io/logging', () => ({
-  ...jest.requireActual<{}>('@salto-io/logging'),
-  logger: jest.fn().mockReturnValue({
-    warn: jest.fn((...args) => mockLogWarn(...args)),
-  }),
-}))
+const log = logger('core/src/core/adapters/config_creator')
 
 const mockOptionsType = new ObjectType({
   elemID: new ElemID('mockOptionsType'),
@@ -99,6 +93,7 @@ describe('adapters config creator', () => {
       expect(mockGetOptionsTypeFn).toHaveBeenCalledWith()
     })
     it('should log configContext validation errors and return undefined', () => {
+      const mockLogWarn = jest.spyOn(log, 'warn')
       const result = getAdapterConfigOptionsType({
         adapterName: mockServiceWithConfigContextType,
         adapterCreators: mockAdapterCreators,
