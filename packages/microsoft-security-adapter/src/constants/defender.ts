@@ -18,7 +18,7 @@ export const ASSIGNMENTS_FIELD_NAME = 'assignments'
 export const TOP_LEVEL_TYPES = {
   INDICATOR_TYPE_NAME: 'DefenderIndicator',
   POLICY_TEMPLATE_TYPE_NAME: 'DefenderPolicyTemplate',
-  ATTACK_SURFACE_REDUCTION_POLICY_TYPE_NAME: 'DefenderADRPolicy',
+  ATTACK_SURFACE_REDUCTION_POLICY_TYPE_NAME: 'DefenderASRPolicy',
   ENDPOINT_DETECTION_AND_RESPONSE_POLICY_TYPE_NAME: 'DefenderEDRPolicy',
   ANTIVIRUS_POLICY_TYPE_NAME: 'DefenderAntivirusPolicy',
   FIREWALL_POLICY_TYPE_NAME: 'DefenderFirewallPolicy',
