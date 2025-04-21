@@ -925,7 +925,11 @@ export const handleHiddenChanges = async (
   changes: DetailedChangeWithBaseChange[],
   state: State,
   visibleElementSource: ReadOnlyElementsSource,
-): Promise<{ visible: DetailedChangeWithBaseChange[]; hidden: DetailedChangeWithBaseChange[] }> => {
+): Promise<{
+  visible: DetailedChangeWithBaseChange[]
+  hidden: DetailedChangeWithBaseChange[]
+  hasHiddenChangeNaclSideEffects: boolean
+}> => {
   // The side effects here are going to be applied to the nacls, so only
   // the visible part is needed. We filter it here and not with the rest
   // of the changes in order to prevent remove changes (which are always
@@ -938,6 +942,7 @@ export const handleHiddenChanges = async (
     .filter(values.isDefined)
   const filteredChanges = await filterOutHiddenChanges(changes, state)
   return {
+    hasHiddenChangeNaclSideEffects: additionalNaclChanges.length > 0,
     visible: removeDuplicateChanges(
       filteredChanges.map(change => change.visible).filter(values.isDefined),
       additionalNaclChanges,

@@ -645,7 +645,7 @@ describe('fetch command', () => {
                     { severity: 'Error', message: 'BLA Error', detailedMessage: 'detailed BLA Error' },
                   ]),
                 )
-                return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0 }
+                return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0, hasHiddenChangeNaclSideEffects: false }
               })
 
               const res = await fetchCommand({
@@ -678,7 +678,7 @@ describe('fetch command', () => {
                     { severity: 'Warning', message: 'BLA Error', detailedMessage: 'detailed BLA Error' },
                   ]),
                 )
-                return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0 }
+                return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0, hasHiddenChangeNaclSideEffects: false }
               })
 
               const res = await fetchCommand({

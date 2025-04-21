@@ -332,6 +332,7 @@ export const mockWorkspace = ({
     updateNaclFiles: mockFunction<Workspace['updateNaclFiles']>().mockResolvedValue({
       naclFilesChangesCount: 0,
       stateOnlyChangesCount: 0,
+      hasHiddenChangeNaclSideEffects: false,
     }),
     listNaclFiles: mockFunction<Workspace['listNaclFiles']>().mockResolvedValue([]),
     getTotalSize: mockFunction<Workspace['getTotalSize']>().mockResolvedValue(0),

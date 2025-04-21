@@ -95,6 +95,7 @@ describe('restore command', () => {
       jest.spyOn(workspace, 'updateNaclFiles').mockResolvedValue({
         naclFilesChangesCount: 2,
         stateOnlyChangesCount: 0,
+        hasHiddenChangeNaclSideEffects: false,
       })
 
       result = await action({
@@ -338,7 +339,7 @@ describe('restore command', () => {
       workspace.errors.mockResolvedValue(
         mocks.mockErrors([{ severity: 'Error', message: 'some error ', detailedMessage: 'some error ' }]),
       )
-      return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0 }
+      return { naclFilesChangesCount: 0, stateOnlyChangesCount: 0, hasHiddenChangeNaclSideEffects: false }
     })
     const result = await action({
       ...cliCommandArgs,

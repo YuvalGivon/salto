@@ -163,6 +163,7 @@ export type UnresolvedElemIDs = {
 export type UpdateNaclFilesResult = {
   naclFilesChangesCount: number
   stateOnlyChangesCount: number
+  hasHiddenChangeNaclSideEffects: boolean
 }
 
 // common source has no state
@@ -1029,7 +1030,11 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
     validate?: boolean
     stateOnly?: boolean
   }): Promise<UpdateNaclFilesResult> => {
-    const { visible: visibleChanges, hidden: hiddenChanges } = await handleHiddenChanges(
+    const {
+      visible: visibleChanges,
+      hidden: hiddenChanges,
+      hasHiddenChangeNaclSideEffects,
+    } = await handleHiddenChanges(
       changes,
       state(),
       await (await getLoadedNaclFilesSource()).getElementsSource(currentEnv()),
@@ -1058,6 +1063,7 @@ export async function loadWorkspace(params: LoadWorkspaceParams): Promise<Worksp
       validate,
     })
     return {
+      hasHiddenChangeNaclSideEffects,
       naclFilesChangesCount: Object.values(workspaceChanges)
         .map(changeSet => changeSet.changes)
         .flat().length,

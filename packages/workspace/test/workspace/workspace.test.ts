@@ -602,6 +602,7 @@ describe('workspace', () => {
       expect(updateNaclFileResults).toEqual({
         naclFilesChangesCount: 1,
         stateOnlyChangesCount: 1,
+        hasHiddenChangeNaclSideEffects: false,
       })
       expect(searchableNamesAfter.length).toEqual(TOTAL_NUM_ELEMENTS - (numOfFields + 1))
       expect(searchableNamesAfter.includes(accountIntSett.elemID.getFullName())).toBeFalsy()
@@ -631,6 +632,7 @@ describe('workspace', () => {
       expect(updateNaclFilesREsult).toEqual({
         naclFilesChangesCount: 1,
         stateOnlyChangesCount: 0,
+        hasHiddenChangeNaclSideEffects: false,
       })
       const searchableNamesAfter = await workspace.getSearchableNames()
       expect(searchableNamesAfter.length).toEqual(TOTAL_NUM_ELEMENTS + 2)
@@ -1185,6 +1187,7 @@ salesforce.staticFile staticFileInstance {
       expect(otherUpdateNaclFileResults).toEqual({
         naclFilesChangesCount: 1,
         stateOnlyChangesCount: 0,
+        hasHiddenChangeNaclSideEffects: false,
       })
     })
   })
@@ -1977,13 +1980,14 @@ salesforce.staticFile staticFileInstance {
       ] as InstanceElement
     })
 
-    it('should have right number of results', () => {
+    it('should have right number of results, and hasHiddenChangeNaclSideEffects=true', () => {
       // This is just meant to test that calculating number of changes works,
       // and could possibly change. If you get a failure here and the number
       // of changes you get seems ok, you can just change numExpectedChanges
       expect(updateNaclFileResults).toEqual({
         naclFilesChangesCount: 27,
         stateOnlyChangesCount: 20,
+        hasHiddenChangeNaclSideEffects: true,
       })
     })
 
@@ -2245,6 +2249,7 @@ salesforce.staticFile staticFileInstance {
       expect(updateNaclFilesResult).toEqual({
         naclFilesChangesCount: 2,
         stateOnlyChangesCount: 0,
+        hasHiddenChangeNaclSideEffects: false,
       })
       expect(lead.fields.base_field.annotations[CORE_ANNOTATIONS.DEFAULT]).toEqual('blabla')
     })
@@ -2367,6 +2372,7 @@ salesforce.staticFile staticFileInstance {
         expect(await wsWithMultipleEnvs.updateNaclFiles([change], 'override')).toEqual({
           naclFilesChangesCount: 2,
           stateOnlyChangesCount: 0,
+          hasHiddenChangeNaclSideEffects: false,
         })
         expect(
           await awu(await (await wsWithMultipleEnvs.elements(true, secondarySourceName)).list()).toArray(),

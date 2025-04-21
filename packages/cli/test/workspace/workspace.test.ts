@@ -28,6 +28,7 @@ const mockWsFunctions = {
   updateNaclFiles: mockFunction<Workspace['updateNaclFiles']>().mockResolvedValue({
     naclFilesChangesCount: 0,
     stateOnlyChangesCount: 0,
+    hasHiddenChangeNaclSideEffects: false,
   }),
   isEmpty: mockFunction<Workspace['isEmpty']>().mockResolvedValue(false),
   flush: mockFunction<Workspace['flush']>(),
