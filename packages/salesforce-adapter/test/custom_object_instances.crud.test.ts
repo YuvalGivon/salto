@@ -377,9 +377,10 @@ describe('Custom Object Instances CRUD', () => {
             [CORE_ANNOTATIONS.REQUIRED]: false,
             [constants.LABEL]: 'Name',
             [constants.API_NAME]: 'Name',
-            [constants.FIELD_ANNOTATIONS.CREATABLE]: true,
-            [constants.FIELD_ANNOTATIONS.UPDATEABLE]: true,
-            [constants.FIELD_ANNOTATIONS.QUERYABLE]: true,
+            // Annotations here are set to false on purpose to make sure we calculate the FLS permissions upon deploy
+            [constants.FIELD_ANNOTATIONS.CREATABLE]: false,
+            [constants.FIELD_ANNOTATIONS.UPDATEABLE]: false,
+            [constants.FIELD_ANNOTATIONS.QUERYABLE]: false,
           },
         },
         TestField__c: {
@@ -1872,8 +1873,9 @@ describe('Custom Object Instances CRUD', () => {
   })
 
   describe('When adapter is defined with dataManagement config with invalid fields in SaltoIDSettings', () => {
+    let connection: MockInterface<Connection>
     beforeEach(() => {
-      ;({ adapter } = mockAdapter({
+      ;({ connection, adapter } = mockAdapter({
         adapterParams: {
           filterCreators: [],
           config: {
@@ -1888,6 +1890,7 @@ describe('Custom Object Instances CRUD', () => {
           },
         },
       }))
+      mockDescribe(connection, customObject)
     })
 
     it('Should fail with trying to run an add group', async () => {
@@ -1910,13 +1913,15 @@ describe('Custom Object Instances CRUD', () => {
   })
 
   describe('When adapter is defined without dataManagement config', () => {
+    let connection: MockInterface<Connection>
     beforeEach(() => {
-      ;({ adapter } = mockAdapter({
+      ;({ connection, adapter } = mockAdapter({
         adapterParams: {
           filterCreators: [],
           config: {},
         },
       }))
+      mockDescribe(connection, customObject)
     })
 
     describe('Add deploy group', () => {
