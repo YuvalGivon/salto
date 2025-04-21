@@ -20,6 +20,7 @@ const DC_ENCODE_PREFIX = '`!`'
 const CANNED_SCRIPT = 'canned-script'
 const FIELD_COMMENT_TYPE = 'com.onresolve.scriptrunner.canned.jira.workflow.postfunctions.CommentIssue'
 const LOGGED_SCRIPT_FIRST_CHARS = 200
+const FIELDS_TO_OMIT = (): string[] => ['FIELD_FUNCTION_ID']
 
 const decodeBase64 = (base64: string): string => {
   try {
@@ -101,9 +102,9 @@ const transformConfigFields =
       return WALK_NEXT_STEP.SKIP
     }
     if (SCRIPT_RUNNER_DC_TYPES.includes(value.type) && value.configuration !== undefined) {
-      // remove empty fields
+      // remove empty fields and fields to omit
       Object.entries(value.configuration).forEach(([fieldName, fieldValue]) => {
-        if (fieldValue === '') {
+        if (fieldValue === '' || FIELDS_TO_OMIT().includes(fieldName)) {
           delete value.configuration[fieldName]
         }
       })

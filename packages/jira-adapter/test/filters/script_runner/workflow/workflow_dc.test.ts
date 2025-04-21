@@ -169,6 +169,12 @@ describe('Scriptrunner DC Workflow', () => {
           instance.value.transitions.tran1.rules.postFunctions[0].configuration.FIELD_SCRIPT_FILE_OR_SCRIPT,
         ).toBeUndefined()
       })
+
+      it('should delete fields to omit', async () => {
+        instance.value.transitions.tran1.rules.postFunctions[0].configuration.FIELD_FUNCTION_ID = '123'
+        await filter.onFetch([instance])
+        expect(instance.value.transitions.tran1.rules.postFunctions[0].configuration.FIELD_FUNCTION_ID).toBeUndefined()
+      })
       it('should not return null if both script and path are null', async () => {
         instance.value.transitions.tran1.rules.postFunctions[0].configuration.FIELD_SCRIPT_FILE_OR_SCRIPT = twoNulls
         await filter.onFetch([instance])
