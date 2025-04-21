@@ -171,7 +171,7 @@ describe('config upgrade utils', () => {
           },
         })
       })
-      it('should not return updated config if no elemID related definitions are found', () => {
+      it('should remove only empty apiDefinitions from updated config if no elemID related definitions are found', () => {
         const config = new InstanceElement('config', configType, {
           fetch: {
             include: [{ type: '.*' }],
@@ -190,7 +190,48 @@ describe('config upgrade utils', () => {
         })
 
         const res = updateDeprecatedConfig(config)
-        expect(res).toBeUndefined()
+        expect(res).toEqual({
+          config: new InstanceElement('config', configType, {
+            fetch: {
+              include: [{ type: '.*' }],
+              exclude: [],
+            },
+            apiDefinitions: {
+              types: {
+                foo: {
+                  request: { url: '/foos' },
+                },
+              },
+            },
+          }),
+          message:
+            'Elem ID customizations are now under `fetch.elemID`. The following changes will upgrade the deprecated definitions from `apiDefinitions` to the new location.',
+        })
+      })
+      it('should remove apiDefinitions completely from updated config if no elemID related definitions are found', () => {
+        const config = new InstanceElement('config', configType, {
+          fetch: {
+            include: [{ type: '.*' }],
+            exclude: [],
+          },
+          apiDefinitions: {
+            typeDefaults: {
+              transformation: {},
+            },
+          },
+        })
+
+        const res = updateDeprecatedConfig(config)
+        expect(res).toEqual({
+          config: new InstanceElement('config', configType, {
+            fetch: {
+              include: [{ type: '.*' }],
+              exclude: [],
+            },
+          }),
+          message:
+            'Elem ID customizations are now under `fetch.elemID`. The following changes will upgrade the deprecated definitions from `apiDefinitions` to the new location.',
+        })
       })
       it('should merge any existing elemID config if exists', () => {
         const config = new InstanceElement('config', configType, {

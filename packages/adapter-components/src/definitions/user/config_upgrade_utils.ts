@@ -94,7 +94,6 @@ export const updateDeprecatedConfig = (
   const updatedElemIDs = updateElemIDDefinitions(updatedConfig.value.apiDefinitions)
   if (_.isEmpty(updatedElemIDs)) {
     log.debug('found no elemID definitions to update in config')
-    return undefined
   }
   if (updatedConfig.value.fetch?.elemID !== undefined) {
     log.error(
