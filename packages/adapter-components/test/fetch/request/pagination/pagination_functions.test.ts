@@ -18,6 +18,7 @@ import {
   offsetAndLimitPagination,
   getPaginationWithLimitedResults,
   getItems,
+  offsetAndTotalPagination,
 } from '../../../../src/fetch/request/pagination/pagination_functions'
 
 describe('pagination functions', () => {
@@ -112,6 +113,26 @@ describe('pagination functions', () => {
           responseData: { more: false, startAt: 3, values: [4] },
         }),
       ).toEqual([])
+    })
+  })
+
+  describe('offsetAndTotalPagination', () => {
+    it('should calculate next pages', async () => {
+      const paginate = offsetAndTotalPagination()
+      expect(
+        paginate({
+          endpointIdentifier: { path: '/ep' },
+          currentParams: {},
+          responseData: { paging: { offset: 0, perPage: 3, total: 10 } },
+        }),
+      ).toEqual([{ queryParams: { offset: '3' } }])
+      expect(
+        paginate({
+          endpointIdentifier: { path: '/ep' },
+          currentParams: {},
+          responseData: { paging: { offset: 3, perPage: 3, total: 10 } },
+        }),
+      ).toEqual([{ queryParams: { offset: '6' } }])
     })
   })
 

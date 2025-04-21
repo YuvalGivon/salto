@@ -20,8 +20,8 @@ const validateDirectoryCredentials = async ({
   connection: clientUtils.APIConnection
 }): Promise<AccountInfo> => {
   try {
-    const defualtCustomer = await connection.get('/admin/directory/v1/customers/my_customer')
-    const primaryDomain = defualtCustomer.data.customerDomain
+    const defaultCustomer = await connection.get('/admin/directory/v1/customers/my_customer')
+    const primaryDomain = defaultCustomer.data.customerDomain
     if (primaryDomain === undefined) {
       throw new Error('Failed to find primary domain')
     }
