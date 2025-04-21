@@ -152,7 +152,6 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
     src: {
       field: 'ioa_rule_groups',
       instanceTypes: ['PreventionPolicy'],
-      parentTypes: ['FileVantagePolicy'],
     },
     target: {
       type: 'IoaRuleGroup',
