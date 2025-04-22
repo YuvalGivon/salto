@@ -15,9 +15,9 @@ import {
   isInstanceChange,
   CORE_ANNOTATIONS,
   ElemID,
-  isReferenceExpression,
 } from '@salto-io/adapter-api'
 import { deployment } from '@salto-io/adapter-components'
+import { isResolvedReferenceExpression } from '@salto-io/adapter-utils'
 import { ISSUE_LAYOUT_TYPE } from '../constants'
 
 type ChangeWithKey = deployment.dependency.ChangeWithKey<Change<InstanceElement>>
@@ -70,7 +70,7 @@ export const issueLayoutDependencyChanger: DependencyChanger = async changes => 
     ) as string[][]
 
   Object.entries(issueLayoutsKeysToProject).forEach(([issueLayoutKey, project]) => {
-    const issueLayoutKeyToProjectScreenSchemesKeys = isReferenceExpression(project.value.issueTypeScreenScheme)
+    const issueLayoutKeyToProjectScreenSchemesKeys = isResolvedReferenceExpression(project.value.issueTypeScreenScheme)
       ? project.value.issueTypeScreenScheme.value.value.issueTypeMappings
           ?.map((issueTypeMapping: issueTypeMappingStruct) =>
             getSpecificChange(issueTypeMapping.screenSchemeId?.elemID, AdditionOrModificationChanges),

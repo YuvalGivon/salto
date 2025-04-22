@@ -620,5 +620,14 @@ describe('issueLayoutDependencyChanger', () => {
       const dependencyChanges = [...(await issueLayoutDependencyChanger(inputChanges, inputDeps))]
       expect(dependencyChanges).toHaveLength(0)
     })
+
+    it('should not crash if the parent reference is unresolved', async () => {
+      projectInstance1.value.issueTypeScreenScheme = new ReferenceExpression(
+        new ElemID('jira', 'IssueTypeScreenScheme', 'instance', 'unresolved'),
+      )
+      const inputChanges = new Map([['issueLayoutInstance1', toChange({ after: issueLayoutInstance1 })]])
+      const dependencyChanges = [...(await issueLayoutDependencyChanger(inputChanges, inputDeps))]
+      expect(dependencyChanges).toHaveLength(0)
+    })
   })
 })
