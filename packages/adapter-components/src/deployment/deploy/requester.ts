@@ -248,14 +248,15 @@ export const getRequester = <TOptions extends APIDefinitionsOptions>({
 
     const extractor = createExtractor(mergedRequestDef.transformation)
 
+    const { elemID, value } = getChangeData(change)
+
     const resolvedChange = await changeResolver(change)
-    const resolvedValue = getChangeData(resolvedChange).value
     const contextFunc =
       mergedRequestDef.context?.custom !== undefined
         ? mergedRequestDef.context.custom(mergedRequestDef.context)
         : () => undefined
     const additionalContext = replaceAllArgs({
-      context: _.merge({}, resolvedValue, getChangeData(resolvedChange).annotations),
+      context: _.merge({}, getChangeData(resolvedChange).value, getChangeData(resolvedChange).annotations),
       value: _.merge(
         contextFunc({ change, ...changeContext }),
         _.omit(mergedRequestDef.context, ['change', 'changeGroup', 'elementSource', 'sharedContext', 'custom']),
@@ -268,7 +269,7 @@ export const getRequester = <TOptions extends APIDefinitionsOptions>({
           change,
           ...changeContext,
           additionalContext,
-          value: recursiveNaclCase(resolvedValue, true),
+          value: recursiveNaclCase(getChangeData(resolvedChange).value, true),
         })
 
     throwOnUnresolvedReferences(data)
@@ -278,7 +279,7 @@ export const getRequester = <TOptions extends APIDefinitionsOptions>({
         mergedEndpointDef.queryArgs !== undefined
           ? replaceAllArgs({
               value: mergedEndpointDef.queryArgs,
-              context: _.merge({}, resolvedValue, additionalContext),
+              context: _.merge({}, value, additionalContext),
             })
           : undefined,
       headers: mergedEndpointDef.headers,
@@ -287,7 +288,7 @@ export const getRequester = <TOptions extends APIDefinitionsOptions>({
 
     log.trace(
       'making request for change %s client %s endpoint %s.%s',
-      getChangeData(change).elemID.getFullName(),
+      elemID.getFullName(),
       clientName,
       mergedRequestDef.endpoint.path,
       mergedRequestDef.endpoint.method,
@@ -295,7 +296,7 @@ export const getRequester = <TOptions extends APIDefinitionsOptions>({
 
     const finalEndpointIdentifier = replaceAllArgs({
       value: mergedEndpointDef,
-      context: _.merge({}, resolvedValue, additionalContext),
+      context: _.merge({}, value, additionalContext),
       throwOnUnresolvedArgs: true,
     })
     const client = clientDefs[clientName].httpClient
