@@ -23,6 +23,7 @@ import {
   isModificationChange,
   ElemID,
   isRemovalChange,
+  ListItemCompareOptions,
 } from '@salto-io/adapter-api'
 import { values } from '@salto-io/lowerdash'
 import wu from 'wu'
@@ -159,7 +160,11 @@ const buildKeyToIndicesMap = (list: Value[], keyFunc: KeyFunction): Record<strin
  *
  * Any implementation that satisfies these properties would work with the rest of the code
  */
-export const getArrayIndexMapping = (before: Value[], after: Value[]): IndexMappingItem[] => {
+export const getArrayIndexMapping = (
+  before: Value[],
+  after: Value[],
+  options: ListItemCompareOptions = {},
+): IndexMappingItem[] => {
   const afterIndexExactMap = buildKeyToIndicesMap(after, getListItemExactKey)
   const afterIndexTopLevelMap = buildKeyToIndicesMap(after, getListItemTopLevelKey)
 
@@ -260,6 +265,15 @@ export const getArrayIndexMapping = (before: Value[], after: Value[]): IndexMapp
           : undefined
 
       if (selectedAfterIndex === undefined) {
+        return { beforeIndex, afterIndex }
+      }
+
+      if (
+        options.reducePrimitiveValueModifications &&
+        (isValidLeafValue(before[beforeIndex]) || isValidLeafValue(after[selectedAfterIndex]))
+      ) {
+        // For leaf values (not objects / arrays), if the index doesn't match and the value doesn't match exactly, we prefer to show addition/removal
+        // We don't do this for complex values because in those cases, a partial match could be meaningful
         return { beforeIndex, afterIndex }
       }
 

@@ -12,7 +12,7 @@ export type PromiseWithState<T> = Promise<T> & {
 }
 
 const isPromiseWithState = <T>(o: Promise<T>): o is PromiseWithState<T> =>
-  ['done', 'resolved', 'rejected'].every(p => Object.prototype.hasOwnProperty.call(o, p))
+  ['done', 'resolved', 'rejected'].every(p => Object.hasOwn(o, p))
 
 const defineGetter = <T, TReturn>(o: T, name: string, ret: () => TReturn): void => {
   Object.defineProperty(o, name, { get: ret })

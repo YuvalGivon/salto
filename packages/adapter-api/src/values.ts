@@ -23,10 +23,15 @@ export interface Values {
   [key: string]: Value
 }
 
+export type ListItemCompareOptions = {
+  reducePrimitiveValueModifications?: boolean
+}
+
 export type CompareOptions = {
   compareByValue?: boolean
   createFieldChanges?: boolean
   compareListItems?: boolean
+  listItemCompareOptions?: ListItemCompareOptions
 }
 
 export const calculateStaticFileHash = (content: Buffer): string => hashUtils.toMD5(content)

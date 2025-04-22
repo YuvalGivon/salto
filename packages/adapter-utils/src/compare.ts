@@ -48,7 +48,7 @@ const compareListWithOrderMatching = ({
   afterId: ElemID | undefined
   options: CompareOptions | undefined
 }): DetailedChange[] => {
-  const indexMapping = getArrayIndexMapping(before, after)
+  const indexMapping = getArrayIndexMapping(before, after, options?.listItemCompareOptions)
 
   const itemsChanges = _.flatten(
     indexMapping.map((item, changeIndex) => {

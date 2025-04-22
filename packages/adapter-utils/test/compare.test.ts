@@ -22,6 +22,7 @@ import {
   toChange,
   Change,
   TypeReference,
+  DetailedChangeWithBaseChange,
 } from '@salto-io/adapter-api'
 import {
   detailedCompare,
@@ -471,6 +472,183 @@ describe('detailedCompare', () => {
             baseChange,
           },
         ])
+      })
+
+      describe('reduce primitive value modifications', () => {
+        describe('with primitive value reorder and modification', () => {
+          let listChanges: DetailedChangeWithBaseChange[]
+          beforeEach(() => {
+            beforeInst.value.list = ['a', 'b', 'e', 'f']
+            afterInst.value.list = ['c', 'a', 'd', 'e', 'g']
+            listChanges = detailedCompare(beforeInst, afterInst, {
+              compareListItems: true,
+              listItemCompareOptions: { reducePrimitiveValueModifications: true },
+            })
+          })
+          it('should avoid creating modify changes when value and index are different', () => {
+            expect(listChanges).toEqual([
+              {
+                id: listID.createNestedID('0'),
+                data: { after: 'c' },
+                action: 'add',
+                elemIDs: {
+                  after: listID.createNestedID('0'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('1'),
+                data: { before: 'b' },
+                action: 'remove',
+                elemIDs: {
+                  before: listID.createNestedID('1'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('2'),
+                data: { before: 'a', after: 'a' },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('0'),
+                  after: listID.createNestedID('1'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('3'),
+                data: { before: 'f' },
+                action: 'remove',
+                elemIDs: {
+                  before: listID.createNestedID('3'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('4'),
+                data: { after: 'd' },
+                action: 'add',
+                elemIDs: {
+                  after: listID.createNestedID('2'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('5'),
+                data: { before: 'e', after: 'e' },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('2'),
+                  after: listID.createNestedID('3'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('6'),
+                data: { after: 'g' },
+                action: 'add',
+                elemIDs: {
+                  after: listID.createNestedID('4'),
+                },
+                baseChange,
+              },
+            ])
+          })
+        })
+        describe('with complex value reorder and modification', () => {
+          let listChanges: DetailedChangeWithBaseChange[]
+          beforeEach(() => {
+            beforeInst.value.list = [{ value: 'a' }, { value: 'b' }, { value: 'e' }, { value: 'f' }]
+            afterInst.value.list = [{ value: 'c' }, { value: 'a' }, { value: 'd' }, { value: 'e' }, { value: 'g' }]
+            listChanges = detailedCompare(beforeInst, afterInst, {
+              compareListItems: true,
+              listItemCompareOptions: { reducePrimitiveValueModifications: true },
+            })
+          })
+          it('should still create modify changes when value and index are different', () => {
+            const listChangesToStr = (myChanges: DetailedChangeWithBaseChange[]): string =>
+              myChanges
+                .map(
+                  c =>
+                    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-explicit-any
+                    `${listID.getRelativePath(c.id)} : ${c.action[0]} : ${listID.getRelativePath(c.elemIDs?.before ?? listID)}->${listID.getRelativePath(c.elemIDs?.after ?? listID)} ${JSON.stringify((c as any).data?.before)} -> ${JSON.stringify((c as any).data?.after)}`,
+                )
+                .join('\n')
+
+            const expected: DetailedChangeWithBaseChange[] = [
+              {
+                id: listID.createNestedID('0'),
+                data: { after: { value: 'c' } },
+                action: 'add',
+                elemIDs: {
+                  after: listID.createNestedID('0'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('1'),
+                data: { before: { value: 'a' }, after: { value: 'a' } },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('0'),
+                  after: listID.createNestedID('1'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('2', 'value'),
+                data: { before: 'b', after: 'd' },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('1', 'value'),
+                  after: listID.createNestedID('2', 'value'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('2'),
+                data: { before: { value: 'b' }, after: { value: 'd' } },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('1'),
+                  after: listID.createNestedID('2'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('3'),
+                data: { before: { value: 'e' }, after: { value: 'e' } },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('2'),
+                  after: listID.createNestedID('3'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('4', 'value'),
+                data: { before: 'f', after: 'g' },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('3', 'value'),
+                  after: listID.createNestedID('4', 'value'),
+                },
+                baseChange,
+              },
+              {
+                id: listID.createNestedID('4'),
+                data: { before: { value: 'f' }, after: { value: 'g' } },
+                action: 'modify',
+                elemIDs: {
+                  before: listID.createNestedID('3'),
+                  after: listID.createNestedID('4'),
+                },
+                baseChange,
+              },
+            ]
+            expect(listChangesToStr(listChanges)).toEqual(listChangesToStr(expected))
+          })
+        })
       })
     })
   })
