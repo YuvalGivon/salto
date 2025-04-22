@@ -8,6 +8,7 @@
 import _ from 'lodash'
 import { forEachAsync, awu } from './collections/asynciterable'
 import { TypeGuard, Predicate, AsyncPredicate } from './types'
+import { getOwn } from './objects'
 
 // The '0' key is used to "nudge" typescript to infer a tuple type instead of an array
 type TupleType<T> = T[] & { '0': T }
@@ -80,7 +81,7 @@ export const buildMultiIndex = <InputType, Result extends object = {}>(): MultiI
     Object.fromEntries(
       indexDefinitions.map(indexDef => [
         indexDef.name,
-        { get: (...keyParts: string[]): unknown => _.get(index, [indexDef.name, ...keyParts]) },
+        { get: (...keyParts: string[]): unknown => getOwn(index, [indexDef.name, ...keyParts]) },
       ]),
     ) as Result
   const indexBuilder: MultiIndexBuilder<InputType, Result> = {

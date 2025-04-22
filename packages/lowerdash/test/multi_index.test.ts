@@ -90,5 +90,10 @@ describe('multi index', () => {
       expect(all.get('all', '9')).toEqual(9)
       expect(all.get('all', '10')).toBeUndefined()
     })
+    it('should ignore keys from Object prototype', async () => {
+      const { all } = await builder.process(items)
+      expect(all.get('all', 'constructor')).toBeUndefined()
+      expect(all.get('all', 'toString')).toBeUndefined()
+    })
   })
 })

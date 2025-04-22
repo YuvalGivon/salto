@@ -6,7 +6,7 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import _ from 'lodash'
-import { cleanEmptyObjects, concatObjects } from '../src/objects'
+import { cleanEmptyObjects, concatObjects, getOwn } from '../src/objects'
 
 describe('concatObjects', () => {
   type testType = {
@@ -95,5 +95,68 @@ describe('cleanEmptyObjects', () => {
       },
       anotherArr: [{}, { a: 'b' }],
     })
+  })
+})
+
+describe('getOwn', () => {
+  const obj = {
+    a: {
+      b: {
+        c: 'value',
+      },
+      arr: [1, 2, 3],
+    },
+    toString: 'obj',
+  }
+
+  // Create an object with inherited properties
+  const proto = { inherited: 'value' }
+  const objWithInherited = Object.create(proto)
+  objWithInherited.own = 'value'
+
+  // Create an object with null prototype
+  const nullProtoObj = Object.create(null)
+  nullProtoObj.test = 'value'
+
+  it('should get nested own properties', () => {
+    expect(getOwn(obj, ['a', 'b', 'c'])).toBe('value')
+  })
+
+  it('should work with array indices', () => {
+    expect(getOwn(obj, ['a', 'arr', '1'])).toBe(2)
+  })
+
+  it('should return defaultValue for non-existent paths', () => {
+    expect(getOwn(obj, ['a', 'x', 'y'], 'default')).toBe('default')
+  })
+
+  it('should return defaultValue for non-object intermediate values', () => {
+    expect(getOwn(obj, ['a', 'b', 'c', 'deeper'], 'default')).toBe('default')
+  })
+
+  it('should ignore properties from Object prototype', () => {
+    expect(getOwn(obj, ['constructor'], 'default')).toBe('default')
+  })
+
+  it('should get own properties which override Object prototype properties', () => {
+    expect(getOwn(obj, ['toString'], 'default')).toBe('obj')
+  })
+
+  it('should ignore inherited properties', () => {
+    expect(getOwn(objWithInherited, ['inherited'], 'default')).toBe('default')
+    expect(getOwn(objWithInherited, ['own'])).toBe('value')
+  })
+
+  it('should work with objects with null prototype', () => {
+    expect(getOwn(nullProtoObj, ['test'])).toBe('value')
+  })
+
+  it('should handle null/undefined input object', () => {
+    expect(getOwn(null, ['a'], 'default')).toBe('default')
+    expect(getOwn(undefined, ['a'], 'default')).toBe('default')
+  })
+
+  it('should return undefined when no defaultValue is provided', () => {
+    expect(getOwn(obj, ['nonexistent'])).toBeUndefined()
   })
 })

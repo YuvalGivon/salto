@@ -46,3 +46,15 @@ export const cleanEmptyObjects = (object: Record<string, unknown>): unknown => {
   const cleanedRoot = cleanObject(object)
   return isPlainRecord(cleanedRoot) && _.isEmpty(cleanedRoot) ? undefined : cleanedRoot
 }
+
+/**
+ * Gets the value at path of object, only traversing own properties.
+ * Similar to _.get but only traverses properties that pass Object.hasOwn check.
+ */
+export const getOwn = (obj: unknown, path: string[], defaultValue?: unknown): unknown =>
+  path.reduce<unknown>((current, part) => {
+    if (current == null || typeof current !== 'object' || !Object.hasOwn(current, part)) {
+      return defaultValue
+    }
+    return (current as Record<string, unknown>)[part]
+  }, obj) ?? defaultValue
