@@ -18,6 +18,7 @@ import {
   ReferenceExpression,
 } from '@salto-io/adapter-api'
 import { collections } from '@salto-io/lowerdash'
+import { JiraConfig } from '../config/config'
 import JiraClient from '../client/client'
 import { PROJECT_TYPE } from '../constants'
 import { doesProjectHaveIssues } from './projects/project_deletion'
@@ -43,13 +44,14 @@ const projectSchemeChanged = (change: ModificationChange<InstanceElement>): Rele
 const getRelevantChanges = async (
   changes: ReadonlyArray<Change<ChangeDataType>>,
   client: JiraClient,
+  useJqlSearch: boolean,
 ): Promise<ModificationChange<InstanceElement>[]> =>
   awu(changes)
     .filter(isInstanceChange)
     .filter(isModificationChange)
     .filter(change => getChangeData(change).elemID.typeName === PROJECT_TYPE)
     .filter(change => projectSchemeChanged(change).length > 0)
-    .filter(async change => doesProjectHaveIssues(getChangeData(change), client))
+    .filter(async change => doesProjectHaveIssues(getChangeData(change), client, useJqlSearch))
     .toArray()
 
 const getChangeErrorForChange = (change: ModificationChange<InstanceElement>): ChangeError[] => {
@@ -63,8 +65,9 @@ const getChangeErrorForChange = (change: ModificationChange<InstanceElement>): C
 }
 
 export const activeSchemeChangeValidator =
-  (client: JiraClient): ChangeValidator =>
+  (client: JiraClient, config: JiraConfig): ChangeValidator =>
   async changes => {
-    const relevantChanges = await getRelevantChanges(changes, client)
+    const useJqlSearch = config.fetch.useJqlSearch === true
+    const relevantChanges = await getRelevantChanges(changes, client, useJqlSearch)
     return relevantChanges.flatMap(getChangeErrorForChange)
   }

@@ -28,12 +28,12 @@ describe('projectDeletionValidator', () => {
     mockConnection.get.mockResolvedValue({
       status: 200,
       data: {
-        total: 1,
+        issues: [{ fields: 'test' }],
       },
     })
 
     config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
-
+    config.fetch.useJqlSearch = true
     changeValidator = projectDeletionValidator(client, config)
 
     type = new ObjectType({ elemID: new ElemID(JIRA, 'Project') })
@@ -58,10 +58,10 @@ describe('projectDeletionValidator', () => {
       },
     ])
 
-    expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockConnection.get).toHaveBeenCalledWith('/rest/api/3/search/jql', {
       params: {
         jql: 'project = "KEY"',
-        maxResults: '0',
+        maxResults: '1',
       },
     })
   })
@@ -70,7 +70,7 @@ describe('projectDeletionValidator', () => {
     mockConnection.get.mockResolvedValue({
       status: 200,
       data: {
-        total: 0,
+        issues: [],
       },
     })
 

@@ -68,7 +68,8 @@ export const projectHasWorkflowSchemeReference = (project: InstanceElement): boo
 const workflowLinkedToProjectWithIssues = async (
   assignedProjects: InstanceElement[],
   client: JiraClient,
-): Promise<boolean> => awu(assignedProjects).some(async project => doesProjectHaveIssues(project, client))
+  useJqlSearch: boolean,
+): Promise<boolean> => awu(assignedProjects).some(async project => doesProjectHaveIssues(project, client, useJqlSearch))
 
 export const getRelevantChanges = (
   changes: ReadonlyArray<Change<ChangeDataType>>,
@@ -243,12 +244,14 @@ export const workflowSchemeMigrationValidator =
     const workflowSchemesToProjects = _.groupBy(projects.filter(projectHasWorkflowSchemeReference), project =>
       project.value.workflowScheme.elemID.getFullName(),
     )
+    const useJqlSearch = config.fetch.useJqlSearch === true
     const activeWorkflowsChanges = await awu(relevantChanges)
       .filter(change => workflowSchemesToProjects[getChangeData(change).elemID.getFullName()] !== undefined)
       .filter(async change =>
         workflowLinkedToProjectWithIssues(
           workflowSchemesToProjects[getChangeData(change).elemID.getFullName()],
           client,
+          useJqlSearch,
         ),
       )
       .toArray()

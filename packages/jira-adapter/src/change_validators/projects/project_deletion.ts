@@ -24,14 +24,21 @@ const { awu } = collections.asynciterable
 
 const log = logger(module)
 
-export const doesProjectHaveIssues = async (instance: InstanceElement, client: JiraClient): Promise<boolean> => {
+export const doesProjectHaveIssues = async (
+  instance: InstanceElement,
+  client: JiraClient,
+  useJqlSearch: boolean,
+): Promise<boolean> => {
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
+
+  const jql = `project = "${instance.value.key}"`
+
   try {
     response = await client.get({
-      url: '/rest/api/3/search',
+      url: useJqlSearch ? '/rest/api/3/search/jql' : '/rest/api/3/search',
       queryParams: {
-        jql: `project = "${instance.value.key}"`,
-        maxResults: '0',
+        jql,
+        maxResults: useJqlSearch ? '1' : '0',
       },
     })
   } catch (e) {
@@ -39,6 +46,20 @@ export const doesProjectHaveIssues = async (instance: InstanceElement, client: J
       `Received an error Jira search API, ${e.message}. Assuming project ${instance.elemID.getFullName()} has issues.`,
     )
     return true
+  }
+
+  if (useJqlSearch) {
+    if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
+      log.error(
+        `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming project ${instance.elemID.getFullName()} has issues.`,
+      )
+      return true
+    }
+
+    const { issues } = response.data
+    const projectHasIssues = issues.length > 0
+    log.debug(`Project ${instance.elemID.getFullName()} has ${projectHasIssues ? '' : 'no'} issues.`)
+    return projectHasIssues
   }
 
   if (Array.isArray(response.data) || response.data.total === undefined) {
@@ -49,7 +70,6 @@ export const doesProjectHaveIssues = async (instance: InstanceElement, client: J
   }
 
   log.debug(`Project ${instance.elemID.getFullName()} has ${response.data.total} issues.`)
-
   return response.data.total !== 0
 }
 
@@ -60,12 +80,14 @@ export const projectDeletionValidator: (client: JiraClient, config: JiraConfig) 
       return []
     }
 
+    const useJqlSearch = config.fetch.useJqlSearch === true
+
     return awu(changes)
       .filter(isInstanceChange)
       .filter(isRemovalChange)
       .map(getChangeData)
       .filter(instance => instance.elemID.typeName === 'Project')
-      .filter(instance => doesProjectHaveIssues(instance, client))
+      .filter(instance => doesProjectHaveIssues(instance, client, useJqlSearch))
       .map(instance => ({
         elemID: instance.elemID,
         severity: 'Error' as SeverityLevel,

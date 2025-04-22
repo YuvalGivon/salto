@@ -5,9 +5,11 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { ObjectType, ElemID, InstanceElement, ChangeValidator, toChange } from '@salto-io/adapter-api'
+import { ObjectType, ElemID, InstanceElement, ChangeValidator, toChange, Value } from '@salto-io/adapter-api'
 import { MockInterface } from '@salto-io/test-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
+import _ from 'lodash'
+import { getDefaultConfig, JiraConfig } from '../../src/config/config'
 import { mockClient } from '../utils'
 import { issueTypeDeletionValidator } from '../../src/change_validators/issue_type_deletion'
 import { ISSUE_TYPE_NAME, JIRA } from '../../src/constants'
@@ -15,29 +17,32 @@ import { ISSUE_TYPE_NAME, JIRA } from '../../src/constants'
 describe('issue type deletion validator', () => {
   let validator: ChangeValidator
   let mockConnection: MockInterface<clientUtils.APIConnection>
-  let numberOfIssues: number
+  let issues: Value[]
   let instance: InstanceElement
+  let config: JiraConfig
 
   beforeEach(() => {
     jest.clearAllMocks()
     const { client, connection } = mockClient()
     mockConnection = connection
-    numberOfIssues = 100
+    issues = [{ fields: 'test' }]
     instance = new InstanceElement('instance', new ObjectType({ elemID: new ElemID(JIRA, ISSUE_TYPE_NAME) }), {
       name: 'instance',
     })
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         return {
           status: 200,
           data: {
-            total: numberOfIssues,
+            issues,
           },
         }
       }
       throw new Error(`Unexpected url ${url}`)
     })
-    validator = issueTypeDeletionValidator(client)
+    config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
+    config.fetch.useJqlSearch = true
+    validator = issueTypeDeletionValidator(client, config)
   })
 
   it('should not return an error on modification/addition changes', async () => {
@@ -45,12 +50,12 @@ describe('issue type deletion validator', () => {
     expect(await validator([toChange({ after: instance })])).toEqual([])
   })
   it('should not return an error if there are no linked issues', async () => {
-    numberOfIssues = 0
+    issues = []
     expect(await validator([toChange({ before: instance })])).toEqual([])
   })
   it("should assume there aren't issues if error is returned from server", async () => {
     mockConnection.get.mockImplementation(async url => {
-      if (url === '/rest/api/3/search') {
+      if (url === '/rest/api/3/search/jql') {
         throw new Error('error')
       }
       throw new Error(`Unexpected url ${url}`)

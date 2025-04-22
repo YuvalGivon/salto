@@ -20,6 +20,7 @@ import { safeJsonStringify } from '@salto-io/adapter-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
 import { logger } from '@salto-io/logging'
 import { collections } from '@salto-io/lowerdash'
+import { JiraConfig } from '../config/config'
 import { ISSUE_TYPE_NAME } from '../constants'
 import JiraClient from '../client/client'
 
@@ -27,14 +28,18 @@ const { awu } = collections.asynciterable
 
 const log = logger(module)
 
-const isIssueTypeUsed = async (instance: InstanceElement, client: JiraClient): Promise<boolean> => {
+const isIssueTypeUsed = async (
+  instance: InstanceElement,
+  client: JiraClient,
+  useJqlSearch: boolean,
+): Promise<boolean> => {
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
   try {
     response = await client.get({
-      url: '/rest/api/3/search',
+      url: useJqlSearch ? '/rest/api/3/search/jql' : '/rest/api/3/search',
       queryParams: {
         jql: `issuetype = "${instance.value.name}"`,
-        maxResults: '0',
+        maxResults: useJqlSearch ? '1' : '0',
       },
     })
   } catch (e) {
@@ -42,6 +47,21 @@ const isIssueTypeUsed = async (instance: InstanceElement, client: JiraClient): P
       `Received an error Jira search API, ${e.message}. Assuming issue type ${instance.elemID.getFullName()} has no issues.`,
     )
     return false
+  }
+
+  if (useJqlSearch) {
+    if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
+      log.error(
+        `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming issue type ${instance.elemID.getFullName()} has no issues.`,
+      )
+      return false
+    }
+
+    const { issues } = response.data
+    const hasIssues = issues.length > 0
+    log.debug(`Issue type ${instance.elemID.getFullName()} has ${hasIssues ? '' : 'no'} issues.`)
+
+    return hasIssues
   }
 
   if (Array.isArray(response.data) || response.data.total === undefined) {
@@ -69,11 +89,13 @@ const getRemovedIssueTypeUsedError = (instance: InstanceElement): ChangeError =>
     'There are existing issues of this issue type. You must delete them before you can delete the issue type itself.',
 })
 
-export const issueTypeDeletionValidator: (client: JiraClient) => ChangeValidator = client => async changes => {
-  const relevantChanges = getRelevantChanges(changes)
-  return awu(relevantChanges)
-    .map(getChangeData)
-    .filter(instance => isIssueTypeUsed(instance, client))
-    .map(getRemovedIssueTypeUsedError)
-    .toArray()
-}
+export const issueTypeDeletionValidator: (client: JiraClient, config: JiraConfig) => ChangeValidator =
+  (client, config) => async changes => {
+    const relevantChanges = getRelevantChanges(changes)
+    const useJqlSearch = config.fetch.useJqlSearch === true
+    return awu(relevantChanges)
+      .map(getChangeData)
+      .filter(instance => isIssueTypeUsed(instance, client, useJqlSearch))
+      .map(getRemovedIssueTypeUsedError)
+      .toArray()
+  }
