@@ -30,7 +30,7 @@ const getFallbackUser = async (
       return getUserIdFromEmail(defaultUser, userMap)
     }
 
-    if (!Object.prototype.hasOwnProperty.call(userMap, defaultUser)) {
+    if (!Object.hasOwn(userMap, defaultUser)) {
       return undefined
     }
 
@@ -69,7 +69,7 @@ const filter: FilterCreator = ({ client, config, elementsSource }) => {
           walkOnElement({
             element,
             func: walkOnUsers(({ value, fieldName, path }) => {
-              if (!Object.prototype.hasOwnProperty.call(userMap, value[fieldName].id)) {
+              if (!Object.hasOwn(userMap, value[fieldName].id)) {
                 fallbackPathToUser[path.createNestedID(fieldName).getFullName()] = value[fieldName].id
                 value[fieldName].id = fallbackUser
               }
@@ -92,7 +92,7 @@ const filter: FilterCreator = ({ client, config, elementsSource }) => {
       Object.entries(fallbackPathToUser).forEach(([path, userId]) => {
         const idPath = ElemID.fromFullName(path)
         const baseId = idPath.createBaseID().parent.getFullName()
-        if (!Object.prototype.hasOwnProperty.call(idToInstance, baseId)) {
+        if (!Object.hasOwn(idToInstance, baseId)) {
           return
         }
 

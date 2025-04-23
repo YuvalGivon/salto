@@ -84,7 +84,7 @@ export const queryWithDefault = <T, K extends string = string>(
   return {
     allKeys: () => query.allKeys(),
     query: key => {
-      if (!Object.prototype.hasOwnProperty.call(cache, key)) {
+      if (!Object.hasOwn(cache, key)) {
         cache[key] = query.query(key)
       }
       return cache[key]

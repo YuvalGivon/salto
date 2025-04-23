@@ -728,7 +728,7 @@ const calcHiddenPart = <V extends object>(fullValue: V, visibleValue?: V): Recur
     if (values.isPlainObject(full) && values.isPlainObject(visible)) {
       const res = _.pickBy(
         _.mapValues(full, (val, key) => {
-          if (Object.prototype.hasOwnProperty.call(visible, key)) {
+          if (Object.hasOwn(visible, key)) {
             const difference = calcHiddenInner(_.get(full, key), _.get(visible, key))
             if (_.isEmpty(difference)) {
               return undefined

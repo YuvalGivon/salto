@@ -33,10 +33,10 @@ export class TreeMap<T> implements Map<string, T[]> {
       return data
     }
     const [key, ...restOfPath] = path
-    if (!Object.prototype.hasOwnProperty.call(data.children, key) && createIfMissing) {
+    if (!Object.hasOwn(data.children, key) && createIfMissing) {
       data.children[key] = { children: {}, value: [] }
     }
-    if (Object.prototype.hasOwnProperty.call(data.children, key)) {
+    if (Object.hasOwn(data.children, key)) {
       return TreeMap.getFromPath(data.children[key], restOfPath, createIfMissing)
     }
     return undefined

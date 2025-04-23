@@ -44,7 +44,7 @@ type TypeWithFieldPermissions = ObjectType & {
 }
 
 const isTypeWithFieldPermissions = (elem: ObjectType): elem is TypeWithFieldPermissions =>
-  Object.prototype.hasOwnProperty.call(elem.fields, FIELD_PERMISSIONS)
+  Object.hasOwn(elem.fields, FIELD_PERMISSIONS)
 
 type FieldPermissionObject = {
   field: string

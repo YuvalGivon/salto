@@ -9,7 +9,7 @@ import _ from 'lodash'
 import Joi from 'joi'
 import { logger } from '@salto-io/logging'
 import { client as clientUtils, definitions } from '@salto-io/adapter-components'
-import { collections } from '@salto-io/lowerdash'
+import { collections, objects } from '@salto-io/lowerdash'
 import { createSchemeGuard, ERROR_MESSAGES } from '@salto-io/adapter-utils'
 import { SaltoError, Values } from '@salto-io/adapter-api'
 import ZendeskClient from './client/client'
@@ -19,6 +19,7 @@ import { CURSOR_BASED_PAGINATION_FIELD, DEFAULT_QUERY_PARAMS } from './config'
 const log = logger(module)
 const { toArrayAsync } = collections.asynciterable
 const { makeArray } = collections.array
+const { getOwn } = objects
 
 const MISSING_DEPLOY_CONFIG_USER =
   'User provided in defaultMissingUserFallback does not exist in the target environment'
@@ -87,7 +88,7 @@ const replaceRestrictionImpl = (values: Values, mapping?: Record<string, string>
     return []
   }
   if (mapping !== undefined) {
-    const newValue = Object.prototype.hasOwnProperty.call(mapping, id) ? mapping[id] : undefined
+    const newValue = getOwn(mapping, id)
     if (newValue !== undefined) {
       values.restriction.id = newValue
     }

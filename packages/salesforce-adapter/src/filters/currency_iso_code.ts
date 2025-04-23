@@ -69,7 +69,7 @@ const VALUE_SET_SCHEMA = Joi.object({
   .required()
 
 const isTypeWithCurrencyIsoCode = (elem: ObjectType): elem is CurrencyIsoCodeType => {
-  if (!Object.prototype.hasOwnProperty.call(elem.fields, CURRENCY_ISO_CODE)) {
+  if (!Object.hasOwn(elem.fields, CURRENCY_ISO_CODE)) {
     return false
   }
   const { error } = VALUE_SET_SCHEMA.validate(elem.fields[CURRENCY_ISO_CODE]?.annotations)

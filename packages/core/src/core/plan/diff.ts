@@ -294,8 +294,8 @@ export const calculateDiff = async ({
           // because fieldName might be a builtin function name such as
           // `toString` and in that case `beforeFields[fieldName]` will
           // unexpectedly return a function
-          before: Object.prototype.hasOwnProperty.call(beforeFields, fieldName) ? beforeFields[fieldName] : undefined,
-          after: Object.prototype.hasOwnProperty.call(afterFields, fieldName) ? afterFields[fieldName] : undefined,
+          before: Object.hasOwn(beforeFields, fieldName) ? beforeFields[fieldName] : undefined,
+          after: Object.hasOwn(afterFields, fieldName) ? afterFields[fieldName] : undefined,
         }),
       ),
     )

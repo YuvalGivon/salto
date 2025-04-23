@@ -7,11 +7,12 @@
  */
 import _ from 'lodash'
 import { applyFunctionToChangeData } from '@salto-io/adapter-utils'
-import { collections } from '@salto-io/lowerdash'
+import { collections, objects } from '@salto-io/lowerdash'
 import { Change, ElemID, InstanceElement, isReferenceExpression } from '@salto-io/adapter-api'
 import { conditionFieldValue, isCorrectConditions } from './filters/utils'
 
 const { awu } = collections.asynciterable
+const { getOwn } = objects
 
 export type ValueReplacer = (instance: InstanceElement, mapping?: Record<string, string>) => ElemID[]
 
@@ -25,7 +26,7 @@ export const replaceConditionsAndActionsCreator =
   (params: FieldsParams[], isIdNumber = false): ValueReplacer =>
   (instance, mapping) =>
     params.flatMap(({ fieldName, fieldsToReplace, overrideFilterCriteria }) => {
-      const conditions = _.get(instance.value, fieldName)
+      const conditions = getOwn(instance.value, fieldName)
       const { typeName } = instance.elemID
       // Conditions can be undefined - in that case, we don't want to log a warning
       if (conditions === undefined || !isCorrectConditions(conditions, typeName)) {
@@ -55,7 +56,7 @@ export const replaceConditionsAndActionsCreator =
             }
             const valuePath = instance.elemID.createNestedID(...fieldName, index.toString(), ...valueRelativePath)
             if (mapping !== undefined) {
-              const newValue = Object.prototype.hasOwnProperty.call(mapping, value) ? mapping[value] : undefined
+              const newValue = getOwn(mapping, value)
               if (newValue !== undefined) {
                 _.set(
                   condition,
@@ -81,7 +82,7 @@ export const fieldReplacer =
       const values = (_.isArray(fieldValue) ? fieldValue : [fieldValue]).map(v => v.toString())
       if (mapping !== undefined) {
         values.forEach((value, i) => {
-          const newValue = Object.prototype.hasOwnProperty.call(mapping, value) ? mapping[value] : undefined
+          const newValue = getOwn(mapping, value)
           if (newValue !== undefined) {
             _.set(
               instance.value,

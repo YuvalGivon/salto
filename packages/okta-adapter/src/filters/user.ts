@@ -8,7 +8,7 @@
 import _ from 'lodash'
 import { logger } from '@salto-io/logging'
 import { applyFunctionToChangeData, resolvePath, setPath } from '@salto-io/adapter-utils'
-import { collections } from '@salto-io/lowerdash'
+import { collections, objects } from '@salto-io/lowerdash'
 import { Change, getChangeData, InstanceElement, isInstanceElement, isModificationChange } from '@salto-io/adapter-api'
 import { FilterCreator } from '../filter'
 import { getUsers, USER_MAPPING, getUsersFromInstances, shouldConvertUserIds } from '../user_utils'
@@ -16,6 +16,7 @@ import { getUsers, USER_MAPPING, getUsersFromInstances, shouldConvertUserIds } f
 const log = logger(module)
 const { awu } = collections.asynciterable
 const { makeArray } = collections.array
+const { getOwn } = objects
 
 const isRelevantInstance = (instance: InstanceElement): boolean =>
   Object.keys(USER_MAPPING).includes(instance.elemID.typeName)
@@ -29,10 +30,7 @@ const replaceValues = (instance: InstanceElement, mapping: Record<string, string
     if (resolvedPath === undefined) {
       return
     }
-    const newValues = userValues.map(value => {
-      const newValue = Object.prototype.hasOwnProperty.call(mapping, value) ? mapping[value] : undefined
-      return newValue ?? value
-    })
+    const newValues = userValues.map(value => getOwn(mapping, value, value))
     setPath(instance, usersPath, _.isArray(resolvedPath) ? newValues : newValues[0])
   })
 }

@@ -106,6 +106,7 @@ describe('getOwn', () => {
       },
       arr: [1, 2, 3],
     },
+    top: 'val',
     toString: 'obj',
   }
 
@@ -120,6 +121,10 @@ describe('getOwn', () => {
 
   it('should get nested own properties', () => {
     expect(getOwn(obj, ['a', 'b', 'c'])).toBe('value')
+  })
+
+  it('should support single string path', () => {
+    expect(getOwn(obj, 'top')).toBe('val')
   })
 
   it('should work with array indices', () => {

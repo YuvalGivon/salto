@@ -51,7 +51,7 @@ const createTypeToChangesRecord = (
 ): Record<string, (ModificationChange<InstanceElement> | AdditionChange<InstanceElement>)[]> => {
   const relevantChanges = changes
     .filter(isAdditionOrModificationChange)
-    .filter(change => Object.prototype.hasOwnProperty.call(typeToFieldRecord, getChangeData(change).elemID.typeName))
+    .filter(change => Object.hasOwn(typeToFieldRecord, getChangeData(change).elemID.typeName))
     .filter(isInstanceChange)
   return _.groupBy(relevantChanges, change => getChangeData(change).elemID.typeName)
 }

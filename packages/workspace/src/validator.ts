@@ -521,7 +521,7 @@ const validateNoAdditionalProperties = (
 ): ValidationError[] => {
   if (isObjectType(type) && type.annotations[CORE_ANNOTATIONS.ADDITIONAL_PROPERTIES] === false) {
     return Object.keys(value)
-      .filter(key => !Object.prototype.hasOwnProperty.call(type.fields, key))
+      .filter(key => !Object.hasOwn(type.fields, key))
       .map(
         key =>
           new AdditionalPropertiesValidationError({

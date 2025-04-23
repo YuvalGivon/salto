@@ -7,6 +7,7 @@
  */
 import _ from 'lodash'
 import { isDefined, isPlainRecord } from './values'
+import { makeArray } from './collections/array'
 
 export const concatObjects = <T extends Record<string, ReadonlyArray<unknown> | unknown[] | undefined>>(
   objects: T[],
@@ -51,8 +52,8 @@ export const cleanEmptyObjects = (object: Record<string, unknown>): unknown => {
  * Gets the value at path of object, only traversing own properties.
  * Similar to _.get but only traverses properties that pass Object.hasOwn check.
  */
-export const getOwn = (obj: unknown, path: string[], defaultValue?: unknown): unknown =>
-  path.reduce<unknown>((current, part) => {
+export const getOwn = (obj: unknown, path: string | string[], defaultValue?: unknown): unknown =>
+  makeArray(path).reduce<unknown>((current, part) => {
     if (current == null || typeof current !== 'object' || !Object.hasOwn(current, part)) {
       return defaultValue
     }

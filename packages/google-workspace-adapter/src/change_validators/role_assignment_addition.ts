@@ -30,10 +30,7 @@ const isNonSecurityGroup = async (
   if (isReferenceExpression(groupReference)) {
     try {
       const group = await groupReference.getResolvedValue(elementSource)
-      return !Object.prototype.hasOwnProperty.call(
-        group.value.labels,
-        'cloudidentity_googleapis_com_groups_security@vvdv',
-      )
+      return !Object.hasOwn(group.value.labels, 'cloudidentity_googleapis_com_groups_security@vvdv')
     } catch {
       log.error('Failed to resolve group reference %s for role assignment', groupReference.elemID.getFullName())
       return false

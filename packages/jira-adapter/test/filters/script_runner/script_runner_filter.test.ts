@@ -225,7 +225,7 @@ describe('AuditSetter', () => {
     scriptRunnerAuditSetter(fieldInstance, {
       id: 'my-id',
     })
-    expect(Object.prototype.hasOwnProperty.call(fieldInstance.value, 'auditData')).toBeFalsy()
+    expect(Object.hasOwn(fieldInstance.value, 'auditData')).toBeFalsy()
   })
   it('should set the id and audit info in a listener', async () => {
     listenersAuditSetter(listenerInstance, {
@@ -240,8 +240,8 @@ describe('AuditSetter', () => {
     listenersAuditSetter(listenerInstance, {
       id: 'my-id',
     })
-    expect(Object.prototype.hasOwnProperty.call(listenerInstance.value, 'createdTimestamp')).toBeFalsy()
-    expect(Object.prototype.hasOwnProperty.call(listenerInstance.value, 'updatedTimestamp')).toBeFalsy()
+    expect(Object.hasOwn(listenerInstance.value, 'createdTimestamp')).toBeFalsy()
+    expect(Object.hasOwn(listenerInstance.value, 'updatedTimestamp')).toBeFalsy()
   })
   it('should not set the audit info in a fragment', async () => {
     scriptRunnerAuditSetter(fragmentInstance, {
@@ -251,8 +251,8 @@ describe('AuditSetter', () => {
         updatedTimestamp: 10,
       },
     })
-    expect(Object.prototype.hasOwnProperty.call(fragmentInstance.value, 'createdTimestamp')).toBeFalsy()
-    expect(Object.prototype.hasOwnProperty.call(fragmentInstance.value, 'updatedTimestamp')).toBeFalsy()
-    expect(Object.prototype.hasOwnProperty.call(fragmentInstance.value, 'auditData')).toBeFalsy()
+    expect(Object.hasOwn(fragmentInstance.value, 'createdTimestamp')).toBeFalsy()
+    expect(Object.hasOwn(fragmentInstance.value, 'updatedTimestamp')).toBeFalsy()
+    expect(Object.hasOwn(fragmentInstance.value, 'auditData')).toBeFalsy()
   })
 })

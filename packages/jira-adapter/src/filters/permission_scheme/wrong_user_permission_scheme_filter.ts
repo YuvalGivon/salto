@@ -18,7 +18,7 @@ export const wrongUserPermissionSchemePredicateCreator =
   (userMap: UserMap): OmitChangesPredicate =>
   (permissionScheme: PermissionHolder) => {
     const accountId = permissionScheme.holder?.parameter?.id
-    return accountId !== undefined && !Object.prototype.hasOwnProperty.call(userMap, accountId)
+    return accountId !== undefined && !Object.hasOwn(userMap, accountId)
   }
 
 /**

@@ -40,12 +40,12 @@ const handleJiraReference = ({
   templatePart: TemplatePart
   error?: 'ambiguous'
 } => {
-  if (Object.prototype.hasOwnProperty.call(fieldInstancesById, referenceStr)) {
+  if (Object.hasOwn(fieldInstancesById, referenceStr)) {
     const instance = fieldInstancesById[referenceStr]
     return { templatePart: new ReferenceExpression(instance.elemID, instance) }
   }
 
-  if (Object.prototype.hasOwnProperty.call(fieldInstancesByName, referenceStr)) {
+  if (Object.hasOwn(fieldInstancesByName, referenceStr)) {
     const instances = fieldInstancesByName[referenceStr]
 
     if (instances.length > 1) {

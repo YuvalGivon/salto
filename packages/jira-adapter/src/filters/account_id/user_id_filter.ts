@@ -24,7 +24,7 @@ const { awu } = collections.asynciterable
 const addDisplayName =
   (userMap: UserMap): WalkOnUsersCallback =>
   ({ value, fieldName }): void => {
-    if (Object.prototype.hasOwnProperty.call(userMap, value[fieldName].id)) {
+    if (Object.hasOwn(userMap, value[fieldName].id)) {
       value[fieldName].displayName = userMap[value[fieldName].id].displayName
     }
   }
@@ -32,7 +32,7 @@ const addDisplayName =
 const convertIdToUsername =
   (userMap: UserMap): WalkOnUsersCallback =>
   ({ value, fieldName }): void => {
-    if (Object.prototype.hasOwnProperty.call(userMap, value[fieldName].id)) {
+    if (Object.hasOwn(userMap, value[fieldName].id)) {
       value[fieldName].id = userMap[value[fieldName].id].username ?? value[fieldName].id
     }
   }
@@ -40,7 +40,7 @@ const convertIdToUsername =
 const convertUserNameToId =
   (userMap: UserMap): WalkOnUsersCallback =>
   ({ value, fieldName }): void => {
-    if (Object.prototype.hasOwnProperty.call(userMap, value[fieldName].id)) {
+    if (Object.hasOwn(userMap, value[fieldName].id)) {
       value[fieldName].id = userMap[value[fieldName].id].userId ?? value[fieldName].id
     }
   }

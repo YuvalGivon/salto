@@ -133,7 +133,7 @@ export const consumeBlockBody = (
           }),
         )
       }
-      if (!Object.prototype.hasOwnProperty.call(fields, fieldName)) {
+      if (!Object.hasOwn(fields, fieldName)) {
         fields[fieldName] = {
           refType: createFieldRefType(context, fieldType, { ...defTokens.range, filename: context.filename }),
           annotations: consumedBlock.value.attrs,

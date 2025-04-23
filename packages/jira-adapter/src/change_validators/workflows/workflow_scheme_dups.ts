@@ -42,7 +42,7 @@ export const workflowSchemeDupsValidator: ChangeValidator = async (changes, elem
   return workflowSchemeNameChangesData
     .filter(
       instance =>
-        Object.prototype.hasOwnProperty.call(nameToInstance, instance.value.name?.toLowerCase()) &&
+        Object.hasOwn(nameToInstance, instance.value.name?.toLowerCase()) &&
         nameToInstance[instance.value.name?.toLowerCase()].some(
           dupInstance => !instance.elemID.isEqual(dupInstance.elemID),
         ),

@@ -261,8 +261,8 @@ describe('account_id_filter', () => {
       await filter.onFetch([currentObjectType])
       await awu(ACCOUNT_ID_FIELDS_NAMES).forEach(async fieldName => {
         const currentType = (await currentObjectType.fields[fieldName].getType()) as ObjectType
-        expect(Object.prototype.hasOwnProperty.call(currentType.fields, 'id')).toBeTruthy()
-        expect(Object.prototype.hasOwnProperty.call(currentType.fields, 'displayName')).toBeTruthy()
+        expect(Object.hasOwn(currentType.fields, 'id')).toBeTruthy()
+        expect(Object.hasOwn(currentType.fields, 'displayName')).toBeTruthy()
         expect(currentType.elemID.getFullName()).toEqual('jira.AccountIdInfo')
       })
       expect((await currentObjectType.fields.accountIds.getType()).elemID.getFullName()).toEqual(

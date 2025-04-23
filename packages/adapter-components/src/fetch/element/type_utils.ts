@@ -201,7 +201,7 @@ export const markServiceIdField = (
   typeFields: Record<string, FieldDefinition | Field>,
   typeName: string,
 ): void => {
-  const field = Object.prototype.hasOwnProperty.call(typeFields, fieldName) ? typeFields[fieldName] : undefined
+  const field = Object.hasOwn(typeFields, fieldName) ? typeFields[fieldName] : undefined
   if (field === undefined) {
     return
   }
@@ -366,7 +366,7 @@ export const getTypeInPath = (
     return undefined
   }
   const [fieldName, ...restPath] = fieldPath
-  const field = Object.prototype.hasOwnProperty.call(type.fields, fieldName) ? type.fields[fieldName] : undefined
+  const field = Object.hasOwn(type.fields, fieldName) ? type.fields[fieldName] : undefined
   if (field === undefined) {
     log.warn('failed to find type for field %s in type %s', fieldName, type.elemID.getFullName())
     return undefined

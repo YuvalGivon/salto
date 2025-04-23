@@ -115,14 +115,14 @@ const editDefaultValue = (context: InstanceElement, idToOptionRecord: Record<str
     return
   }
   const { optionIds, optionId, cascadingOptionId } = context.value.defaultValue
-  if (_.isString(optionId) && Object.prototype.hasOwnProperty.call(idToOptionRecord, optionId)) {
+  if (_.isString(optionId) && Object.hasOwn(idToOptionRecord, optionId)) {
     const optionInstance = idToOptionRecord[optionId]
     context.value.defaultValue.optionId = new ReferenceExpression(optionInstance.elemID, optionInstance)
   }
   if (
     Array.isArray(optionIds) &&
     optionIds.find(option => !_.isString(option)) === undefined &&
-    optionIds.find(id => !Object.prototype.hasOwnProperty.call(idToOptionRecord, id)) === undefined
+    optionIds.find(id => !Object.hasOwn(idToOptionRecord, id)) === undefined
   ) {
     context.value.defaultValue.optionIds = _.sortBy(
       optionIds.map((id: string) => {
@@ -132,7 +132,7 @@ const editDefaultValue = (context: InstanceElement, idToOptionRecord: Record<str
       ref => ref.elemID.getFullName(),
     )
   }
-  if (_.isString(cascadingOptionId) && Object.prototype.hasOwnProperty.call(idToOptionRecord, cascadingOptionId)) {
+  if (_.isString(cascadingOptionId) && Object.hasOwn(idToOptionRecord, cascadingOptionId)) {
     const optionInstance = idToOptionRecord[cascadingOptionId]
     context.value.defaultValue.cascadingOptionId = new ReferenceExpression(optionInstance.elemID, optionInstance)
   }

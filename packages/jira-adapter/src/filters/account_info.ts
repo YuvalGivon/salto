@@ -114,7 +114,7 @@ const getDCLicense = async (client: JiraClient): Promise<Value> => {
   const response = await client.get({
     url: '/rest/plugins/applications/1.0/installed/jira-software/license',
   })
-  if (!Object.prototype.hasOwnProperty.call(response.data, 'licenseType') || Array.isArray(response.data)) {
+  if (!Object.hasOwn(response.data, 'licenseType') || Array.isArray(response.data)) {
     throw new Error('Received an invalid dc license response')
   }
   delete response.data.rawLicense

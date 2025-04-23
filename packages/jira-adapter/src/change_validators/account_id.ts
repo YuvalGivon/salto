@@ -130,7 +130,7 @@ const doesDefaultUserExist = (defaultUser: string | undefined, userMap: UserMap,
   }
 
   if (isDataCenter) {
-    return Object.prototype.hasOwnProperty.call(userMap, defaultUser)
+    return Object.hasOwn(userMap, defaultUser)
   }
 
   return getUserIdFromEmail(defaultUser, userMap) !== undefined
@@ -150,11 +150,11 @@ const checkAndAddChangeErrors =
     }
     const accountId = value[fieldName].id
     const currentDisplayName = value[fieldName].displayName
-    if (path.typeName === PERMISSION_SCHEME_TYPE_NAME && !Object.prototype.hasOwnProperty.call(userMap, accountId)) {
+    if (path.typeName === PERMISSION_SCHEME_TYPE_NAME && !Object.hasOwn(userMap, accountId)) {
       return // handled by wrongUserPermissionScheme validator
     }
 
-    if (!Object.prototype.hasOwnProperty.call(userMap, accountId)) {
+    if (!Object.hasOwn(userMap, accountId)) {
       missingUsers.push({ accountId, displayName: currentDisplayName })
       return
     }

@@ -149,7 +149,7 @@ const accountIdsScenarios = (
   const accountIdsFields = config.fetch.enableScriptRunnerAddon ? ['accountIds', 'FIELD_USER_IDS'] : ['accountIds']
   // main scenario, field is within the ACCOUNT_IDS_FIELDS_NAMES
   ACCOUNT_ID_FIELDS_NAMES.forEach(fieldName => {
-    if (Object.prototype.hasOwnProperty.call(value, fieldName)) {
+    if (Object.hasOwn(value, fieldName)) {
       callback({ value, path, fieldName })
     }
   })
@@ -271,7 +271,7 @@ const cacheAndSimplifyAccountId =
 const convertType = async (objectType: ObjectType): Promise<void> => {
   await awu(ACCOUNT_ID_FIELDS_NAMES).forEach(async fieldName => {
     if (
-      Object.prototype.hasOwnProperty.call(objectType.fields, fieldName) &&
+      Object.hasOwn(objectType.fields, fieldName) &&
       (await objectType.fields[fieldName].getType()).elemID.isEqual(BuiltinTypes.STRING.elemID)
     ) {
       objectType.fields[fieldName].refType = new TypeReference(accountIdInfoType.elemID, accountIdInfoType)

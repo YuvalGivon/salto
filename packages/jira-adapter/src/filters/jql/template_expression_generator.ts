@@ -172,7 +172,7 @@ const getFieldInfo = (
     position.end = position.start + fieldIdentifier.length
   }
 
-  if (Object.prototype.hasOwnProperty.call(jqlContext.typeToInstanceById[FIELD_TYPE_NAME], fieldIdentifier)) {
+  if (Object.hasOwn(jqlContext.typeToInstanceById[FIELD_TYPE_NAME], fieldIdentifier)) {
     return {
       fieldInfo: {
         instance: jqlContext.typeToInstanceById[FIELD_TYPE_NAME][fieldIdentifier],
@@ -182,7 +182,7 @@ const getFieldInfo = (
     }
   }
 
-  if (!Object.prototype.hasOwnProperty.call(jqlContext.typeToInstancesByField[FIELD_TYPE_NAME], fieldIdentifier)) {
+  if (!Object.hasOwn(jqlContext.typeToInstancesByField[FIELD_TYPE_NAME], fieldIdentifier)) {
     return { fieldInfo: undefined }
   }
 
@@ -212,14 +212,14 @@ const getValueInfo = (
     } => {
   const valueIdentifier = operand.value.toLowerCase()
 
-  if (Object.prototype.hasOwnProperty.call(idToInstance, valueIdentifier)) {
+  if (Object.hasOwn(idToInstance, valueIdentifier)) {
     return {
       identifier: 'id',
       instances: [idToInstance[valueIdentifier]],
     }
   }
 
-  if (Object.prototype.hasOwnProperty.call(fieldToInstances, valueIdentifier)) {
+  if (Object.hasOwn(fieldToInstances, valueIdentifier)) {
     return {
       identifier: CONTEXT_TYPE_TO_FIELD[typeName],
       instances: fieldToInstances[valueIdentifier],
@@ -245,11 +245,11 @@ const getValueTokens = (
   // A heuristic that works for the types in CONTEXT_TYPE_TO_FIELD
   // to convert a field name to its values' type
   const typeName = fieldInstance.value.name.replace(/\s+/g, '')
-  const fieldToInstances = Object.prototype.hasOwnProperty.call(jqlContext.typeToInstancesByField, typeName)
+  const fieldToInstances = Object.hasOwn(jqlContext.typeToInstancesByField, typeName)
     ? jqlContext.typeToInstancesByField[typeName]
     : {}
 
-  const idToInstance = Object.prototype.hasOwnProperty.call(jqlContext.typeToInstanceById, typeName)
+  const idToInstance = Object.hasOwn(jqlContext.typeToInstanceById, typeName)
     ? jqlContext.typeToInstanceById[typeName]
     : {}
 
