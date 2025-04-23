@@ -51,7 +51,7 @@ export const adjustPreventionPolicyAction =
   (actionParamName?: string): definitions.AdjustFunction<definitions.deploy.ChangeAndExtendedContext> =>
   async ({ value, context }) => {
     validatePlainObject(value, 'PreventionPolicy subresource')
-    // TODO(SALTO-7761): Change to use `getParent`.
+    // References are resolved at this point, so we can't use getParent as it's not an instance anymore.
     const parent = getParents(getChangeData(context.change))[0]
     return {
       value: {
