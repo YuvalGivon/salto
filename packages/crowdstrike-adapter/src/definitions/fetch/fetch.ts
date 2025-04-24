@@ -5,7 +5,7 @@
  *
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
-import { concatAdjustFunctions, definitions } from '@salto-io/adapter-components'
+import { AliasData, concatAdjustFunctions, definitions } from '@salto-io/adapter-components'
 import { validatePlainObject } from '@salto-io/adapter-utils'
 import { UserFetchConfig } from '../../config'
 import { Options } from '../types'
@@ -14,6 +14,14 @@ import { convertSummaryToIdList } from './transforms'
 
 const NAME_ID_FIELD: definitions.fetch.FieldIDPart = { fieldName: 'name' }
 const DEFAULT_ID_PARTS = [NAME_ID_FIELD]
+const ALIAS_NAME_AND_PLATFORM: AliasData = {
+  separator: '',
+  aliasComponents: [{ fieldName: 'name' }, { constant: ' (' }, { fieldName: 'platform' }, { constant: ')' }],
+}
+const ALIAS_NAME_AND_PLATFORM_NAME: AliasData = {
+  separator: '',
+  aliasComponents: [{ fieldName: 'name' }, { constant: ' (' }, { fieldName: 'platform_name' }, { constant: ')' }],
+}
 
 const COMMON_FIELD_CUSTOMIZATIONS: Record<string, definitions.fetch.ElementFieldCustomization> = {
   // ID fields
@@ -40,6 +48,7 @@ const COMMON_FIELD_CUSTOMIZATIONS: Record<string, definitions.fetch.ElementField
     'last_modified',
     'last_seen',
     'last_updated_on',
+    'committed_on',
   ].reduce((acc: Record<string, definitions.fetch.ElementFieldCustomization>, fieldName: string) => {
     acc[fieldName] = { omit: true }
     return acc
@@ -66,6 +75,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       topLevel: {
         isTopLevel: true,
         elemID: { parts: [NAME_ID_FIELD, { fieldName: 'platform_name' }] },
+        alias: ALIAS_NAME_AND_PLATFORM_NAME,
         serviceUrl: {
           path: '/policies/prevention/windows/detail/{id}/Settings',
         },
@@ -96,6 +106,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       topLevel: {
         isTopLevel: true,
         elemID: { parts: [NAME_ID_FIELD, { fieldName: 'platform_name' }] },
+        alias: ALIAS_NAME_AND_PLATFORM_NAME,
         serviceUrl: {
           path: '/configuration/sensor-update/policies/{id}',
         },
@@ -186,6 +197,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       topLevel: {
         isTopLevel: true,
         elemID: { parts: [NAME_ID_FIELD, { fieldName: 'platform_name' }] },
+        alias: ALIAS_NAME_AND_PLATFORM_NAME,
         serviceUrl: {
           path: '/policies/firewallv2/windows/detail/{id}/Settings',
         },
@@ -220,6 +232,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         id: { hide: true },
+        meta: { omit: true },
         ...COMMON_FIELD_CUSTOMIZATIONS,
       },
     },
@@ -505,6 +518,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         serviceUrl: {
           path: '/configuration-v2/exclusions/machine-learning/{id}/summary',
         },
+        alias: { aliasComponents: [{ fieldName: 'value' }] },
       },
       fieldCustomizations: {
         ...COMMON_FIELD_CUSTOMIZATIONS,
@@ -598,6 +612,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
             },
           ],
         },
+        alias: { aliasComponents: [{ fieldName: 'name' }, { fieldName: 'status' }] },
         serviceUrl: {
           path: '/configuration-v2/exclusions/certificates/{id}/summary',
         },
@@ -698,6 +713,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       topLevel: {
         isTopLevel: true,
         elemID: { parts: [NAME_ID_FIELD, { fieldName: 'platform_name' }] },
+        alias: ALIAS_NAME_AND_PLATFORM_NAME,
         serviceUrl: {
           path: '/policies/device-control/windows/detail/{id}/Settings',
         },
@@ -841,6 +857,8 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
     element: {
       topLevel: {
         isTopLevel: true,
+        elemID: { parts: [{ fieldName: 'name' }, { fieldName: 'platform' }] },
+        alias: ALIAS_NAME_AND_PLATFORM,
         serviceUrl: {
           path: '/configuration/custom-ioa-groups/{id}/rules',
         },
@@ -873,6 +891,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         id: { hide: true },
+        instance_id: { hide: true },
         family: { hide: true },
         rulegroup_id: { hide: true }, // references its parent
         ...COMMON_FIELD_CUSTOMIZATIONS,
@@ -905,6 +924,9 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       },
       fieldCustomizations: {
         ...COMMON_FIELD_CUSTOMIZATIONS,
+        ID: {
+          hide: true,
+        },
         aws_permissions_status: {
           sort: {
             properties: [{ path: 'name' }],
@@ -1010,6 +1032,33 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         updated_at: {
           omit: true,
         },
+        policy_settings: {
+          sort: { properties: [{ path: 'account_id.account_id' }] },
+        },
+        cis_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        pci_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        nist_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        soc2_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        cisa_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        iso_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        hipaa_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
+        hitrust_benchmark: {
+          sort: { properties: [{ path: 'id' }] },
+        },
       },
       topLevel: {
         elemID: {
@@ -1080,6 +1129,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         transformation: {
           root: 'resources',
+          adjust: convertSummaryToIdList('groups'),
         },
       },
     ],
@@ -1114,6 +1164,12 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       fieldCustomizations: {
         id: {
           hide: true,
+        },
+        user_uuid: {
+          omit: true,
+        },
+        user_id: {
+          omit: true,
         },
         ...COMMON_FIELD_CUSTOMIZATIONS,
       },
@@ -1203,6 +1259,9 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         },
         id: {
           hide: true,
+        },
+        uuid: {
+          omit: true,
         },
       },
       topLevel: {
@@ -1395,6 +1454,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
             },
           ],
         },
+        alias: ALIAS_NAME_AND_PLATFORM,
         isTopLevel: true,
       },
     },
@@ -1800,13 +1860,14 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
         elemID: {
           parts: [
             {
-              fieldName: 'platform_name',
+              fieldName: 'name',
             },
             {
-              fieldName: 'name',
+              fieldName: 'platform_name',
             },
           ],
         },
+        alias: ALIAS_NAME_AND_PLATFORM_NAME,
         isTopLevel: true,
       },
     },
@@ -1841,6 +1902,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           ],
         },
         isTopLevel: true,
+        alias: { aliasComponents: [{ fieldName: 'description' }] },
       },
     },
     requests: [
@@ -1873,6 +1935,7 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
           ],
         },
         isTopLevel: true,
+        alias: { aliasComponents: [{ fieldName: 'description' }] },
       },
     },
     requests: [
@@ -2282,6 +2345,7 @@ export const createFetchDefinitions = (
       element: {
         topLevel: {
           elemID: { parts: DEFAULT_ID_PARTS },
+          alias: { aliasComponents: [{ fieldName: 'name' }] },
           serviceUrl: {
             baseUrl: credentials.baseUrl.replace('api', 'falcon'),
           },

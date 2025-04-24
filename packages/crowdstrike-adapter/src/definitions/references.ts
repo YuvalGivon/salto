@@ -50,6 +50,7 @@ const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
         'SensorUpdatePolicy',
         'PreventionPolicy',
         'ResponsePolicy',
+        'ContentUpdatePolicy',
       ],
     },
     serializationStrategy: 'id',
