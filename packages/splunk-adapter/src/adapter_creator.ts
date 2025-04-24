@@ -7,7 +7,7 @@
  */
 import { createAdapter, credentials as defaultCredentials } from '@salto-io/adapter-components'
 import { Credentials, credentialsType } from './auth'
-import createChangeValidator from './change_validator'
+import createChangeValidator from './change_validators'
 import { DEFAULT_CONFIG, UserConfig } from './config'
 import { createConnection } from './client/connection'
 import { ADAPTER_NAME } from './constants'
