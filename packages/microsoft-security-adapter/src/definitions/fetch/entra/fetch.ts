@@ -22,6 +22,7 @@ const {
     SERVICE_PRINCIPAL_TYPE_NAME,
     CONDITIONAL_ACCESS_POLICY_TYPE_NAME,
     APPLICATION_TYPE_NAME,
+    APPLICATION_TEMPLATE_TYPE_NAME,
     GROUP_TYPE_NAME,
     LIFE_CYCLE_POLICY_TYPE_NAME,
     ROLE_DEFINITION_TYPE_NAME,
@@ -61,6 +62,9 @@ const {
   APPLICATION_API_TYPE_NAME,
   CONTEXT_LIFE_CYCLE_POLICY_MANAGED_GROUP_TYPES,
   OAUTH2_PERMISSION_SCOPES_FIELD_NAME,
+  APPLICATION_WEB_TYPE_NAME,
+  REDIRECT_URIS_FIELD_NAME,
+  REDIRECT_URI_SETTINGS_FIELD_NAME,
 } = entraConstants
 
 const APP_ROLES_STANDALONE_DEFINITION = {
@@ -247,6 +251,28 @@ const graphV1Customizations: FetchCustomizations = {
       },
     ],
   },
+  [APPLICATION_TEMPLATE_TYPE_NAME]: {
+    requests: [
+      {
+        endpoint: {
+          path: '/applicationTemplates',
+        },
+        transformation: DEFAULT_TRANSFORMATION,
+      },
+    ],
+    resource: {
+      directFetch: true,
+    },
+    element: {
+      topLevel: {
+        isTopLevel: true,
+        elemID: {
+          parts: [NAME_ID_FIELD, { fieldName: 'publisher' }],
+        },
+      },
+      fieldCustomizations: ID_FIELD_TO_HIDE,
+    },
+  },
   [APPLICATION_TYPE_NAME]: {
     requests: [
       {
@@ -285,6 +311,25 @@ const graphV1Customizations: FetchCustomizations = {
     element: {
       fieldCustomizations: {
         [OAUTH2_PERMISSION_SCOPES_FIELD_NAME]: OAUTH2_PERMISSION_SCOPE_STANDALONE_DEFINITION,
+      },
+    },
+  },
+  [APPLICATION_WEB_TYPE_NAME]: {
+    resource: {
+      directFetch: false,
+    },
+    element: {
+      fieldCustomizations: {
+        [REDIRECT_URIS_FIELD_NAME]: {
+          sort: {
+            properties: [],
+          },
+        },
+        [REDIRECT_URI_SETTINGS_FIELD_NAME]: {
+          sort: {
+            properties: [{ path: 'uri' }],
+          },
+        },
       },
     },
   },

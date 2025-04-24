@@ -6,10 +6,12 @@
  * CERTAIN THIRD PARTY SOFTWARE MAY BE CONTAINED IN PORTIONS OF THE SOFTWARE. See NOTICE FILE AT https://github.com/salto-io/salto/blob/main/NOTICES
  */
 import { deployment } from '@salto-io/adapter-components'
+import _ from 'lodash'
 import { entraConstants, ODATA_ID_FIELD } from '../../../constants'
 import { GRAPH_BETA_PATH, GRAPH_V1_PATH } from '../../requests/clients'
-import { DeployCustomDefinitions, DeployRequestDefinition, DeployableRequestDefinition } from '../shared/types'
+import { DeployCustomDefinitions } from '../shared/types'
 import {
+  templateApplication,
   createDefinitionForAppRoleAssignment,
   createDefinitionForGroupLifecyclePolicyGroupModification,
   getGroupLifecyclePolicyGroupModificationRequest,
@@ -20,6 +22,7 @@ import {
   adjustWrapper,
   omitParentIdFromPathAdjustCreator,
 } from '../shared/utils'
+import { isTemplateServicePrincipal } from './conditions/template_service_principal'
 
 const {
   TOP_LEVEL_TYPES: {
@@ -58,49 +61,7 @@ const {
 } = entraConstants
 
 const AUTHENTICATION_STRENGTH_POLICY_DEPLOYABLE_FIELDS = ['displayName', 'description']
-
-const SERVICE_PRINCIPAL_MODIFICATION_REQUEST: DeployRequestDefinition = {
-  endpoint: {
-    path: '/servicePrincipals/{id}',
-    method: 'patch',
-  },
-  transformation: {
-    adjust: adjustWrapper(
-      omitParentIdFromPathAdjustCreator(APP_ROLES_FIELD_NAME),
-      omitParentIdFromPathAdjustCreator(OAUTH2_PERMISSION_SCOPES_FIELD_NAME),
-    ),
-  },
-}
-
 const APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION = ['web.redirectUriSettings', 'api.preAuthorizedApplications']
-
-const APPLICATION_MODIFICATION_REQUEST: DeployRequestDefinition = {
-  endpoint: {
-    path: '/applications/{id}',
-    method: 'patch',
-  },
-  transformation: {
-    omit: APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION,
-    adjust: adjustWrapper(
-      omitParentIdFromPathAdjustCreator(APP_ROLES_FIELD_NAME),
-      omitParentIdFromPathAdjustCreator(API_FIELD_NAME, OAUTH2_PERMISSION_SCOPES_FIELD_NAME),
-    ),
-  },
-}
-
-const APPLICATION_SECOND_MODIFICATION_ITERATION_REQUEST: DeployableRequestDefinition = {
-  request: {
-    endpoint: {
-      path: '/applications/{id}',
-      method: 'patch',
-    },
-    transformation: {
-      pick: APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION,
-    },
-  },
-  condition: createCustomConditionCheckChangesInFields(APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION),
-}
-
 // These fields cannot be specified when creating a group, but can be modified after creation
 const GROUP_UNDEPLOYABLE_FIELDS_ON_ADDITION = [
   'allowExternalSenders',
@@ -163,10 +124,10 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
                 pick: ['displayName'],
               },
             },
+            condition: {
+              custom: () => _.negate(templateApplication.isTemplateInstantiateChange),
+            },
             copyFromResponse: {
-              toSharedContext: {
-                pick: ['id'],
-              },
               additional: {
                 // The appId is hidden, so it won't exist on addition.
                 // However, it is used to reference the application from other instances, so we should copy it to the applied change.
@@ -176,21 +137,56 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
           },
           {
             request: {
-              ...APPLICATION_MODIFICATION_REQUEST,
-              context: {
-                sharedContext: {
-                  id: 'id',
-                },
+              endpoint: {
+                path: '/applicationTemplates/{applicationTemplateId}/instantiate',
+                method: 'post',
+              },
+            },
+            condition: {
+              custom: () => templateApplication.isTemplateInstantiateChange,
+            },
+            copyFromResponse: {
+              toSharedContext: {
+                // This is needed for the modification request
+                pick: ['application'],
+                nestUnderElemID: true,
+              },
+              additional: {
+                root: 'application',
+                pick: ['appId', 'id'],
               },
             },
           },
-          APPLICATION_SECOND_MODIFICATION_ITERATION_REQUEST,
         ],
         modify: [
           {
-            request: APPLICATION_MODIFICATION_REQUEST,
+            request: {
+              endpoint: {
+                path: '/applications/{id}',
+                method: 'patch',
+              },
+              transformation: {
+                omit: APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION,
+                adjust: adjustWrapper(
+                  omitParentIdFromPathAdjustCreator(APP_ROLES_FIELD_NAME),
+                  omitParentIdFromPathAdjustCreator(API_FIELD_NAME, OAUTH2_PERMISSION_SCOPES_FIELD_NAME),
+                  templateApplication.updateAppStandaloneFieldsWithIds,
+                ),
+              },
+            },
           },
-          APPLICATION_SECOND_MODIFICATION_ITERATION_REQUEST,
+          {
+            request: {
+              endpoint: {
+                path: '/applications/{id}',
+                method: 'patch',
+              },
+              transformation: {
+                pick: APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION,
+              },
+            },
+            condition: createCustomConditionCheckChangesInFields(APPLICATION_FIELDS_TO_DEPLOY_IN_SECOND_ITERATION),
+          },
         ],
         remove: [
           {
@@ -204,6 +200,8 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
         ],
       },
     },
+    toActionNames: templateApplication.toActionNames,
+    actionDependencies: templateApplication.actionDependencies,
   },
   [APP_ROLE_TYPE_NAME]: {
     changeGroupId: deployment.grouping.groupWithFirstParent,
@@ -229,14 +227,38 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
                 pick: ['appId'],
               },
             },
+            condition: {
+              custom: () => _.negate(isTemplateServicePrincipal),
+            },
           },
           {
-            request: SERVICE_PRINCIPAL_MODIFICATION_REQUEST,
+            // This request is used to get the id of the service principal that was automatically created for the template application
+            // It is copied from the response automatically, since it's a service id
+            request: {
+              endpoint: {
+                path: "/servicePrincipals(appId='{appId}')",
+                method: 'get',
+              },
+            },
+            condition: {
+              custom: () => isTemplateServicePrincipal,
+            },
           },
         ],
         modify: [
           {
-            request: SERVICE_PRINCIPAL_MODIFICATION_REQUEST,
+            request: {
+              endpoint: {
+                path: '/servicePrincipals/{id}',
+                method: 'patch',
+              },
+              transformation: {
+                adjust: adjustWrapper(
+                  omitParentIdFromPathAdjustCreator(APP_ROLES_FIELD_NAME),
+                  omitParentIdFromPathAdjustCreator(OAUTH2_PERMISSION_SCOPES_FIELD_NAME),
+                ),
+              },
+            },
           },
         ],
         remove: [
@@ -251,6 +273,8 @@ const graphV1CustomDefinitions: DeployCustomDefinitions = {
         ],
       },
     },
+    toActionNames: templateApplication.toActionNames,
+    actionDependencies: templateApplication.actionDependencies,
   },
   [GROUP_TYPE_NAME]: {
     requestsByAction: {

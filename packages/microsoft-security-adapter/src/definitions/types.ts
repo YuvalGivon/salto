@@ -18,7 +18,7 @@ type CustomIndexField = CustomReferenceSerializationStrategyName
 export type Options = definitions.APIDefinitionsOptions & {
   clientOptions: ClientOptions
   paginationOptions: PaginationOptions
-  additionalAction: never
+  additionalAction: AdditionalAction
   referenceContextStrategies: ReferenceContextStrategies
   referenceSerializationStrategies: CustomReferenceSerializationStrategyName
   referenceIndexNames: CustomIndexField

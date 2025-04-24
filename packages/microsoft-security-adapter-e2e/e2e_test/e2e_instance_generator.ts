@@ -76,6 +76,137 @@ const createInstanceElementFunc =
   }
 
 // ******************* create all elements for deploy *******************
+const getApplicationFromTemplateInstancesToAdd = (
+  createInstanceElement: ReturnType<typeof createInstanceElementFunc>,
+): InstanceElement[] => {
+  // The following should already exist in the service, we only create it to be used as reference
+  const entraApplicationTemplate = createInstanceElement({
+    typeName: entraTopLevelTypes.APPLICATION_TEMPLATE_TYPE_NAME,
+    valuesOverride: {
+      displayName: 'Workday',
+      publisher: 'Workday',
+    },
+  })
+  const entraApplicationFromTemplate = createInstanceElement({
+    typeName: entraTopLevelTypes.APPLICATION_TYPE_NAME,
+    valuesOverride: {
+      displayName: createName(`${entraTopLevelTypes.APPLICATION_TYPE_NAME}FromTemplate`),
+      applicationTemplateId: new ReferenceExpression(entraApplicationTemplate.elemID, entraApplicationTemplate),
+      isFallbackPublicClient: true, // This value is not the default that is created by the template application
+      publisherDomain: 'e2eAdapter.onmicrosoft.com',
+      signInAudience: 'AzureADMyOrg',
+      parentalControlSettings: {
+        legalAgeGroupRule: 'Allow',
+      },
+      web: {
+        homePageUrl: 'https://impl.workday.com/*?metadata=workday|ISV9.2|primary|z',
+        redirectUris: [
+          'https://*.myworkday.com/*',
+          'https://*.workday.com',
+          'https://*.workday.com/*',
+          'https://impl.workday.com/*',
+          'https://myworkday.com/*',
+          'https://www.myworkday.com/*',
+        ],
+        implicitGrantSettings: {
+          enableAccessTokenIssuance: false,
+          enableIdTokenIssuance: true,
+        },
+        redirectUriSettings: [
+          {
+            uri: 'https://*.myworkday.com/*',
+          },
+          {
+            uri: 'https://*.workday.com',
+          },
+          {
+            uri: 'https://*.workday.com/*',
+          },
+          {
+            uri: 'https://impl.workday.com/*',
+          },
+          {
+            uri: 'https://myworkday.com/*',
+          },
+          {
+            uri: 'https://www.myworkday.com/*',
+          },
+        ],
+      },
+    },
+  })
+  const defaultAppRole = createInstanceElement({
+    typeName: entraTopLevelTypes.APP_ROLE_TYPE_NAME,
+    valuesOverride: {
+      allowedMemberTypes: ['User'],
+      description: 'msiam_access',
+      displayName: 'msiam_access',
+      isEnabled: true,
+      origin: 'Application',
+    },
+    parent: entraApplicationFromTemplate,
+  })
+  const additionalAppRole = createInstanceElement({
+    typeName: entraTopLevelTypes.APP_ROLE_TYPE_NAME,
+    valuesOverride: {
+      allowedMemberTypes: ['User'],
+      description: 'custom_app_role',
+      displayName: 'custom_app_role',
+      isEnabled: true,
+      origin: 'Application',
+    },
+    parent: entraApplicationFromTemplate,
+  })
+  const defaultOauth2PermissionScope = createInstanceElement({
+    typeName: entraTopLevelTypes.OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
+    valuesOverride: {
+      adminConsentDescription: 'Allow the application to access Workday on behalf of the signed-in user.',
+      adminConsentDisplayName: 'Access Workday',
+      isEnabled: true,
+      type: 'User',
+      userConsentDescription: 'Allow the application to access Workday on your behalf.',
+      userConsentDisplayName: 'Access Workday',
+      value: 'user_impersonation',
+    },
+    parent: entraApplicationFromTemplate,
+  })
+  const additionalOauth2PermissionScope = createInstanceElement({
+    typeName: entraTopLevelTypes.OAUTH2_PERMISSION_SCOPE_TYPE_NAME,
+    valuesOverride: {
+      value: 'custom_oauth2_permission_scope',
+      adminConsentDescription: 'Allow the application to access Workday on behalf of the signed-in user.',
+      adminConsentDisplayName: 'Access Workday',
+      isEnabled: true,
+      type: 'User',
+      userConsentDescription: 'Allow the application to access Workday on your behalf.',
+      userConsentDisplayName: 'Access Workday',
+    },
+    parent: entraApplicationFromTemplate,
+  })
+  const servicePrincipalOfTemplateApplication = createInstanceElement({
+    typeName: entraTopLevelTypes.SERVICE_PRINCIPAL_TYPE_NAME,
+    valuesOverride: {
+      appId: new ReferenceExpression(entraApplicationFromTemplate.elemID, entraApplicationFromTemplate),
+      // The displayName should be the same as the referenced application displayName
+      displayName: entraApplicationFromTemplate.value.displayName,
+      accountEnabled: true,
+      appRoleAssignmentRequired: false,
+      notes: 'some custom notes',
+      servicePrincipalType: 'Application',
+      tags: ['WindowsAzureActiveDirectoryIntegratedApp'],
+    },
+  })
+
+  return [
+    entraApplicationFromTemplate,
+    defaultAppRole,
+    additionalAppRole,
+    defaultOauth2PermissionScope,
+    additionalOauth2PermissionScope,
+    servicePrincipalOfTemplateApplication,
+  ]
+}
+
 export const getAllInstancesToDeploy = async ({
   types,
 }: {
@@ -192,7 +323,8 @@ export const getAllInstancesToDeploy = async ({
     singleton: true,
   })
 
-  const instancesToAdd = [
+  const applicationFromTemplateInstances = getApplicationFromTemplateInstancesToAdd(createInstanceElement)
+  const instancesToAdd = applicationFromTemplateInstances.concat([
     group,
     // TODO SALTO-7443: Uncomment this when we fix the flakiness in assigning a group to a life cycle policy
     // groupWithLifeCyclePolicy,
@@ -203,7 +335,7 @@ export const getAllInstancesToDeploy = async ({
     authenticationStrengthPolicy,
     conditionalAccessPolicy,
     roleDefinition,
-  ]
+  ])
 
   // Some instances cannot be deleted, so we only modify them.
   // The instances to modify should include the fields that define the elemID and some extra fields that should be modified

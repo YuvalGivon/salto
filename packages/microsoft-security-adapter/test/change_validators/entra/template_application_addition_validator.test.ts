@@ -17,7 +17,7 @@ const {
 describe(templateApplicationAdditionValidator.name, () => {
   describe('when the change is an addition change', () => {
     describe('when applicationTemplateId is defined', () => {
-      it('should return an error', async () => {
+      it('should return an informational message', async () => {
         const applicationType = new ObjectType({
           elemID: new ElemID(MICROSOFT_SECURITY, APPLICATION_TYPE_NAME),
         })
@@ -34,10 +34,11 @@ describe(templateApplicationAdditionValidator.name, () => {
         expect(res).toEqual([
           {
             elemID: application.elemID,
-            severity: 'Error',
-            message: 'Cannot create an application from a template.',
+            severity: 'Info',
+            message: 'Additional resources may be created automatically.',
             detailedMessage:
-              'Creating an application from a template is currently not supported in Salto. Please use the Entra admin center to create the application.',
+              'When creating an application from a template, the following resources may be created automatically: ' +
+              'a Service Principal (Enterprise Application), App Roles, and OAuth2 Permission Scopes',
           },
         ])
       })

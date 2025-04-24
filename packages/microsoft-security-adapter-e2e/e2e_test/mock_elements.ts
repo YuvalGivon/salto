@@ -128,7 +128,6 @@ export const mockDefaultValues: Record<string, Values> = {
     accountEnabled: true,
     appRoleAssignmentRequired: true,
     servicePrincipalType: 'Application',
-    tags: ['WindowsAzureActiveDirectoryCustomSingleSignOnApplication', 'WindowsAzureActiveDirectoryIntegratedApp'],
   },
 }
 

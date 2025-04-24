@@ -62,7 +62,17 @@ export const microsoftSecurityDeployChangeErrorFilter = (error: ChangeError): bo
     (error.detailedMessage.includes('The newly created app registration may require additional credentials setup.') ||
       error.detailedMessage.includes('The newly created application may require additional credentials setup.'))
 
-  return !builtInReadOnlyFieldsValidationFilter() && !credentialsSetupValidationFilter()
+  const applicationFromTemplateValidationFilter = (): boolean =>
+    error.severity === 'Info' &&
+    error.detailedMessage.includes(
+      'When creating an application from a template, the following resources may be created automatically',
+    )
+
+  return (
+    !builtInReadOnlyFieldsValidationFilter() &&
+    !credentialsSetupValidationFilter() &&
+    !applicationFromTemplateValidationFilter()
+  )
 }
 
 // TODO SALTO-7238: Remove this filter once we better handle the domain name references

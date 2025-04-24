@@ -15,6 +15,7 @@ const { recursiveNestedTypeName } = fetchUtils.element
 const {
   TOP_LEVEL_TYPES: {
     APPLICATION_TYPE_NAME,
+    APPLICATION_TEMPLATE_TYPE_NAME,
     APP_ROLE_TYPE_NAME,
     CONDITIONAL_ACCESS_POLICY_NAMED_LOCATION_TYPE_NAME,
     CUSTOM_SECURITY_ATTRIBUTE_DEFINITION_TYPE_NAME,
@@ -288,6 +289,14 @@ export const REFERENCE_RULES: referenceUtils.FieldReferenceDefinition<
       parentTypes: [AUTHORIZATION_POLICY_TYPE_NAME],
     },
     target: { type: DIRECTORY_ROLE_TEMPLATE_TYPE_NAME },
+    serializationStrategy: 'id',
+  },
+  {
+    src: {
+      field: 'applicationTemplateId',
+      parentTypes: [APPLICATION_TYPE_NAME],
+    },
+    target: { type: APPLICATION_TEMPLATE_TYPE_NAME },
     serializationStrategy: 'id',
   },
 ]

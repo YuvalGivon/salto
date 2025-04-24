@@ -10,3 +10,4 @@ export {
   getGroupLifecyclePolicyGroupModificationRequest,
   createDefinitionForGroupLifecyclePolicyGroupModification,
 } from './group_deployment_life_cycle_policy'
+export * as templateApplication from './template_application'

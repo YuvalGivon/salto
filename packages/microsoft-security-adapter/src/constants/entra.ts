@@ -29,8 +29,11 @@ export const GROUP_LIFE_CYCLE_POLICY_FIELD_NAME = 'lifeCyclePolicy'
 export const IDENTIFIER_URIS_FIELD_NAME = 'identifierUris'
 export const MEMBERS_FIELD_NAME = 'members'
 export const PRE_AUTHORIZED_APPLICATIONS_FIELD_NAME = 'preAuthorizedApplications'
+export const REDIRECT_URIS_FIELD_NAME = 'redirectUris'
+export const REDIRECT_URI_SETTINGS_FIELD_NAME = 'redirectUriSettings'
 export const REQUIRED_RESOURCE_ACCESS_FIELD_NAME = 'requiredResourceAccess'
 export const OAUTH2_PERMISSION_SCOPES_FIELD_NAME = 'oauth2PermissionScopes'
+export const WEB_FIELD_NAME = 'web'
 
 export const CONDITIONAL_ACCESS_POLICY_ASSIGNMENT_FIELDS = [
   'includeApplications',
@@ -54,6 +57,7 @@ export const AUTHENTICATION_STRENGTH_PATH = ['grantControls', 'authenticationStr
 export const TOP_LEVEL_TYPES = {
   ADMINISTRATIVE_UNIT_TYPE_NAME: 'EntraAdministrativeUnit',
   APPLICATION_TYPE_NAME: 'EntraApplication',
+  APPLICATION_TEMPLATE_TYPE_NAME: 'EntraApplicationTemplate',
   APP_ROLE_TYPE_NAME: 'EntraAppRole',
   AUTHENTICATION_STRENGTH_POLICY_TYPE_NAME: 'EntraAuthenticationStrengthPolicy',
   AUTHENTICATION_METHOD_POLICY_TYPE_NAME: 'EntraAuthenticationMethodPolicy',
@@ -85,6 +89,7 @@ export const ADMINISTRATIVE_UNIT_MEMBERS_TYPE_NAME = recursiveNestedTypeName(
   MEMBERS_FIELD_NAME,
 )
 export const APPLICATION_API_TYPE_NAME = recursiveNestedTypeName(TOP_LEVEL_TYPES.APPLICATION_TYPE_NAME, API_FIELD_NAME)
+export const APPLICATION_WEB_TYPE_NAME = recursiveNestedTypeName(TOP_LEVEL_TYPES.APPLICATION_TYPE_NAME, WEB_FIELD_NAME)
 export const AUTHENTICATION_METHOD_CONFIGURATION_TYPE_NAME = recursiveNestedTypeName(
   TOP_LEVEL_TYPES.AUTHENTICATION_METHOD_POLICY_TYPE_NAME,
   AUTHENTICATION_METHOD_CONFIGURATIONS_FIELD_NAME,

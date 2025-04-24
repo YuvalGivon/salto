@@ -46,6 +46,16 @@ export const createClientDefinitions = (
               },
             },
           },
+          '/v1.0/applications/{id}': {
+            patch: {
+              polling: {
+                interval: 5000,
+                retries: 5,
+                retryOnStatus: [404],
+                checkStatus: response => response.status === 204,
+              },
+            },
+          },
           [`/beta${GET_MANAGED_STORE_APP_POST_DEPLOY_PATH}` as EndpointPath]: {
             get: {
               polling: {

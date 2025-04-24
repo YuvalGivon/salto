@@ -23,9 +23,10 @@ export const templateApplicationAdditionValidator: ChangeValidator = async chang
     .filter(instance => instance.value.applicationTemplateId !== undefined)
     .map(instance => ({
       elemID: instance.elemID,
-      severity: 'Error',
-      message: 'Cannot create an application from a template.',
+      severity: 'Info',
+      message: 'Additional resources may be created automatically.',
       detailedMessage:
-        'Creating an application from a template is currently not supported in Salto. Please use the Entra admin center to create the application.',
+        'When creating an application from a template, the following resources may be created automatically: ' +
+        'a Service Principal (Enterprise Application), App Roles, and OAuth2 Permission Scopes',
     }))
 }
