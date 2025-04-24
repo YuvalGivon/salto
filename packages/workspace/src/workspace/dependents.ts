@@ -71,15 +71,15 @@ const getDependentIDs = (
     elemIDs.length,
   )
 
-const getAdditionalDependentIDs = (dependentIDs: ElemID[], elementsSource: ReadOnlyElementsSource): Promise<ElemID[]> =>
+const getAdditionalDependentIDs = (elemIDs: ElemID[], elementsSource: ReadOnlyElementsSource): Promise<ElemID[]> =>
   log.timeDebug(
     async () => {
-      // if there are no dependent types we can avoid iterating `elementsSource.list()` to get the additional dependent instances.
-      if (!dependentIDs.some(id => id.idType === 'type')) {
+      // if there are no types we can avoid iterating `elementsSource.list()` to get the additional dependent instances.
+      if (!elemIDs.some(id => id.idType === 'type')) {
         return []
       }
 
-      const dependentIdsSet = new Set(dependentIDs.map(id => id.getFullName()))
+      const dependentIdsSet = new Set(elemIDs.map(id => id.getFullName()))
 
       // in `referenceSourcesIndex` there are no references between types and their instances
       // so we should add the instances of the types that are in `addedIDs` as well.
@@ -94,8 +94,8 @@ const getAdditionalDependentIDs = (dependentIDs: ElemID[], elementsSource: ReadO
 
       return additionalDependentInstanceIDs
     },
-    'getAdditionalDependentIDs for %d dependentIDs',
-    dependentIDs.length,
+    'getAdditionalDependentIDs for %d elemIDs',
+    elemIDs.length,
   )
 
 const getElementDependencies = async (
@@ -176,7 +176,7 @@ export const getDependents = async (
     referenceSourcesIndex,
     createIsDependentFunc(changes, elementsSource, skipValidationDependentElementsFiltering),
   )
-  const additionalDependentIDs = await getAdditionalDependentIDs(dependentIDs, elementsSource)
+  const additionalDependentIDs = await getAdditionalDependentIDs(elemIDs.concat(dependentIDs), elementsSource)
   const allDependentIDs = dependentIDs.concat(additionalDependentIDs)
   const dependents = await getDependentElements(elementsSource, allDependentIDs)
   log.debug('found %d dependents of %d elements', dependents.length, elemIDs.length)

@@ -132,6 +132,32 @@ describe('dependents', () => {
 
         beforeAll(async () => {
           dependentIDs = await getDependentIDs(
+            toChange({ after: new ObjectType({ elemID: new ElemID('salto', 'base') }) }),
+          )
+        })
+        it('should have the correct amount of dependents', () => {
+          expect(dependentIDs).toHaveLength(7)
+        })
+        it('should have dependent instances', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'aBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'bBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'cBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'topLevelRefBaseInst'))
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'base', 'instance', 'refTopLevelRefBaseInst'))
+        })
+        it('should have dependent type because of a field type', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'obj'))
+        })
+        it('should have dependent instances that their type is a dependent too', () => {
+          expect(dependentIDs).toContainEqual(new ElemID('salto', 'obj', 'instance', 'objInst'))
+        })
+      })
+
+      describe('field type dependents', () => {
+        let dependentIDs: ElemID[]
+
+        beforeAll(async () => {
+          dependentIDs = await getDependentIDs(
             toChange({ after: new ObjectType({ elemID: new ElemID('salto', 'prim') }) }),
           )
         })
