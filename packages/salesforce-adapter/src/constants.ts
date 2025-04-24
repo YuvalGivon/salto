@@ -39,6 +39,7 @@ export const ADMIN_PROFILE = 'Admin'
 export const NAMESPACE_SEPARATOR = '__'
 export const API_NAME_SEPARATOR = '.'
 export const CUSTOM_OBJECT_ID_FIELD = 'Id'
+export const SOBJECT_URI = 'SOBJECT://'
 
 // Internal constants
 export const INTERNAL_ID_FIELD = 'internalId'

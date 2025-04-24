@@ -64,6 +64,7 @@ import {
   FIELD_INSTANCE_FIELD_NAMES,
   ITEM_INSTANCE_FIELD_NAMES,
   FLOW_METADATA_TYPE,
+  SOBJECT_URI,
 } from '../../src/constants'
 import {
   metadataType,
@@ -1216,6 +1217,155 @@ describe('Serialization Strategies', () => {
       const reportTypeValue = reportInstance.value.reportType as ReferenceExpression
       expect(reportTypeValue).not.toSatisfy(isReferenceExpression)
       expect(reportTypeValue).toEqual('AccountList')
+    })
+  })
+  describe('colonSeparator', () => {
+    const apexName = 'TestApexClass'
+    const flowName = 'TestFlow'
+    let filter: FilterWith<'onFetch'>
+    let apexClassInstance: InstanceElement
+    let flowInstance: InstanceElement
+    let genAiPromptTemplateDataProvider: ObjectType
+    let genAiPromptTemplate: ObjectType
+    let genAiPromptTemplateInstance: InstanceElement
+
+    beforeEach(() => {
+      genAiPromptTemplateDataProvider = createMetadataObjectType({
+        annotations: {
+          metadataType: 'GenAiPromptTemplateDataProvider',
+        },
+        fields: {
+          referenceName: { refType: BuiltinTypes.STRING },
+        },
+      })
+      genAiPromptTemplate = createMetadataObjectType({
+        annotations: {
+          metadataType: 'GenAiPromptTemplate',
+        },
+        fields: {
+          templateDataProviders: { refType: new ListType(genAiPromptTemplateDataProvider) },
+        },
+      })
+      genAiPromptTemplateInstance = createInstanceElement(
+        {
+          fullName: 'TestPromptTemplate',
+          templateDataProviders: [
+            {
+              referenceName: `Apex:${apexName}`,
+            },
+            {
+              referenceName: `Flow:${flowName}`,
+            },
+          ],
+        },
+        genAiPromptTemplate,
+      )
+      apexClassInstance = createInstanceElement(
+        {
+          fullName: apexName,
+        },
+        mockTypes.ApexClass,
+      )
+      flowInstance = createInstanceElement(
+        {
+          fullName: flowName,
+        },
+        mockTypes.Flow,
+      )
+      filter = filterCreator({
+        config: defaultFilterContext,
+      }) as FilterWith<'onFetch'>
+    })
+    it('should create reference to the right instance and deserialize it to the original value', async () => {
+      await filter.onFetch([
+        flowInstance,
+        mockTypes.Flow,
+        apexClassInstance,
+        mockTypes.ApexClass,
+        genAiPromptTemplate,
+        genAiPromptTemplateInstance,
+      ])
+      const apexReference = genAiPromptTemplateInstance.value.templateDataProviders[0]
+        .referenceName as ReferenceExpression
+      const flowReference = genAiPromptTemplateInstance.value.templateDataProviders[1]
+        .referenceName as ReferenceExpression
+      expect(apexReference).toBeInstanceOf(ReferenceExpression)
+      expect(apexReference.elemID.getFullName()).toEqual('salesforce.ApexClass.instance.TestApexClass')
+      expect(flowReference).toBeInstanceOf(ReferenceExpression)
+      expect(flowReference.elemID.getFullName()).toEqual('salesforce.Flow.instance.TestFlow')
+
+      const serializedApexValue = await ReferenceSerializationStrategyLookup.colonSeparator.serialize({
+        ref: apexReference,
+        element: genAiPromptTemplateInstance,
+      })
+      const serializedFlowValue = await ReferenceSerializationStrategyLookup.colonSeparator.serialize({
+        ref: flowReference,
+        element: genAiPromptTemplateInstance,
+      })
+      expect(serializedApexValue).toEqual('Apex:TestApexClass')
+      expect(serializedFlowValue).toEqual('Flow:TestFlow')
+    })
+  })
+  describe('sobjectUriDefinition', () => {
+    let filter: FilterWith<'onFetch'>
+    let genAiPromptTemplateInput: ObjectType
+    let genAiPromptTemplateVersion: ObjectType
+    let genAiPromptTemplate: ObjectType
+    let genAiPromptTemplateInstance: InstanceElement
+
+    beforeEach(() => {
+      genAiPromptTemplateInput = createMetadataObjectType({
+        annotations: {
+          metadataType: 'GenAiPromptTemplateInput',
+        },
+        fields: {
+          definition: { refType: BuiltinTypes.STRING },
+        },
+      })
+      genAiPromptTemplateVersion = createMetadataObjectType({
+        annotations: {
+          metadataType: 'GenAiPromptTemplateVersion',
+        },
+        fields: {
+          inputs: { refType: new ListType(genAiPromptTemplateInput) },
+        },
+      })
+      genAiPromptTemplate = createMetadataObjectType({
+        annotations: {
+          metadataType: 'GenAiPromptTemplate',
+        },
+        fields: {
+          templateVersions: { refType: new ListType(genAiPromptTemplateVersion) },
+        },
+      })
+      genAiPromptTemplateInstance = createInstanceElement(
+        {
+          fullName: 'TestPromptTemplateInput',
+          templateVersions: [
+            {
+              inputs: [{ definition: `${SOBJECT_URI}Account` }],
+            },
+          ],
+        },
+        genAiPromptTemplate,
+      )
+      filter = filterCreator({
+        config: defaultFilterContext,
+      }) as FilterWith<'onFetch'>
+    })
+
+    it('should create reference to the Account and deserialize it to the original value', async () => {
+      await filter.onFetch([mockTypes.Account, genAiPromptTemplate, genAiPromptTemplateInstance])
+      const createdReference = genAiPromptTemplateInstance.value.templateVersions[0].inputs[0]
+        .definition as ReferenceExpression
+      expect(createdReference).toBeInstanceOf(ReferenceExpression)
+      expect(createdReference.elemID.getFullName()).toEqual('salesforce.Account')
+
+      const serializedValue = await ReferenceSerializationStrategyLookup.sobjectUriDefinition.serialize({
+        ref: createdReference,
+        element: genAiPromptTemplateInstance,
+      })
+      expect(serializedValue).toEqual(`${SOBJECT_URI}Account`)
     })
   })
 })

@@ -25,12 +25,15 @@ import { logger } from '@salto-io/logging'
 import { collections } from '@salto-io/lowerdash'
 import { apiName, isMetadataInstanceElement } from './transformer'
 import {
+  APEX_CLASS_METADATA_TYPE,
   API_NAME_SEPARATOR,
   CUSTOM_FIELD,
+  CUSTOM_OBJECT,
   DEFAULT_OBJECT_TO_API_MAPPING,
   ELEMENT_REFERENCE,
   LEFT_VALUE_REFERENCE,
   SCHEDULE_CONSTRAINT_FIELD_TO_API_MAPPING,
+  SOBJECT_URI,
   TEST_OBJECT_TO_API_MAPPING,
 } from '../constants'
 import { instanceInternalId, isOrderedMapTypeOrRefType } from '../filters/utils'
@@ -75,6 +78,8 @@ type ReferenceSerializationStrategyName =
   | 'recordFieldDollarPrefix'
   | 'flexiPageleftValueField'
   | 'reportType'
+  | 'colonSeparator'
+  | 'sobjectUriDefinition'
 export const ReferenceSerializationStrategyLookup: Record<
   ReferenceSerializationStrategyName,
   ReferenceSerializationStrategy
@@ -160,6 +165,20 @@ export const ReferenceSerializationStrategyLookup: Record<
   reportType: {
     serialize: async ({ ref, path }) => `${await safeApiName({ ref, path })}__c`,
     lookup: val => (val.endsWith('__c') ? val.replace('__c', '') : val),
+  },
+  colonSeparator: {
+    serialize: async ({ ref, path }) =>
+      `${ref.elemID.typeName === APEX_CLASS_METADATA_TYPE ? 'Apex' : ref.elemID.typeName}:${await safeApiName({ ref, path })}`,
+    lookup: val => val.split(':')[1],
+  },
+  sobjectUriDefinition: {
+    serialize: async ({ ref, path }) => `SOBJECT://${await safeApiName({ ref, path })}`,
+    lookup: val => {
+      if (val.startsWith(SOBJECT_URI)) {
+        return val.split(SOBJECT_URI)[1]
+      }
+      return val
+    },
   },
 }
 
@@ -1625,14 +1644,54 @@ export const referenceMappingDefs: Record<string, FieldReferenceDefinition> = {
       type: 'GenAiFunction',
     },
   },
-  'Network.changePasswordTemplate:EmailTemplate': {
+  'GenAiPromptTemplate.relatedField:CustomField': {
     src: {
-      field: 'changePasswordTemplate',
-      parentTypes: ['Network'],
+      field: 'relatedField',
+      parentTypes: ['GenAiPromptTemplate'],
     },
     target: {
-      type: 'EmailTemplate',
+      type: CUSTOM_FIELD,
     },
+  },
+  'GenAiPromptTemplateDataProvider.referenceName:Flow': {
+    src: {
+      field: 'referenceName',
+      parentTypes: ['GenAiPromptTemplateDataProvider'],
+    },
+    target: {
+      type: 'Flow',
+    },
+    serializationStrategy: 'colonSeparator',
+  },
+  'GenAiPromptTemplateDataProvider.referenceName:ApexClass': {
+    src: {
+      field: 'referenceName',
+      parentTypes: ['GenAiPromptTemplateDataProvider'],
+    },
+    target: {
+      type: 'ApexClass',
+    },
+    serializationStrategy: 'colonSeparator',
+  },
+  'GenAiPromptTemplateInput.definition:CustomObject': {
+    src: {
+      field: 'definition',
+      parentTypes: ['GenAiPromptTemplateInput'],
+    },
+    target: {
+      type: CUSTOM_OBJECT,
+    },
+    serializationStrategy: 'sobjectUriDefinition',
+  },
+  'GenAiPromptTemplateDataProviderParam.definition:CustomObject': {
+    src: {
+      field: 'definition',
+      parentTypes: ['GenAiPromptTemplateDataProviderParam'],
+    },
+    target: {
+      type: CUSTOM_OBJECT,
+    },
+    serializationStrategy: 'sobjectUriDefinition',
   },
   'Network.chgEmailVerNewTemplate:EmailTemplate': {
     src: {
