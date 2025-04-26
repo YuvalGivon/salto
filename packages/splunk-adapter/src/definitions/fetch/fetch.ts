@@ -64,6 +64,15 @@ const createCustomizations = (): Record<string, definitions.fetch.InstanceFetchA
       topLevel: {
         isTopLevel: true,
         alias: { aliasComponents: [NAME_ID_FIELD] },
+        serviceUrl: {
+          path: '', // this part is ignored
+          custom:
+            ({ baseUrl }) =>
+            value => {
+              const encodedName = encodeURIComponent(value.name)
+              return new URL(`/en-US/app/search/report?s=${encodedName}`, baseUrl).href
+            },
+        },
       },
       fieldCustomizations: {
         id: {

@@ -51,7 +51,13 @@ export const addUrlToInstance: <Options extends FetchApiDefinitionsOptions = {}>
   instance: InstanceElement,
   apiDef: InstanceFetchApiDefinitions<Options> | undefined,
 ) => void = (instance, apiDef) => {
-  const { path, baseUrl } = apiDef?.element?.topLevel?.serviceUrl ?? {}
+  const serviceUrlDef = apiDef?.element?.topLevel?.serviceUrl
+  if (serviceUrlDef?.custom !== undefined) {
+    const serviceURl = serviceUrlDef.custom(serviceUrlDef)(instance.value)
+    instance.annotations[CORE_ANNOTATIONS.SERVICE_URL] = serviceURl
+    return
+  }
+  const { path, baseUrl } = serviceUrlDef ?? {}
   if (path === undefined) {
     return
   }
