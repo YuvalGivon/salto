@@ -756,43 +756,34 @@ export const groupIdForInstanceChangeGroup = (action: ActionName, typeName: stri
 
 // Custom Rules And Conditions Groups
 
-export const CUSTOM_APPROVAL_RULE_AND_CONDITION = 'Custom ApprovalRule and ApprovalCondition'
-export const CUSTOM_PRICE_RULE_AND_CONDITION = 'Custom PriceRule and PriceCondition'
-export const CUSTOM_PRODUCT_RULE_AND_CONDITION = 'Custom ProductRule and ErrorCondition'
-export const CUSTOM_QUOTE_TERM_AND_CONDITION = 'Custom QuoteTerm and TermCondition'
+export const APPROVAL_RULE_AND_CONDITION = 'ApprovalRule and ApprovalCondition'
+export const PRICE_RULE_AND_CONDITION = 'PriceRule and PriceCondition'
+export const PRODUCT_RULE_AND_CONDITION = 'ProductRule and ErrorCondition'
+export const QUOTE_TERM_AND_CONDITION = 'QuoteTerm and TermCondition'
 
-export const ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
+export const ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
   'add',
-  CUSTOM_APPROVAL_RULE_AND_CONDITION,
+  APPROVAL_RULE_AND_CONDITION,
 )
-export const ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
-  'add',
-  CUSTOM_PRICE_RULE_AND_CONDITION,
-)
-export const ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
-  'add',
-  CUSTOM_PRODUCT_RULE_AND_CONDITION,
-)
-export const ADD_CPQ_QUOTE_TERM_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
-  'add',
-  CUSTOM_QUOTE_TERM_AND_CONDITION,
-)
+export const ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup('add', PRICE_RULE_AND_CONDITION)
+export const ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup('add', PRODUCT_RULE_AND_CONDITION)
+export const ADD_CPQ_QUOTE_TERM_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup('add', QUOTE_TERM_AND_CONDITION)
 
-export const REMOVE_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
+export const REMOVE_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
   'remove',
-  CUSTOM_APPROVAL_RULE_AND_CONDITION,
+  APPROVAL_RULE_AND_CONDITION,
 )
-export const REMOVE_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
+export const REMOVE_CPQ_PRICE_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
   'remove',
-  CUSTOM_PRICE_RULE_AND_CONDITION,
+  PRICE_RULE_AND_CONDITION,
 )
-export const REMOVE_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
+export const REMOVE_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
   'remove',
-  CUSTOM_PRODUCT_RULE_AND_CONDITION,
+  PRODUCT_RULE_AND_CONDITION,
 )
 export const REMOVE_CPQ_QUOTE_TERM_AND_CONDITION_GROUP = groupIdForInstanceChangeGroup(
   'remove',
-  CUSTOM_QUOTE_TERM_AND_CONDITION,
+  QUOTE_TERM_AND_CONDITION,
 )
 
 export const METADATA_CHANGE_GROUP = 'Salesforce Metadata'

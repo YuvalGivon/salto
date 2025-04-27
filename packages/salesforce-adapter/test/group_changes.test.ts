@@ -35,10 +35,10 @@ import {
   CPQ_ERROR_CONDITION_RULE_FIELD,
   CPQ_QUOTE_TERM,
   CPQ_TERM_CONDITION,
-  CUSTOM_APPROVAL_RULE_AND_CONDITION,
-  CUSTOM_PRICE_RULE_AND_CONDITION,
-  CUSTOM_PRODUCT_RULE_AND_CONDITION,
-  CUSTOM_QUOTE_TERM_AND_CONDITION,
+  APPROVAL_RULE_AND_CONDITION,
+  PRICE_RULE_AND_CONDITION,
+  PRODUCT_RULE_AND_CONDITION,
+  QUOTE_TERM_AND_CONDITION,
   SBAA_APPROVAL_CONDITION,
   groupIdForInstanceChangeGroup,
 } from '../src/constants'
@@ -218,7 +218,7 @@ describe('Group changes function', () => {
 
     const testCases = [
       {
-        groupName: CUSTOM_APPROVAL_RULE_AND_CONDITION,
+        groupName: APPROVAL_RULE_AND_CONDITION,
         ruleType: mockTypes.ApprovalRule,
         conditionType: mockTypes.ApprovalCondition,
         typeName: SBAA_APPROVAL_RULE,
@@ -227,7 +227,7 @@ describe('Group changes function', () => {
         customConditionField: SBAA_APPROVAL_RULE,
       },
       {
-        groupName: CUSTOM_PRICE_RULE_AND_CONDITION,
+        groupName: PRICE_RULE_AND_CONDITION,
         ruleType: mockTypes[CPQ_PRICE_RULE],
         conditionType: mockTypes[CPQ_PRICE_CONDITION],
         typeName: CPQ_PRICE_RULE,
@@ -236,7 +236,7 @@ describe('Group changes function', () => {
         customConditionField: CPQ_PRICE_CONDITION_RULE_FIELD,
       },
       {
-        groupName: CUSTOM_PRODUCT_RULE_AND_CONDITION,
+        groupName: PRODUCT_RULE_AND_CONDITION,
         ruleType: mockTypes[CPQ_PRODUCT_RULE],
         conditionType: mockTypes[CPQ_ERROR_CONDITION],
         typeName: CPQ_PRODUCT_RULE,
@@ -245,7 +245,7 @@ describe('Group changes function', () => {
         customConditionField: CPQ_ERROR_CONDITION_RULE_FIELD,
       },
       {
-        groupName: CUSTOM_QUOTE_TERM_AND_CONDITION,
+        groupName: QUOTE_TERM_AND_CONDITION,
         ruleType: mockTypes[CPQ_QUOTE_TERM],
         conditionType: mockTypes[CPQ_TERM_CONDITION],
         typeName: CPQ_QUOTE_TERM,
@@ -257,9 +257,9 @@ describe('Group changes function', () => {
 
     describe.each(testCases)(
       '$groupName',
-      ({ groupName, ruleType, conditionType, typeName, conditionName, customRuleField, customConditionField }) => {
+      ({ groupName, ruleType, conditionType, customRuleField, customConditionField }) => {
         let instances: InstanceElement[]
-        let exptectedRemovalGroupName: string
+        let expectedRemovalGroupName: string
         let expectedAdditionGroupName: string
         beforeEach(() => {
           const customRule = new InstanceElement('CustomRule', ruleType, {
@@ -275,7 +275,7 @@ describe('Group changes function', () => {
             [customConditionField]: new ReferenceExpression(rule.elemID, rule),
           })
           instances = [customRule, rule, customCondition, condition]
-          exptectedRemovalGroupName = groupIdForInstanceChangeGroup('remove', groupName)
+          expectedRemovalGroupName = groupIdForInstanceChangeGroup('remove', groupName)
           expectedAdditionGroupName = groupIdForInstanceChangeGroup('add', groupName)
         })
         describe('additions', () => {
@@ -283,22 +283,18 @@ describe('Group changes function', () => {
             const result = await getChangeGroupIds(createChangeMap(instances, 'add'))
             expect(result.changeGroupIdMap.get('CustomRule')).toEqual(expectedAdditionGroupName)
             expect(result.changeGroupIdMap.get('CustomCondition')).toEqual(expectedAdditionGroupName)
-            expect(result.changeGroupIdMap.get('Rule')).toEqual(`Addition of data instances of type '${typeName}'`)
-            expect(result.changeGroupIdMap.get('Condition')).toEqual(
-              `Addition of data instances of type '${conditionName}'`,
-            )
+            expect(result.changeGroupIdMap.get('Rule')).toEqual(expectedAdditionGroupName)
+            expect(result.changeGroupIdMap.get('Condition')).toEqual(expectedAdditionGroupName)
           })
         })
 
         describe('removals', () => {
           it('should create correct groups for removals', async () => {
             const result = await getChangeGroupIds(createChangeMap(instances, 'remove'))
-            expect(result.changeGroupIdMap.get('CustomRule')).toEqual(exptectedRemovalGroupName)
-            expect(result.changeGroupIdMap.get('CustomCondition')).toEqual(exptectedRemovalGroupName)
-            expect(result.changeGroupIdMap.get('Rule')).toEqual(`Removal of data instances of type '${typeName}'`)
-            expect(result.changeGroupIdMap.get('Condition')).toEqual(
-              `Removal of data instances of type '${conditionName}'`,
-            )
+            expect(result.changeGroupIdMap.get('CustomRule')).toEqual(expectedRemovalGroupName)
+            expect(result.changeGroupIdMap.get('CustomCondition')).toEqual(expectedRemovalGroupName)
+            expect(result.changeGroupIdMap.get('Rule')).toEqual(expectedRemovalGroupName)
+            expect(result.changeGroupIdMap.get('Condition')).toEqual(expectedRemovalGroupName)
           })
         })
       },

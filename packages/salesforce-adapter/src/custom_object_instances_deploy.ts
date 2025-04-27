@@ -50,7 +50,7 @@ import {
 } from './transformers/transformer'
 import SalesforceClient from './client/client'
 import {
-  ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP,
+  ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP,
   CUSTOM_OBJECT_ID_FIELD,
   DEFAULT_CUSTOM_OBJECT_DEPLOY_RETRY_DELAY,
   DEFAULT_CUSTOM_OBJECT_DEPLOY_RETRY_DELAY_MULTIPLIER,
@@ -59,7 +59,7 @@ import {
   SBAA_APPROVAL_RULE,
   SBAA_CONDITIONS_MET,
   SYSTEM_FIELDS,
-  ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP,
+  ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP,
   CPQ_PRICE_RULE,
   CPQ_PRICE_CONDITION,
   CPQ_CONDITIONS_MET,
@@ -67,13 +67,13 @@ import {
   CPQ_PRODUCT_RULE,
   CPQ_ERROR_CONDITION,
   CPQ_ERROR_CONDITION_RULE_FIELD,
-  ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP,
+  ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP,
   CPQ_QUOTE_TERM,
   ADD_CPQ_QUOTE_TERM_AND_CONDITION_GROUP,
   CPQ_TERM_CONDITION,
-  REMOVE_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP,
-  REMOVE_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP,
-  REMOVE_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP,
+  REMOVE_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP,
+  REMOVE_CPQ_PRICE_RULE_AND_CONDITION_GROUP,
+  REMOVE_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP,
   REMOVE_CPQ_QUOTE_TERM_AND_CONDITION_GROUP,
   CPQ_RULE_FIELD,
   CPQ_QUOTE_TERM_FIELD,
@@ -433,7 +433,7 @@ const updateInstances: CrudFn = async ({ typeName, instances, client, groupId })
     'update',
     // For this special group, we know it's safe to update without adding nulls, since the Record
     // was previously added by us, and no Data could be deleted by the user during this process.
-    await instancesToUpdateRecords(instances, groupId !== ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP),
+    await instancesToUpdateRecords(instances, groupId !== ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP),
   )
   return groupInstancesAndResultsByIndex(results, instances)
 }
@@ -851,13 +851,6 @@ const deployRulesAndConditionsGroup = async (
 
   const conditionChanges = changes.filter(isInstanceOfTypeChangeSync(conditionTypeName))
 
-  const anyInvalidRuleInstances = ruleChanges
-    .map(getChangeData)
-    .some(instance => instance.value[ruleConditionFieldName] !== 'Custom')
-
-  if (anyInvalidRuleInstances) {
-    throw new Error(`Received ${ruleTypeName} instance without Custom ConditionsMet`)
-  }
   // On each condition instance, Replacing field referencing the rule to point to the resolved instance
   const ruleInstanceByElemID = _.keyBy(ruleChanges.map(getChangeData), instance => instance.elemID.getFullName())
   await awu(conditionChanges.map(getChangeData)).forEach(instance => {
@@ -866,9 +859,26 @@ const deployRulesAndConditionsGroup = async (
     )
   })
   log.debug(`Deploying ${ruleTypeName} instances with "All" ConditionsMet instead of "Custom"`)
-  ruleChanges.map(getChangeData).forEach(instance => {
-    instance.value[ruleConditionFieldName] = 'All'
-  })
+  const ruleChangesWithCustomConditionsMet = new Set(
+    ruleChanges
+      .filter(change => getChangeData(change).value[ruleConditionFieldName] === 'Custom')
+      .map(change => getChangeData(change).elemID.getFullName()),
+  )
+  const ruleChangesWithAnyConditionsMet = new Set(
+    ruleChanges
+      .filter(change => getChangeData(change).value[ruleConditionFieldName] === 'Any')
+      .map(change => getChangeData(change).elemID.getFullName()),
+  )
+  ruleChanges
+    .map(getChangeData)
+    .filter(
+      instance =>
+        ruleChangesWithCustomConditionsMet.has(instance.elemID.getFullName()) ||
+        ruleChangesWithAnyConditionsMet.has(instance.elemID.getFullName()),
+    )
+    .forEach(instance => {
+      instance.value[ruleConditionFieldName] = 'All'
+    })
   const rulesWithAllConditionsMetDeployResult = await deploySingleTypeAndActionCustomObjectInstancesGroup(
     ruleChanges,
     client,
@@ -930,9 +940,17 @@ const deployRulesAndConditionsGroup = async (
   }
 
   log.debug(`Updating the ${ruleTypeName} instances with Custom ${ruleConditionFieldName}`)
-  const firstDeployAppliedChanges = rulesWithAllConditionsMetDeployResult.appliedChanges.filter(isInstanceChange)
+  const firstDeployAppliedChanges = rulesWithAllConditionsMetDeployResult.appliedChanges
+    .filter(isInstanceChange)
+    .filter(
+      change =>
+        ruleChangesWithCustomConditionsMet.has(getChangeData(change).elemID.getFullName()) ||
+        ruleChangesWithAnyConditionsMet.has(getChangeData(change).elemID.getFullName()),
+    )
   firstDeployAppliedChanges.map(getChangeData).forEach(instance => {
-    instance.value[ruleConditionFieldName] = 'Custom'
+    instance.value[ruleConditionFieldName] = ruleChangesWithCustomConditionsMet.has(instance.elemID.getFullName())
+      ? 'Custom'
+      : 'Any'
     const instanceId = instance.value[CUSTOM_OBJECT_ID_FIELD]
     _(mandatoryFieldsForUpdate)
       .without(CUSTOM_OBJECT_ID_FIELD)
@@ -953,7 +971,7 @@ const deployRulesAndConditionsGroup = async (
     dataManagement,
   )
   return {
-    appliedChanges: rulesWithCustomDeployResult.appliedChanges
+    appliedChanges: rulesWithAllConditionsMetDeployResult.appliedChanges
       // Transforming back to addition changes
       .map(change => toChange({ after: getChangeData(change) }))
       .concat(conditionsDeployResult.appliedChanges),
@@ -976,7 +994,7 @@ const deployAddCustomApprovalRulesAndConditions = async (
     SBAA_APPROVAL_CONDITION,
     SBAA_APPROVAL_RULE,
     changes,
-    ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP,
+    ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP,
     client,
     dataManagement,
   )
@@ -992,7 +1010,7 @@ const deployAddCustomPriceRulesAndConditions = async (
     CPQ_PRICE_CONDITION,
     CPQ_PRICE_CONDITION_RULE_FIELD,
     changes,
-    ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP,
+    ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP,
     client,
     dataManagement,
   )
@@ -1008,7 +1026,7 @@ const deployAddCustomProductRulesAndConditions = async (
     CPQ_ERROR_CONDITION,
     CPQ_ERROR_CONDITION_RULE_FIELD,
     changes,
-    ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP,
+    ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP,
     client,
     dataManagement,
   )
@@ -1079,15 +1097,15 @@ export const deployCustomObjectInstancesGroup = async (
 ): Promise<SalesforceDataDeployResult> => {
   switch (groupId) {
     // Add Approval Rules
-    case ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP: {
+    case ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP: {
       return deployAddCustomApprovalRulesAndConditions(changes, client, dataManagement)
     }
     // Add Price Rules
-    case ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP: {
+    case ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP: {
       return deployAddCustomPriceRulesAndConditions(changes, client, dataManagement)
     }
     // Add Product Rules
-    case ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP: {
+    case ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP: {
       return deployAddCustomProductRulesAndConditions(changes, client, dataManagement)
     }
     // Add Quote Terms
@@ -1095,7 +1113,7 @@ export const deployCustomObjectInstancesGroup = async (
       return deployAddCustomQuoteTermsAndConditions(changes, client, dataManagement)
     }
     // Remove Approval Rules
-    case REMOVE_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP: {
+    case REMOVE_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP: {
       return deployRemoveCustomRulesAndConditions({
         changes,
         client,
@@ -1106,7 +1124,7 @@ export const deployCustomObjectInstancesGroup = async (
       })
     }
     // Remove Price Rules
-    case REMOVE_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP: {
+    case REMOVE_CPQ_PRICE_RULE_AND_CONDITION_GROUP: {
       return deployRemoveCustomRulesAndConditions({
         changes,
         client,
@@ -1117,7 +1135,7 @@ export const deployCustomObjectInstancesGroup = async (
       })
     }
     // Remove Product Rules
-    case REMOVE_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP: {
+    case REMOVE_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP: {
       return deployRemoveCustomRulesAndConditions({
         changes,
         client,

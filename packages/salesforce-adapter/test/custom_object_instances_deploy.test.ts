@@ -12,6 +12,15 @@ import { CrudFn, retryFlow, deleteInstances } from '../src/custom_object_instanc
 import { instancesToCreateRecords } from '../src/transformers/transformer'
 import mockClient from './client'
 
+// Mock shouldRemoveField to always return false
+jest.mock('../src/custom_object_instances_deploy', () => {
+  const original = jest.requireActual('../src/custom_object_instances_deploy')
+  return {
+    ...original,
+    shouldRemoveField: () => false,
+  }
+})
+
 describe('Custom Object Deploy', () => {
   const groupId = 'test_group_id'
   describe('retry mechanism', () => {

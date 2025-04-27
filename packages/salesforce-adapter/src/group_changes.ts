@@ -22,7 +22,7 @@ import {
 import wu from 'wu'
 import { apiNameSync, isInstanceOfCustomObjectChangeSync, isInstanceOfTypeChangeSync } from './filters/utils'
 import {
-  ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP,
+  ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP,
   SBAA_APPROVAL_CONDITION,
   SBAA_APPROVAL_RULE,
   SBAA_CONDITIONS_MET,
@@ -31,18 +31,18 @@ import {
   CPQ_PRICE_RULE,
   CPQ_CONDITIONS_MET,
   CPQ_PRICE_CONDITION,
-  ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP,
+  ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP,
   CPQ_PRICE_CONDITION_RULE_FIELD,
   CPQ_ERROR_CONDITION_RULE_FIELD,
-  ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP,
+  ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP,
   CPQ_PRODUCT_RULE,
   CPQ_ERROR_CONDITION,
   CPQ_QUOTE_TERM,
   CPQ_TERM_CONDITION,
   ADD_CPQ_QUOTE_TERM_AND_CONDITION_GROUP,
-  REMOVE_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP,
-  REMOVE_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP,
-  REMOVE_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP,
+  REMOVE_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP,
+  REMOVE_CPQ_PRICE_RULE_AND_CONDITION_GROUP,
+  REMOVE_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP,
   REMOVE_CPQ_QUOTE_TERM_AND_CONDITION_GROUP,
 } from './constants'
 import { isConditionOfRuleFunc } from './filters/cpq/rules_and_conditions_refs'
@@ -55,7 +55,7 @@ const getGroupId = (change: Change): string => {
   return groupIdForInstanceChangeGroup(change.action, typeName)
 }
 
-type GetCustomRuleAndConditionGroupChangeIdsArgs = {
+type GetRuleAndConditionGroupChangeIdsArgs = {
   action: 'add' | 'remove'
   changes: Map<ChangeId, Change>
   ruleTypeName: string
@@ -76,28 +76,25 @@ const getCustomRuleAndConditionGroupChangeIds = ({
   action,
   changes,
   ruleTypeName,
-  ruleConditionFieldName,
   conditionTypeName,
   conditionRuleFieldName,
-}: GetCustomRuleAndConditionGroupChangeIdsArgs): Set<ChangeId> => {
+}: GetRuleAndConditionGroupChangeIdsArgs): Set<ChangeId> => {
   const isMatchingChange = action === 'add' ? isAdditionChange : isRemovalChange
   const instanceChanges = wu(changes.entries())
     .filter(([_changeId, change]) => isMatchingChange(change))
     .filter(([_changeId, change]) => isInstanceChange(change))
     .toArray() as [ChangeId, AdditionOrRemovalChange<InstanceElement>][]
-  const customRuleChanges = instanceChanges
-    .filter(([_changeId, change]) => isInstanceOfTypeChangeSync(ruleTypeName)(change))
-    .filter(([_changeId, change]) => getChangeData(change).value[ruleConditionFieldName] === 'Custom')
+  const ruleChanges = instanceChanges.filter(([_changeId, change]) => isInstanceOfTypeChangeSync(ruleTypeName)(change))
   const conditionChanges = instanceChanges.filter(([_changeId, change]) =>
     isInstanceOfTypeChangeSync(conditionTypeName)(change),
   )
-  const relevantConditionChanges = customRuleChanges
+  const relevantConditionChanges = ruleChanges
     .map(([, change]) => getChangeData(change))
     .flatMap(rule => {
       const isConditionOfCurrentRule = isConditionOfRuleFunc(rule, conditionRuleFieldName)
       return conditionChanges.filter(([, change]) => isConditionOfCurrentRule(getChangeData(change)))
     })
-  return new Set(customRuleChanges.concat(relevantConditionChanges).map(([changeId]) => changeId))
+  return new Set(ruleChanges.concat(relevantConditionChanges).map(([changeId]) => changeId))
 }
 
 type GetCustomRulesAndConditionsGroupsChangeIdsFunc = (changes: Map<ChangeId, Change>) => {
@@ -196,19 +193,19 @@ export const getChangeGroupIds: ChangeGroupIdFunction = async changes => {
   wu(changes.entries()).forEach(([changeId, change]) => {
     let groupId: string
     if (customApprovalRuleAndConditionChangeIds.add.has(changeId)) {
-      groupId = ADD_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP
+      groupId = ADD_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP
     } else if (customPriceRuleAndConditionChangeIds.add.has(changeId)) {
-      groupId = ADD_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP
+      groupId = ADD_CPQ_PRICE_RULE_AND_CONDITION_GROUP
     } else if (customProductRuleAndConditionChangeIds.add.has(changeId)) {
-      groupId = ADD_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP
+      groupId = ADD_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP
     } else if (customQuoteTermsAndConditionsChangeIds.add.has(changeId)) {
       groupId = ADD_CPQ_QUOTE_TERM_AND_CONDITION_GROUP
     } else if (customApprovalRuleAndConditionChangeIds.remove.has(changeId)) {
-      groupId = REMOVE_SBAA_CUSTOM_APPROVAL_RULE_AND_CONDITION_GROUP
+      groupId = REMOVE_SBAA_APPROVAL_RULE_AND_CONDITION_GROUP
     } else if (customPriceRuleAndConditionChangeIds.remove.has(changeId)) {
-      groupId = REMOVE_CPQ_CUSTOM_PRICE_RULE_AND_CONDITION_GROUP
+      groupId = REMOVE_CPQ_PRICE_RULE_AND_CONDITION_GROUP
     } else if (customProductRuleAndConditionChangeIds.remove.has(changeId)) {
-      groupId = REMOVE_CPQ_CUSTOM_PRODUCT_RULE_AND_CONDITION_GROUP
+      groupId = REMOVE_CPQ_PRODUCT_RULE_AND_CONDITION_GROUP
     } else if (customQuoteTermsAndConditionsChangeIds.remove.has(changeId)) {
       groupId = REMOVE_CPQ_QUOTE_TERM_AND_CONDITION_GROUP
     } else {
