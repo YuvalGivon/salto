@@ -64,6 +64,8 @@ import {
   APPROVAL_PROCESS_METADATA_TYPE,
   VALIDATION_RULES_METADATA_TYPE,
   GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
+  BOT_METADATA_TYPE,
+  BOT_VERSION_METADATA_TYPE,
   GEN_AI_PROMPT_TEMPLATE_VERSION_METADATA_TYPE,
 } from '../src/constants'
 import { createInstanceElement, createMetadataObjectType, Types } from '../src/transformers/transformer'
@@ -918,6 +920,23 @@ export const mockTypes = {
     },
   }),
   [BILLING_PAYMENT_TYPE_NAME]: createCustomObjectType(BILLING_PAYMENT_TYPE_NAME, {}),
+  [BOT_METADATA_TYPE]: createMetadataObjectType({
+    annotations: {
+      metadataType: BOT_METADATA_TYPE,
+    },
+    fields: {
+      botVersions: {
+        refType: new ListType(
+          createMetadataObjectType({
+            annotations: { metadataType: BOT_VERSION_METADATA_TYPE },
+            fields: {
+              status: { refType: BuiltinTypes.STRING },
+            },
+          }),
+        ),
+      },
+    },
+  }),
   [GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE]: createMetadataObjectType({
     annotations: {
       [METADATA_TYPE]: GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,

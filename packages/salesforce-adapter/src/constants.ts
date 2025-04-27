@@ -542,6 +542,8 @@ export const GEN_AI_PROMPT_TEMPLATE_VERSION_METADATA_TYPE = 'GenAiPromptTemplate
 export const LIVE_CHAT_BUTTON = 'LiveChatButton'
 export const APPROVAL_PROCESS_METADATA_TYPE = 'ApprovalProcess'
 export const DOCUMENT_METADATA_TYPE = 'Document'
+export const BOT_METADATA_TYPE = 'Bot'
+export const BOT_VERSION_METADATA_TYPE = 'BotVersion'
 
 // Wave Metadata Types
 export const WAVE_RECIPE_METADATA_TYPE = 'WaveRecipe'
@@ -572,6 +574,7 @@ export const CUSTOM_OBJECTS_FIELD = 'customObjects'
 export const CUSTOM_OBJECT_ALIASES_FIELD = 'customObjectAliases'
 export const CUSTOM_OBJECTS_LOOKUPS_FIELD = 'customObjectsLookups'
 export const METADATA_TYPES_FIELD = 'metadataTypes'
+export const BOT_VERSION_STATUS_FIELD = 'status'
 
 export const ORDERED_MAP_PREFIX = 'OrderedMapOf'
 

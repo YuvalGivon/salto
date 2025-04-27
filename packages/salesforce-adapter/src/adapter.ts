@@ -140,6 +140,7 @@ import mergeProfilesWithSourceValuesFilter from './filters/merge_profiles_with_s
 import flowCoordinatesFilter from './filters/flow_coordinates'
 import taskAndEventCustomFields from './filters/task_and_event_custom_fields'
 import picklistReferences from './filters/picklist_references'
+import addStatusToBotVersionFilter from './filters/add_status_to_bot_version'
 import controllingFieldReference from './filters/controlling_field_reference'
 import addParentRelationship from './filters/add_parent_relationship'
 import { getConfigFromConfigChanges } from './config/config_change'
@@ -194,6 +195,7 @@ const { isDefined } = values
 const log = logger(module)
 
 export const allFilters: Array<FilterCreator> = [
+  addStatusToBotVersionFilter,
   waveStaticFilesFilter,
   createMissingInstalledPackagesInstancesFilter,
   settingsFilter,
