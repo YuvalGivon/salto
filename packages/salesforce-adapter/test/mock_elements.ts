@@ -64,6 +64,7 @@ import {
   APPROVAL_PROCESS_METADATA_TYPE,
   VALIDATION_RULES_METADATA_TYPE,
   GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
+  GEN_AI_PROMPT_TEMPLATE_VERSION_METADATA_TYPE,
 } from '../src/constants'
 import { createInstanceElement, createMetadataObjectType, Types } from '../src/transformers/transformer'
 import { allMissingSubTypes } from '../src/transformers/salesforce_types'
@@ -919,10 +920,27 @@ export const mockTypes = {
   [BILLING_PAYMENT_TYPE_NAME]: createCustomObjectType(BILLING_PAYMENT_TYPE_NAME, {}),
   [GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE]: createMetadataObjectType({
     annotations: {
-      metadataType: GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
+      [METADATA_TYPE]: GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
     },
     fields: {
       relatedEntity: {
+        refType: BuiltinTypes.STRING,
+      },
+      templateVersions: {
+        refType: new ListType(
+          createMetadataObjectType({
+            annotations: {
+              [METADATA_TYPE]: GEN_AI_PROMPT_TEMPLATE_VERSION_METADATA_TYPE,
+            },
+            fields: {
+              content: {
+                refType: BuiltinTypes.STRING,
+              },
+            },
+          }),
+        ),
+      },
+      fullName: {
         refType: BuiltinTypes.STRING,
       },
     },

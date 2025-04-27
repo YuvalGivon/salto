@@ -126,6 +126,7 @@ import generatedDependenciesFilter from './filters/generated_dependencies'
 import extendTriggersMetadataFilter from './filters/extend_triggers_metadata'
 import profilesAndPermissionSetsBrokenPathsFilter from './filters/profiles_and_permission_sets_broken_paths'
 import fetchTargetsFilter from './filters/fetch_targets_filter'
+import genAiPromptTemplateStaticFilesFilter from './filters/gen_ai_prompt_template_static_files'
 import {
   CUSTOM_REFS_CONFIG,
   FetchElements,
@@ -260,6 +261,8 @@ export const allFilters: Array<FilterCreator> = [
   // The following filters should remain last in order to make sure they fix all elements
   convertListsFilter,
   convertTypeFilter,
+  // genAiPromptTemplateStaticFilesFilter should run after convertTypeFilter
+  genAiPromptTemplateStaticFilesFilter,
   // should be after convertTypeFilter & convertMapsFilter and before profileInstanceSplitFilter
   enumFieldPermissionsFilter,
   // should run after convertListsFilter
