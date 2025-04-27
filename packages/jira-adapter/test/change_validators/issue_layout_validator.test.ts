@@ -553,4 +553,54 @@ describe('issue layouts validator', () => {
     const errors = await validator([changeIssueLayout1], elementSource)
     expect(errors).toHaveLength(1)
   })
+  describe('removal of issue layout', () => {
+    it('should not return error if the issue layout can be removed', async () => {
+      issueLayoutInstance1.value.extraDefinerId = new ReferenceExpression(new ElemID('salto', 'nonExistingScreen'))
+      const errors = await validator([toChange({ before: issueLayoutInstance1 })], elementSource)
+      expect(errors).toHaveLength(0)
+    })
+    it('should return error if the issue layout is removed', async () => {
+      const errors = await validator([toChange({ before: issueLayoutInstance1 })], elementSource)
+      expect(errors).toHaveLength(1)
+      expect(errors).toContainEqual({
+        elemID: issueLayoutInstance1.elemID,
+        severity: 'Error',
+        message: 'Cannot delete Issue Layout',
+        detailedMessage:
+          'Issue Layouts cannot be deleted. To remove this issue layout delete its project (jira.Project.instance.project1) or remove its screen (jira.Screen.instance.screen1) association to the project',
+      })
+    })
+    it('should return both removal and addition errors', async () => {
+      projectInstance2.value.issueTypeScreenScheme = new ReferenceExpression(
+        issueTypeScreenSchemeInstance3.elemID,
+        issueTypeScreenSchemeInstance3,
+      )
+      projectInstance2.value.issueTypeScheme = new ReferenceExpression(
+        issueTypeSchemeInstance3.elemID,
+        issueTypeSchemeInstance3,
+      )
+      issueLayoutInstance2.value.extraDefinerId = new ReferenceExpression(screenInstance1.elemID, screenInstance1)
+      elements.push(projectInstance2)
+      elements.push(issueLayoutInstance2)
+      elements.push(screenSchemeInstance4)
+      elements.push(issueTypeSchemeInstance3)
+      elements.push(issueTypeScreenSchemeInstance3)
+      const errors = await validator([toChange({ before: issueLayoutInstance1 }), changeIssueLayout2], elementSource)
+      expect(errors).toHaveLength(2)
+      expect(errors).toContainEqual({
+        elemID: issueLayoutInstance1.elemID,
+        severity: 'Error',
+        message: 'Cannot delete Issue Layout',
+        detailedMessage:
+          'Issue Layouts cannot be deleted. To remove this issue layout delete its project (jira.Project.instance.project1) or remove its screen (jira.Screen.instance.screen1) association to the project',
+      })
+      expect(errors).toContainEqual({
+        elemID: issueLayoutInstance2.elemID,
+        severity: 'Error',
+        message: 'Invalid screen for Issue Layout',
+        detailedMessage:
+          'This issue layout references a screen (jira.Screen.instance.screen1) that is not associated with its project (jira.Project.instance.project2). Learn more at https://help.salto.io/en/articles/9306685-deploying-issue-layouts',
+      })
+    })
+  })
 })

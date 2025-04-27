@@ -11,7 +11,6 @@ import {
   DependencyChanger,
   getChangeData,
   InstanceElement,
-  isAdditionOrModificationChange,
   isInstanceChange,
   CORE_ANNOTATIONS,
   ElemID,
@@ -42,28 +41,22 @@ type issueTypeMappingStruct = {
  * Make sure issue layout dependencies are updated before the issue layout is updated
  */
 export const issueLayoutDependencyChanger: DependencyChanger = async changes => {
-  const AdditionOrModificationChanges = Array.from(changes.entries())
+  const changeWithKey = Array.from(changes.entries())
     .map(([key, change]) => ({ key, change }))
-    .filter(
-      (change): change is ChangeWithKey =>
-        isInstanceChange(change.change) && isAdditionOrModificationChange(change.change),
-    )
+    .filter((change): change is ChangeWithKey => isInstanceChange(change.change))
 
   const issueLayoutsKeysToProject = Object.fromEntries(
     (
-      AdditionOrModificationChanges.filter(
-        ({ change }) => getChangeData(change).elemID.typeName === ISSUE_LAYOUT_TYPE,
-      ).map(({ key, change }) => [key, getParent(getChangeData(change))]) as [string, InstanceElement][]
+      changeWithKey
+        .filter(({ change }) => getChangeData(change).elemID.typeName === ISSUE_LAYOUT_TYPE)
+        .map(({ key, change }) => [key, getParent(getChangeData(change))]) as [string, InstanceElement][]
     ).filter(([_, project]) => project !== undefined && project.value !== undefined),
   )
 
   const issueLayoutsKeysToDependencyKeys = Object.entries(issueLayoutsKeysToProject)
     .flatMap(([issueLayoutKey, project]) => [
-      [
-        issueLayoutKey,
-        getSpecificChange(project.value.issueTypeScreenScheme?.elemID, AdditionOrModificationChanges)?.key,
-      ],
-      [issueLayoutKey, getSpecificChange(project.value.issueTypeScheme?.elemID, AdditionOrModificationChanges)?.key],
+      [issueLayoutKey, getSpecificChange(project.value.issueTypeScreenScheme?.elemID, changeWithKey)?.key],
+      [issueLayoutKey, getSpecificChange(project.value.issueTypeScheme?.elemID, changeWithKey)?.key],
     ])
     .filter(
       ([issueLayoutKey, dependencyKeys]) => issueLayoutKey !== undefined && dependencyKeys !== undefined,
@@ -73,7 +66,7 @@ export const issueLayoutDependencyChanger: DependencyChanger = async changes => 
     const issueLayoutKeyToProjectScreenSchemesKeys = isResolvedReferenceExpression(project.value.issueTypeScreenScheme)
       ? project.value.issueTypeScreenScheme.value.value.issueTypeMappings
           ?.map((issueTypeMapping: issueTypeMappingStruct) =>
-            getSpecificChange(issueTypeMapping.screenSchemeId?.elemID, AdditionOrModificationChanges),
+            getSpecificChange(issueTypeMapping.screenSchemeId?.elemID, changeWithKey),
           )
           .filter((change: ChangeWithKey) => change !== undefined)
           .map((change: ChangeWithKey) => [issueLayoutKey, change.key])

@@ -18,6 +18,7 @@ import {
   CORE_ANNOTATIONS,
   ElemID,
   isReferenceExpression,
+  isRemovalChange,
 } from '@salto-io/adapter-api'
 import _ from 'lodash'
 import { logger } from '@salto-io/logging'
@@ -50,7 +51,6 @@ const getIssueLayoutsListByProject = (changes: ReadonlyArray<Change>): InstanceE
   Object.values(
     _.groupBy(
       changes
-        .filter(isAdditionOrModificationChange)
         .map(getChangeData)
         .filter(isInstanceElement)
         .filter(instance => instance.elemID.typeName === ISSUE_LAYOUT_TYPE),
@@ -109,44 +109,77 @@ const getProjectIssueLayoutsScreensName = async (
     .map((screen: ReferenceExpression) => screen.elemID.getFullName())
 }
 
+type IssueLayoutErrorParams = {
+  changes: ReadonlyArray<Change>
+  elementsSource: ReadOnlyElementsSource
+  issueErrorFor: 'valid' | 'invalid'
+  message: string
+  detailedMessageBuilder: (instance: InstanceElement) => string
+}
+
+const generateIssueLayoutErrors = async ({
+  changes,
+  elementsSource,
+  issueErrorFor,
+  message,
+  detailedMessageBuilder,
+}: IssueLayoutErrorParams): Promise<ChangeError[]> => {
+  const errors: ChangeError[] = []
+  // if we want to issue an error for invalid we should reverse the condition, for valid it remains the same
+  const predicate = issueErrorFor === 'valid' ? (x: boolean) => x : (x: boolean) => !x
+  await Promise.all(
+    getIssueLayoutsListByProject(changes).map(async issueLayoutsByProject => {
+      const screens = await getProjectIssueLayoutsScreensName(elementsSource, parentElemID(issueLayoutsByProject[0]))
+
+      issueLayoutsByProject
+        .filter(instance =>
+          predicate(
+            isReferenceExpression(instance.value.extraDefinerId) &&
+              screens.includes(instance.value.extraDefinerId.elemID.getFullName()),
+          ),
+        )
+        .forEach(instance => {
+          errors.push({
+            elemID: instance.elemID,
+            severity: 'Error',
+            message,
+            detailedMessage: detailedMessageBuilder(instance),
+          })
+        })
+    }),
+  )
+  return errors
+}
+
 // this change validator ensures the correctness of issue layout configurations within each project,
 // by validating that each issue layout is linked to a valid screen according to his specific project
 // we also check that the issue layout is linked to a relevant project
+// for added or modified issue layouts an error is issued if the screen is not linked to the project
+// for removed issue layouts an error is issued if the screen is linked to the project as you cannot delete an issue layout
 export const issueLayoutsValidator: (client: JiraClient, config: JiraConfig) => ChangeValidator =
   (client, config) => async (changes, elementsSource) => {
-    const errors: ChangeError[] = []
     if (client.isDataCenter || !config.fetch.enableIssueLayouts || elementsSource === undefined) {
       log.info('Issue Layouts validation is disabled')
-      return errors
+      return []
     }
 
-    await Promise.all(
-      getIssueLayoutsListByProject(changes).map(async issueLayoutsByProject => {
-        // I use the first issueLayout of the sub-list of the issueLayouts to get the projectId of the project that this issueLayouts linked to
-        // and I need to do it just for the first issueLayout because all the issueLayouts in this sub-list are linked to the same project
-        const issueLayoutsScreens = await getProjectIssueLayoutsScreensName(
-          elementsSource,
-          parentElemID(issueLayoutsByProject[0]),
-        )
-
-        issueLayoutsByProject
-          .filter(
-            issueLayoutInstance =>
-              !isReferenceExpression(issueLayoutInstance.value.extraDefinerId) ||
-              !issueLayoutsScreens.includes(issueLayoutInstance.value.extraDefinerId.elemID.getFullName()),
-          )
-          .forEach(issueLayoutInstance => {
-            errors.push({
-              elemID: issueLayoutInstance.elemID,
-              severity: 'Error',
-              message: 'Invalid screen for Issue Layout',
-              detailedMessage:
-                `This issue layout references a screen (${issueLayoutInstance.value.extraDefinerId?.elemID?.getFullName()})` +
-                ` that is not associated with its project (${parentElemID(issueLayoutInstance)?.getFullName()}). Learn more at https://help.salto.io/en/articles/9306685-deploying-issue-layouts`,
-            })
-          })
+    const addOrModifyErrors = await generateIssueLayoutErrors({
+      changes: changes.filter(isAdditionOrModificationChange),
+      elementsSource,
+      issueErrorFor: 'invalid',
+      message: 'Invalid screen for Issue Layout',
+      detailedMessageBuilder: instance =>
+        `This issue layout references a screen (${instance.value.extraDefinerId?.elemID?.getFullName()})` +
+        ` that is not associated with its project (${parentElemID(instance)?.getFullName()}). Learn more at https://help.salto.io/en/articles/9306685-deploying-issue-layouts`,
+    })
+    return addOrModifyErrors.concat(
+      await generateIssueLayoutErrors({
+        changes: changes.filter(isRemovalChange),
+        elementsSource,
+        issueErrorFor: 'valid',
+        message: 'Cannot delete Issue Layout',
+        detailedMessageBuilder: instance =>
+          `Issue Layouts cannot be deleted. To remove this issue layout delete its project (${parentElemID(instance)?.getFullName()}) or remove its screen (${instance.value.extraDefinerId.elemID.getFullName()}) association to the project`,
       }),
     )
-
-    return errors
   }

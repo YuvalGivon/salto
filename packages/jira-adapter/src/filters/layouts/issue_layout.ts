@@ -33,7 +33,13 @@ import {
 import { FilterCreator } from '../../filter'
 import { createLayoutType, LayoutConfigItem } from './layout_types'
 import { addAnnotationRecursively, setTypeDeploymentAnnotations } from '../../utils'
-import { generateLayoutId, getLayout, getLayoutResponse, isIssueLayoutResponse } from './layout_service_operations'
+import {
+  generateLayoutId,
+  getLayout,
+  getLayoutResponse,
+  isIssueLayoutResponse,
+  isLayoutErrorResponse,
+} from './layout_service_operations'
 import { deployChanges } from '../../deployment/standard_deployment'
 import JiraClient, { graphQLResponseType } from '../../client/client'
 import { JiraConfig } from '../../config/config'
@@ -147,10 +153,11 @@ const getProjectToScreenMappingUnresolved = (elements: Element[]): Record<string
   )
 }
 
-const verifyProjectDeleted = async (projectId: string, client: JiraClient): Promise<boolean> => {
-  const res = await client.get({ url: `/rest/api/3/project/${projectId}` })
-  return res.status === 404
-}
+const isIssueLayoutResponse404 = (response: graphQLResponseType): boolean =>
+  Array.isArray(response.errors) &&
+  response.errors.length > 0 &&
+  isLayoutErrorResponse(response.errors[0]) &&
+  response.errors[0].extensions.statusCode === 404
 
 const deployLayoutChange = async (change: Change<InstanceElement>, client: JiraClient): Promise<void> => {
   const layout = getChangeData(change)
@@ -159,17 +166,6 @@ const deployLayoutChange = async (change: Change<InstanceElement>, client: JiraC
     return
   }
   const parentProject = getParent(layout)
-  if (isRemovalChange(change)) {
-    // if parent project removed, IssueLayout was deleted by delete cascade in Jira
-    if (_.isString(parentProject.value.id) && (await verifyProjectDeleted(parentProject.value.id, client))) {
-      log.debug(
-        `Project ${parentProject.elemID.getFullName()} deleted, IssueLayout ${layout.elemID.getFullName()} marked as deployed`,
-      )
-      return
-    }
-    // TODO SALTO-5205 - suppress removals of IssueLayout when associated Screen is deleted from IssueTypeScreenScheme
-    throw new Error('Could not remove IssueLayout')
-  }
   const items = layout.value.issueLayoutConfig?.items
     .map((item: LayoutConfigItem) => {
       if (isResolvedReferenceExpression(item.key)) {
@@ -219,6 +215,12 @@ const deployLayoutChange = async (change: Change<InstanceElement>, client: JiraC
       layout.value.id = generateLayoutId(variables)
     }
     const response = await getLayoutResponse({ variables, client, typeName })
+    if (isRemovalChange(change)) {
+      if (response.data === undefined || isIssueLayoutResponse404(response)) {
+        return
+      }
+      throw new Error('Could not remove IssueLayout')
+    }
     if (!isIssueLayoutResponse(response.data)) {
       log.error('received invalid response from jira due to error %s', response.errors)
       throw Error(

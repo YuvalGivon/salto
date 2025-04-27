@@ -80,7 +80,7 @@ export const LAYOUT_TYPE_NAME_TO_DETAILS: Record<LayoutTypeName, LayoutTypeDetai
 
 export const isIssueLayoutResponse = createSchemeGuard<IssueLayoutResponse>(ISSUE_LAYOUT_RESPONSE_SCHEME)
 const isLayoutConfigItem = createSchemeGuard<LayoutConfigItem>(ISSUE_LAYOUT_CONFIG_ITEM_SCHEME)
-const isErrorResponse = createSchemeGuard<errorResponse>(ERROR_RESPONSE_SCHEME)
+export const isLayoutErrorResponse = createSchemeGuard<errorResponse>(ERROR_RESPONSE_SCHEME)
 
 export const getLayoutResponse = async ({
   variables,
@@ -272,7 +272,7 @@ export const fetchRequestTypeDetails = async ({
         })
         if (
           Array.isArray(response.errors) &&
-          isErrorResponse(response.errors[0]) &&
+          isLayoutErrorResponse(response.errors[0]) &&
           response.errors[0].extensions.statusCode === 404 &&
           response.errors[0].message ===
             'Entity associated with issue layout does not exist or user does not have required permissions'

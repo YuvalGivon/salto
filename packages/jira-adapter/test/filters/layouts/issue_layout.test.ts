@@ -80,6 +80,8 @@ describe('issue layout filter', () => {
   const mockCli = mockClient()
 
   beforeEach(async () => {
+    jest.clearAllMocks()
+    jest.restoreAllMocks()
     client = mockCli.client
     connection = mockCli.connection
     fetchQuery = elementUtils.query.createMockQuery()
@@ -190,6 +192,13 @@ describe('issue layout filter', () => {
         },
       },
     }
+    mockGet = jest.spyOn(client, 'gqlPost')
+    mockGet.mockImplementation(params => {
+      if (params.url === GQL_BASE_URL_GIRA) {
+        return requestReply
+      }
+      throw new Error('Err')
+    })
   })
   describe('async get', () => {
     beforeEach(() => {
@@ -247,14 +256,6 @@ describe('issue layout filter', () => {
             screenSchemeId: 222,
           },
         ],
-      })
-
-      mockGet = jest.spyOn(client, 'gqlPost')
-      mockGet.mockImplementation(params => {
-        if (params.url === GQL_BASE_URL_GIRA) {
-          return requestReply
-        }
-        throw new Error('Err')
       })
 
       elements = [
@@ -649,9 +650,6 @@ describe('issue layout filter', () => {
     let afterIssueLayoutInstance: InstanceElement
     const issueLayoutType = createLayoutType(ISSUE_LAYOUT_TYPE).layoutType
     beforeEach(() => {
-      jest.clearAllMocks()
-      client = mockCli.client
-      connection = mockCli.connection
       issueLayoutInstance = new InstanceElement(
         'issueLayout',
         issueLayoutType,
@@ -866,60 +864,40 @@ describe('issue layout filter', () => {
       expect(res.deployResult.appliedChanges).toHaveLength(0)
       expect(res.leftoverChanges).toHaveLength(0)
     })
-    it('should mark issue layout as removed if parent project was removed', async () => {
-      const change = toChange({ before: issueLayoutInstance })
-      connection.get.mockImplementation(async url => {
-        if (url === '/rest/api/3/project/11111') {
-          return {
-            status: 404,
-            data: {},
-          }
-        }
-        throw new Error(`Unexpected url ${url}`)
-      })
-      const { deployResult } = await layoutFilter.deploy([change])
-      expect(deployResult.errors).toHaveLength(0)
-      expect(deployResult.appliedChanges).toHaveLength(1)
-    })
-    it('should mark issue layout as removed if project was removed and API throws 404', async () => {
-      const change = toChange({ before: issueLayoutInstance })
-      const error = new clientUtils.HTTPError('message', {
-        status: 404,
-        data: { errorMessages: ['project does not exist.'] },
-      })
-      connection.get.mockRejectedValueOnce(error)
-      const { deployResult } = await layoutFilter.deploy([change])
-      expect(deployResult.errors).toHaveLength(0)
-      expect(deployResult.appliedChanges).toHaveLength(1)
-    })
-    it('should return an error if project was removed and API throws non 404 error', async () => {
+    it('should return an error if removal and API throws non 404 error', async () => {
       const change = toChange({ before: issueLayoutInstance })
       const error = new clientUtils.HTTPError('message', {
         status: 500,
-        data: { errorMessages: ['project does not exist.'] },
+        data: { errorMessages: ['issue layout does not exist.'] },
       })
-      connection.get.mockRejectedValueOnce(error)
+      connection.post.mockRejectedValueOnce(error)
       const { deployResult } = await layoutFilter.deploy([change])
       expect(deployResult.errors).toHaveLength(1)
       expect(deployResult.appliedChanges).toHaveLength(0)
     })
-    it('should return error if issue layout as removed but parent project still exits', async () => {
+    it('should succeed on removal change when issue layout does not exist', async () => {
       const change = toChange({ before: issueLayoutInstance })
-      connection.get.mockImplementation(async url => {
-        if (url === '/rest/api/3/project/11111') {
+      jest.restoreAllMocks()
+      connection.post.mockImplementation(async url => {
+        if (url === '/rest/gira/1') {
           return {
             status: 200,
-            data: {
-              id: '11111',
-            },
+            data: undefined,
+            errors: [
+              {
+                message: 'bla',
+                extensions: {
+                  statusCode: 404,
+                },
+              },
+            ],
           }
         }
         throw new Error(`Unexpected url ${url}`)
       })
       const { deployResult } = await layoutFilter.deploy([change])
-      expect(deployResult.errors).toHaveLength(1)
-      expect(deployResult.errors[0].message).toEqual('Error: Could not remove IssueLayout')
-      expect(deployResult.appliedChanges).toHaveLength(0)
+      expect(deployResult.errors).toHaveLength(0)
+      expect(deployResult.appliedChanges).toHaveLength(1)
     })
   })
 })
