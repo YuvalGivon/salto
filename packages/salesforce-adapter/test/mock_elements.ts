@@ -58,12 +58,12 @@ import {
   CUSTOM_METADATA_TYPE_NAME,
   CPQ_TERM_CONDITION,
   CPQ_INDEX_FIELD,
-  OPPORTUNITY_METADATA_TYPE,
   FLOW_FIELD_TYPE_NAMES,
   ASSIGN_TO_REFERENCE,
   LIVE_CHAT_BUTTON,
   APPROVAL_PROCESS_METADATA_TYPE,
   VALIDATION_RULES_METADATA_TYPE,
+  GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
 } from '../src/constants'
 import { createInstanceElement, createMetadataObjectType, Types } from '../src/transformers/transformer'
 import { allMissingSubTypes } from '../src/transformers/salesforce_types'
@@ -569,11 +569,8 @@ export const mockTypes = {
       metadataType: INSTALLED_PACKAGE_METADATA,
     },
   }),
-  Opportunity: createMetadataObjectType({
-    annotations: {
-      metadataType: OPPORTUNITY_METADATA_TYPE,
-    },
-  }),
+  Opportunity: createCustomObjectType('Opportunity', {}),
+  Lead: createCustomObjectType('Lead', {}),
   Product2: new ObjectType({
     elemID: new ElemID(SALESFORCE, 'Product2'),
     fields: {
@@ -920,6 +917,16 @@ export const mockTypes = {
     },
   }),
   [BILLING_PAYMENT_TYPE_NAME]: createCustomObjectType(BILLING_PAYMENT_TYPE_NAME, {}),
+  [GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE]: createMetadataObjectType({
+    annotations: {
+      metadataType: GEN_AI_PROMPT_TEMPLATE_METADATA_TYPE,
+    },
+    fields: {
+      relatedEntity: {
+        refType: BuiltinTypes.STRING,
+      },
+    },
+  }),
 }
 
 export const lwcJsResourceContent = Buffer.from(

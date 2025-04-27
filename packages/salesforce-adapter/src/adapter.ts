@@ -139,10 +139,8 @@ import mergeProfilesWithSourceValuesFilter from './filters/merge_profiles_with_s
 import flowCoordinatesFilter from './filters/flow_coordinates'
 import taskAndEventCustomFields from './filters/task_and_event_custom_fields'
 import picklistReferences from './filters/picklist_references'
-import addParentToInstancesWithinFolderFilter from './filters/add_parent_to_instances_within_folder'
-import addParentToRecordTriggeredFlows from './filters/add_parent_to_record_triggered_flows'
-import addParentToApprovalProcess from './filters/add_parent_to_approval_process'
 import controllingFieldReference from './filters/controlling_field_reference'
+import addParentRelationship from './filters/add_parent_relationship'
 import { getConfigFromConfigChanges } from './config/config_change'
 import { Filter, FilterContext, FilterCreator, FilterResult } from './filter'
 import {
@@ -267,9 +265,8 @@ export const allFilters: Array<FilterCreator> = [
   // should run after convertListsFilter
   replaceFieldValuesFilter,
   valueToStaticFileFilter,
-  // addParentToRecordTriggeredFlows should run before fieldReferenceFilter
-  addParentToRecordTriggeredFlows,
-  addParentToApprovalProcess,
+  // addParentToRelationship should run before fieldReferenceFilter
+  addParentRelationship,
   fieldReferencesFilter,
   // should run after customObjectsInstancesFilter for now
   referenceAnnotationsFilter,
@@ -301,7 +298,6 @@ export const allFilters: Array<FilterCreator> = [
   flowCoordinatesFilter,
   // createChangedAtSingletonInstanceFilter should run last
   changedAtSingletonFilter,
-  addParentToInstancesWithinFolderFilter,
 ]
 
 export type SalesforceAdapterParams = {
