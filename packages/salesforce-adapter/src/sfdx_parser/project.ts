@@ -62,7 +62,6 @@ export const createProject: InitFolderFunc = async ({ baseDir }) => {
 
   try {
     await templateService.create(TemplateType.Project, opts)
-    return { errors: [] }
   } catch (error) {
     log.error('Error occurred when creating SFDX project: %s', inspectValue(error))
     return {
@@ -75,4 +74,23 @@ export const createProject: InitFolderFunc = async ({ baseDir }) => {
       ],
     }
   }
+
+  try {
+    const project = await SfProject.resolve(baseDir)
+    const projectJson = await project.retrieveSfProjectJson()
+    projectJson.set('name', '')
+    await projectJson.write()
+  } catch (error) {
+    log.error('Error occurred when configuring SFDX project name: %s', inspectValue(error))
+    return {
+      errors: [
+        {
+          severity: 'Error',
+          message: 'Failed configuring SFDX project name',
+          detailedMessage: detailedMessageFromSfError(error),
+        },
+      ],
+    }
+  }
+  return { errors: [] }
 }

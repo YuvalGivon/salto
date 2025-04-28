@@ -51,6 +51,11 @@ describe('createProject', () => {
       expect(res.errors).toBeEmpty()
       expect(fs.existsSync(path.join(project.name(), 'sfdx-project.json'))).toBeTrue()
     })
+
+    it('should create a config file with an empty project name', () => {
+      const projectFile = JSON.parse(fs.readFileSync(path.join(project.name(), 'sfdx-project.json'), 'utf8'))
+      expect(projectFile.name).toBe('')
+    })
   })
 
   describe('when given an invalid directory', () => {
