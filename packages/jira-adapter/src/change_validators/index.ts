@@ -60,6 +60,7 @@ import { deleteLabelAtttributeValidator } from './assets/label_attribute_removal
 import { defaultAdditionQueueValidator } from './default_addition_queue'
 import { defaultAttributeValidator } from './assets/default_attribute'
 import { automationToAssetsValidator } from './automation/automation_to_assets'
+import { automationTemplateFormIdsValidator } from './automation/automation_template_form_ids'
 import { addJsmProjectValidator } from './adding_jsm_project'
 import { jsmPermissionsValidator } from './jsm/jsm_permissions'
 import { referencedWorkflowDeletionChangeValidator } from './workflowsV2/referenced_workflow_deletion'
@@ -150,6 +151,7 @@ export default (client: JiraClient, config: JiraConfig, paginator: clientUtils.P
     deleteLastQueueValidator: deleteLastQueueValidator(config),
     defaultAdditionQueueValidator: defaultAdditionQueueValidator(config),
     automationToAssets: automationToAssetsValidator(config),
+    automationTemplateFormIds: automationTemplateFormIdsValidator,
     defaultAttributeValidator: defaultAttributeValidator(config, client),
     addJsmProject: addJsmProjectValidator(client),
     deleteLabelAtttribute: deleteLabelAtttributeValidator(config),

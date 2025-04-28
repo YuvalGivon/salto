@@ -148,22 +148,6 @@ describe('automationStructureFilter', () => {
           type: 'jira.issue.outgoing.email',
           value: { body: HTML_BODY_TEST, mimeType: 'text/html' },
         },
-        {
-          id: '10',
-          component: 'ACTION',
-          type: 'jira.proforma.form.add.action',
-          value: {
-            templateFormsConfig: { projectId: 10010, templateFormIds: [1, 5] },
-          },
-        },
-        {
-          id: '11',
-          component: 'ACTION',
-          type: 'jira.proforma.form.add.action',
-          value: {
-            templateFormsConfig: { projectId: 10010 },
-          },
-        },
       ],
       projects: [
         {
@@ -329,32 +313,6 @@ describe('automationStructureFilter', () => {
       await filter.onFetch([longNamedInstance])
       expect(longNamedInstance.value.components[9].value.body).toBeInstanceOf(StaticFile)
       expect(longNamedInstance.value.components[9].value.body.filepath.length).toBeLessThan(255)
-    })
-
-    describe('transformIdNumberToString', () => {
-      it('should transform the id type of templateFormIds from number to string in jira.proforma.form.add.action', async () => {
-        await filter.onFetch([instance])
-        expect(Array.isArray(instance.value.components[10].value.templateFormsConfig.templateFormIds)).toBe(true)
-        expect(instance.value.components[10].value.templateFormsConfig.templateFormIds).toEqual(
-          expect.arrayContaining(['1', '5']),
-        )
-      })
-
-      it('should not modify value when templateFormIds is missing', async () => {
-        expect(instance.value.components[11].value.templateFormsConfig.templateFormIds).toBeUndefined()
-      })
-
-      it('should not modify value when templateFormsConfig is missing', async () => {
-        delete instance.value.components[11].value.templateFormsConfig
-        await filter.onFetch([instance])
-        expect(instance.value.components[11].value.templateFormsConfig).toBeUndefined()
-      })
-
-      it('should not modify value when value.value is undefined', async () => {
-        delete instance.value.components[11].value
-        await filter.onFetch([instance])
-        expect(instance.value.components[11].value).toBeUndefined()
-      })
     })
 
     it('should not throw if wrong structure', async () => {

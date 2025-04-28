@@ -282,6 +282,7 @@ const CHANGE_VALIDATOR_NAMES = [
   'customFieldsWith10KOptions',
   'issueTypeHierarchy',
   'automationProjects',
+  'automationTemplateFormIds',
   'deleteLastQueueValidator',
   'defaultAdditionQueueValidator',
   'defaultAttributeValidator',

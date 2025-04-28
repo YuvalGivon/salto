@@ -53,7 +53,6 @@ const { makeArray } = collections.array
 const log = logger(module)
 const { isDefined } = lowerDashValues
 
-const AUTOMATION_ATTACH_FORM_ACTION_TYPE = 'jira.proforma.form.add.action'
 const UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`)
 const isUUID = (value: string): boolean => UUID_REGEX.test(value)
 
@@ -283,18 +282,6 @@ const transformStaticFileBufferToHTML =
     return value
   }
 
-const transformIdNumberToString =
-  (): TransformFuncSync =>
-  ({ value }) => {
-    if (
-      value?.type === AUTOMATION_ATTACH_FORM_ACTION_TYPE &&
-      Array.isArray(value.value?.templateFormsConfig?.templateFormIds)
-    ) {
-      value.value.templateFormsConfig.templateFormIds = value.value.templateFormsConfig.templateFormIds.map(String)
-    }
-    return value
-  }
-
 const revertCompareFieldValueStructure: TransformFuncSync = ({ value, field }) => {
   if (isCompareFieldValueObject(value) && field?.getTypeSync()?.elemID.typeName === AUTOMATION_COMPONENT_VALUE_TYPE) {
     const { compareFieldValue } = value
@@ -447,7 +434,6 @@ const filter: FilterCreator = ({ client }) => {
             createTransformDeleteLinkTypesFunc(),
             createTransformHasAttachmentValueFunc(),
             extractHTMLContentToStaticFile(),
-            transformIdNumberToString(),
           ])
           instance.value = (
             await transformElement({
