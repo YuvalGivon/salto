@@ -16,8 +16,6 @@ import {
 } from '@salto-io/adapter-api'
 import { MockInterface } from '@salto-io/test-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
-import _ from 'lodash'
-import { getDefaultConfig, JiraConfig } from '../../src/config/config'
 import { mockClient } from '../utils'
 import { activeSchemeChangeValidator } from '../../src/change_validators/active_scheme_change'
 import { JIRA } from '../../src/constants'
@@ -33,7 +31,6 @@ describe('active scheme change', () => {
   let modifiedInstance: InstanceElement
   let validator: ChangeValidator
   let issues: Value[]
-  let config: JiraConfig
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -60,9 +57,7 @@ describe('active scheme change', () => {
       }
       throw new Error(`Unexpected url ${url}`)
     })
-    config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
-    config.fetch.useJqlSearch = true
-    validator = activeSchemeChangeValidator(client, config)
+    validator = activeSchemeChangeValidator(client)
   })
   it('should not return error for addition/removal changes', async () => {
     const deletionErrors = await validator([toChange({ before: projectInstance })])

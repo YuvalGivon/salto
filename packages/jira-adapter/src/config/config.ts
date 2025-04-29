@@ -78,7 +78,6 @@ type JiraFetchConfig = definitions.UserFetchConfig<{ fetchCriteria: JiraFetchFil
   walkOnReferences?: boolean
   remove10KOptionsContexts: boolean
   enableProjectsScope: boolean
-  useJqlSearch: boolean
 }
 
 export type MaskingConfig = {
@@ -191,7 +190,6 @@ const PARTIAL_DEFAULT_CONFIG: Omit<JiraConfig, 'apiDefinitions'> = {
     remove10KOptionsContexts: false, // starting value, to be changed
     walkOnReferences: true,
     enableProjectsScope: false,
-    useJqlSearch: true,
   },
   deploy: {
     forceDelete: false,
@@ -363,7 +361,6 @@ const fetchConfigType = definitions.createUserFetchConfigType({
     remove10KOptionsContexts: { refType: BuiltinTypes.BOOLEAN },
     walkOnReferences: { refType: BuiltinTypes.BOOLEAN },
     enableProjectsScope: { refType: BuiltinTypes.BOOLEAN },
-    useJqlSearch: { refType: BuiltinTypes.BOOLEAN },
   },
   fetchCriteriaType: fetchFiltersType,
   omitElemID: true,

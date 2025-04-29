@@ -24,21 +24,17 @@ const { awu } = collections.asynciterable
 
 const log = logger(module)
 
-export const doesProjectHaveIssues = async (
-  instance: InstanceElement,
-  client: JiraClient,
-  useJqlSearch: boolean,
-): Promise<boolean> => {
+export const doesProjectHaveIssues = async (instance: InstanceElement, client: JiraClient): Promise<boolean> => {
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
 
   const jql = `project = "${instance.value.key}"`
 
   try {
     response = await client.get({
-      url: useJqlSearch ? '/rest/api/3/search/jql' : '/rest/api/3/search',
+      url: '/rest/api/3/search/jql',
       queryParams: {
         jql,
-        maxResults: useJqlSearch ? '1' : '0',
+        maxResults: '1',
       },
     })
   } catch (e) {
@@ -48,29 +44,17 @@ export const doesProjectHaveIssues = async (
     return true
   }
 
-  if (useJqlSearch) {
-    if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
-      log.error(
-        `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming project ${instance.elemID.getFullName()} has issues.`,
-      )
-      return true
-    }
-
-    const { issues } = response.data
-    const projectHasIssues = issues.length > 0
-    log.debug(`Project ${instance.elemID.getFullName()} has ${projectHasIssues ? '' : 'no'} issues.`)
-    return projectHasIssues
-  }
-
-  if (Array.isArray(response.data) || response.data.total === undefined) {
+  if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
     log.error(
       `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming project ${instance.elemID.getFullName()} has issues.`,
     )
     return true
   }
 
-  log.debug(`Project ${instance.elemID.getFullName()} has ${response.data.total} issues.`)
-  return response.data.total !== 0
+  const { issues } = response.data
+  const projectHasIssues = issues.length > 0
+  log.debug(`Project ${instance.elemID.getFullName()} has ${projectHasIssues ? '' : 'no '}issues.`)
+  return projectHasIssues
 }
 
 export const projectDeletionValidator: (client: JiraClient, config: JiraConfig) => ChangeValidator =
@@ -80,14 +64,12 @@ export const projectDeletionValidator: (client: JiraClient, config: JiraConfig) 
       return []
     }
 
-    const useJqlSearch = config.fetch.useJqlSearch === true
-
     return awu(changes)
       .filter(isInstanceChange)
       .filter(isRemovalChange)
       .map(getChangeData)
       .filter(instance => instance.elemID.typeName === 'Project')
-      .filter(instance => doesProjectHaveIssues(instance, client, useJqlSearch))
+      .filter(instance => doesProjectHaveIssues(instance, client))
       .map(instance => ({
         elemID: instance.elemID,
         severity: 'Error' as SeverityLevel,

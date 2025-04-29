@@ -27,7 +27,6 @@ import {
   isResolvedReferenceExpression,
   safeJsonStringify,
 } from '@salto-io/adapter-utils'
-import { JiraConfig } from '../config/config'
 import JiraClient from '../client/client'
 import { ISSUE_TYPE_SCHEMA_NAME, PROJECT_TYPE } from '../constants'
 
@@ -68,16 +67,15 @@ const areIssueTypesUsed = async (
   client: JiraClient,
   issueType: string,
   linkedProjectNames: string[],
-  useJqlSearch: boolean,
 ): Promise<boolean> => {
   const jql = `project in (${linkedProjectNames.join(',')}) AND issuetype = ${issueType}`
   let response: clientUtils.Response<clientUtils.ResponseValue | clientUtils.ResponseValue[]>
   try {
     response = await client.get({
-      url: useJqlSearch ? '/rest/api/3/search/jql' : '/rest/api/3/search',
+      url: '/rest/api/3/search/jql',
       queryParams: {
         jql,
-        maxResults: useJqlSearch ? '1' : '0',
+        maxResults: '1',
       },
     })
   } catch (e) {
@@ -85,29 +83,19 @@ const areIssueTypesUsed = async (
     return false
   }
 
-  if (useJqlSearch) {
-    if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
-      log.error(
-        `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming issue type "${issueType}" has no issues.`,
-      )
-      return false
-    }
-
-    const { issues } = response.data
-    return issues.length !== 0
-  }
-
-  if (Array.isArray(response.data) || response.data.total === undefined) {
+  if (Array.isArray(response.data) || !Array.isArray(response.data.issues)) {
     log.error(
       `Received invalid response from Jira search API, ${safeJsonStringify(response.data, undefined, 2)}. Assuming issue type "${issueType}" has no issues.`,
     )
     return false
   }
-  return response.data.total !== 0
+
+  const { issues } = response.data
+  return issues.length !== 0
 }
 
 export const issueTypeSchemeMigrationValidator =
-  (client: JiraClient, config: JiraConfig): ChangeValidator =>
+  (client: JiraClient): ChangeValidator =>
   async (changes, elementSource) => {
     const relevantChanges = getRelevantChanges(changes)
     if (elementSource === undefined || relevantChanges.length === 0) {
@@ -121,7 +109,6 @@ export const issueTypeSchemeMigrationValidator =
       ),
       project => project.value.issueTypeScheme.elemID.getFullName(),
     )
-    const useJqlSearch = config.fetch.useJqlSearch === true
     const errors = await awu(relevantChanges)
       .map(async change => {
         const issueTypeScheme = getChangeData(change)
@@ -135,7 +122,7 @@ export const issueTypeSchemeMigrationValidator =
           .map(issueTypeId => issueTypeId.value.value.name)
           .toArray()
         const removedTypesWithIssues = await awu(removedIssueTypeNames)
-          .filter(async issueType => areIssueTypesUsed(client, issueType, linkedProjectNames, useJqlSearch))
+          .filter(async issueType => areIssueTypesUsed(client, issueType, linkedProjectNames))
           .toArray()
         if (removedTypesWithIssues.length > 0) {
           return getIssueTypeSchemeMigrationError(issueTypeScheme, removedTypesWithIssues)

@@ -19,8 +19,6 @@ import {
 import { MockInterface } from '@salto-io/test-utils'
 import { client as clientUtils } from '@salto-io/adapter-components'
 import { buildElementsSourceFromElements } from '@salto-io/adapter-utils'
-import _ from 'lodash'
-import { getDefaultConfig, JiraConfig } from '../../src/config/config'
 import { mockClient } from '../utils'
 import { issueTypeSchemeMigrationValidator } from '../../src/change_validators/issue_type_scheme_migration'
 import { ISSUE_TYPE_NAME, ISSUE_TYPE_SCHEMA_NAME, JIRA, PROJECT_TYPE } from '../../src/constants'
@@ -56,7 +54,6 @@ describe('issue type scheme migration validator', () => {
   let elementSource: ReadOnlyElementsSource
   let mockConnection: MockInterface<clientUtils.APIConnection>
   let issues: Value[]
-  let config: JiraConfig
   const callValidator = async (): Promise<readonly ChangeError[]> => {
     const changes = [toChange({ before: issueTypeScheme, after: modifiedIssueTypeScheme })]
     return validator(changes, elementSource)
@@ -107,9 +104,7 @@ describe('issue type scheme migration validator', () => {
       }
       throw new Error(`Unexpected url ${url}`)
     })
-    config = _.cloneDeep(getDefaultConfig({ isDataCenter: false }))
-    config.fetch.useJqlSearch = true
-    validator = issueTypeSchemeMigrationValidator(client, config)
+    validator = issueTypeSchemeMigrationValidator(client)
   })
 
   it('should not return an error if no issue types were removed', async () => {
